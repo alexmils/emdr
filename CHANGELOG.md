@@ -29,6 +29,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Apple design tokens aligned with `apple-design` skill in `app/globals.css`
 - Settings page: left sidebar tabs (Voice, AI, ElevenLabs, Memory, Coming soon) with panel on the right
 - Apple-style toggle switches replace checkboxes (Auto voice, memory sets in thread edit)
+- GitHub: initial push to public repo https://github.com/alexmils/emdr (`main`); `.gitignore` excludes `.env`, `__pycache__`
 
 ### Fixed
 - Internal Server Error on `/` from stale `.next` cache — clean rebuild fixes it; `start.bat` now frees port 3471 before dev
