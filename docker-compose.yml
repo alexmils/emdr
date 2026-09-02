@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: emdr
+      POSTGRES_PASSWORD: emdr
+      POSTGRES_DB: emdr
+    volumes:
+      - emdr_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emdr -d emdr"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  emdr_pg_data:

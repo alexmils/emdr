@@ -1,0 +1,22 @@
+---
+description: Check Mem0 and CHANGELOG before EMDR work; update both after every change
+alwaysApply: true
+---
+
+# EMDR — memory & changelog workflow
+
+Before starting any task in this repository:
+
+1. **Search Mem0** (`user-mem0` → `search_memories`) with `user_id: "emdr"` and a query about the feature/area you will touch.
+2. **Read** `CHANGELOG.md` — especially the `[Unreleased]` section — to see what was already done and avoid duplicate work.
+3. If Mem0 or changelog shows the task is already complete, do not re-implement; confirm with the user or extend only what is missing.
+
+After completing each change session (before ending your turn):
+
+1. **Append** a concise bullet under the correct heading in `CHANGELOG.md` `[Unreleased]` (Added / Changed / Fixed / Removed). Newest entry at the bottom of that subsection.
+2. **Add a Mem0 memory** via `add_memory` with:
+   - `user_id: "emdr"`
+   - `text`: one short paragraph — date (YYYY-MM-DD), what changed, key files/paths, ports or config if relevant. Prefix with `[EMDR]`.
+3. Do not store secrets (API keys, passwords) in Mem0 or changelog.
+
+Mem0 namespace: **emdr** (`user_id: "emdr"`).
