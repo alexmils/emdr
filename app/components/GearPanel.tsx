@@ -1,6 +1,7 @@
 "use client";
 
 import type { BlsSettings } from "@/lib/types";
+import { clampBlsSpeed, getActiveSpeedHz } from "@/lib/bls-speed";
 
 export function GearPanel({
   bls,
@@ -60,17 +61,21 @@ export function GearPanel({
           </label>
           <label className="block">
             <span className="mb-2 block font-medium">
-              Speed — {bls.speedHz.toFixed(2)} Hz
+              Active speed — {getActiveSpeedHz(bls).toFixed(2)} Hz
             </span>
             <input
               type="range"
               min={0.5}
               max={2}
               step={0.1}
-              value={bls.speedHz}
-              onChange={(e) =>
-                onChange({ speedHz: parseFloat(e.target.value) })
-              }
+              value={bls.speedPresets[bls.activeSpeedPreset]}
+              onChange={(e) => {
+                const next = [...bls.speedPresets] as [number, number, number];
+                next[bls.activeSpeedPreset] = clampBlsSpeed(
+                  parseFloat(e.target.value)
+                );
+                onChange({ speedPresets: next });
+              }}
               className="range-apple w-full"
             />
           </label>

@@ -20,3 +20,5 @@ After completing each change session (before ending your turn):
 3. Do not store secrets (API keys, passwords) in Mem0 or changelog.
 
 Mem0 namespace: **emdr** (`user_id: "emdr"`).
+
+See also: `.cursor/rules/verify-before-done.mdc` — lint, tests, and runtime checks before finishing.

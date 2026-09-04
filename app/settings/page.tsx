@@ -1,23 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AppleToggle } from "@/app/components/AppleToggle";
+import { PasskeySettings } from "@/app/components/PasskeySettings";
+import { Avatar } from "@/app/components/Avatar";
+import {
+  displayNameFor,
+  notifyUserUpdated,
+  useCurrentUser,
+} from "@/app/components/useCurrentUser";
+import { fileToAvatarDataUrl } from "@/lib/avatar-client";
 import type { AppSettings, Memory, MemorySet } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/types";
 
-type SettingsTab = "voice" | "ai" | "elevenlabs" | "memory" | "coming-soon";
+type SettingsTab = "profile" | "voice" | "memory" | "security" | "coming-soon";
 
 const TABS: { id: SettingsTab; label: string }[] = [
+  { id: "profile", label: "Profile" },
   { id: "voice", label: "Voice" },
-  { id: "ai", label: "AI" },
-  { id: "elevenlabs", label: "ElevenLabs" },
   { id: "memory", label: "Memory" },
+  { id: "security", label: "Security" },
   { id: "coming-soon", label: "Coming soon" },
 ];
 
-export default function SettingsPage() {
-  const [tab, setTab] = useState<SettingsTab>("voice");
+function isSettingsTab(value: string | null): value is SettingsTab {
+  return (
+    value === "profile" ||
+    value === "voice" ||
+    value === "memory" ||
+    value === "security" ||
+    value === "coming-soon"
+  );
+}
+
+function SettingsPageContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [tab, setTab] = useState<SettingsTab>(
+    isSettingsTab(tabParam) ? tabParam : "profile"
+  );
+  const { user, refresh: refreshUser } = useCurrentUser();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
@@ -26,18 +50,31 @@ export default function SettingsPage() {
   const [newSetName, setNewSetName] = useState("");
   const [addToSetId, setAddToSetId] = useState("");
   const [addMemId, setAddMemId] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setProfileName(user?.name ?? "");
+  }, [user?.name]);
 
   const load = async () => {
     const res = await fetch("/api/settings");
     const data = await res.json();
-    setSettings(data.settings);
-    setMemories(data.memories);
-    setMemorySets(data.memorySets);
+    setSettings(data.settings ?? DEFAULT_SETTINGS);
+    setMemories(data.memories ?? []);
+    setMemorySets(data.memorySets ?? []);
   };
 
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (isSettingsTab(tabParam)) setTab(tabParam);
+  }, [tabParam]);
 
   const save = async (next: AppSettings) => {
     setSettings(next);
@@ -48,7 +85,73 @@ export default function SettingsPage() {
     });
   };
 
+  const saveProfile = async () => {
+    setProfileSaving(true);
+    setProfileError(null);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: profileName.trim() || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not save");
+      notifyUserUpdated();
+      await refreshUser();
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const onAvatarFile = async (file: File | null) => {
+    if (!file) return;
+    setAvatarBusy(true);
+    setProfileError(null);
+    try {
+      const avatarUrl = await fileToAvatarDataUrl(file);
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not upload");
+      notifyUserUpdated();
+      await refreshUser();
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setAvatarBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeAvatar = async () => {
+    setAvatarBusy(true);
+    setProfileError(null);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: null }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Could not remove");
+      }
+      notifyUserUpdated();
+      await refreshUser();
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : "Remove failed");
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
   const panelTitle = TABS.find((t) => t.id === tab)?.label ?? "Settings";
+  const label = displayNameFor(user);
 
   return (
     <div className="settings-shell">
@@ -79,14 +182,93 @@ export default function SettingsPage() {
       <main className="settings-panel">
         <h2 className="settings-panel-title">{panelTitle}</h2>
 
+        {tab === "profile" && (
+          <div className="settings-group">
+            <div className="settings-row flex flex-wrap items-center gap-4">
+              <Avatar
+                src={user?.avatarUrl}
+                alt={label}
+                fallback={label}
+                className="avatar-lg"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-medium">Profile photo</p>
+                <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                  Shown in chat and the sidebar. JPG, PNG, or WebP.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) =>
+                      void onAvatarFile(e.target.files?.[0] ?? null)
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    disabled={avatarBusy}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {avatarBusy ? "Uploading…" : "Upload photo"}
+                  </button>
+                  {user?.avatarUrl && (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      disabled={avatarBusy}
+                      onClick={() => void removeAvatar()}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <label className="settings-row block">
+              <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
+                Display name
+              </span>
+              <input
+                className="field"
+                value={profileName}
+                placeholder="Your name"
+                maxLength={80}
+                onChange={(e) => setProfileName(e.target.value)}
+              />
+            </label>
+            <div className="settings-row flex items-center justify-between gap-2">
+              <p className="text-[12px] text-[var(--text-muted)]">
+                {user?.email}
+              </p>
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={profileSaving}
+                onClick={() => void saveProfile()}
+              >
+                {profileSaving ? "Saving…" : "Save profile"}
+              </button>
+            </div>
+            {profileError && (
+              <p className="settings-row text-[13px] text-[var(--destructive)]">
+                {profileError}
+              </p>
+            )}
+          </div>
+        )}
+
         {tab === "voice" && (
           <div className="settings-group">
             <div className="settings-row settings-toggle-row">
               <div className="min-w-0 flex-1">
                 <span className="text-[13px] font-medium">Auto voice</span>
                 <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-secondary)]">
-                  ElevenLabs reads each agent line automatically (not during
-                  BLS). Use the speaker icon on each message when off.
+                  Automatically read each agent line aloud (not during BLS).
+                  Use the speaker icon on each message when off. Voice provider
+                  is configured by the platform admin.
                 </p>
               </div>
               <AppleToggle
@@ -94,128 +276,6 @@ export default function SettingsPage() {
                 checked={settings.autoVoice}
                 onChange={(autoVoice) => void save({ ...settings, autoVoice })}
               />
-            </div>
-          </div>
-        )}
-
-        {tab === "ai" && (
-          <div className="settings-group">
-            <div className="settings-row flex items-center justify-between gap-3">
-              <span className="text-[13px]">Default provider</span>
-              <select
-                className="field !w-auto !py-1.5 text-[13px]"
-                value={settings.defaultAiProvider}
-                onChange={(e) =>
-                  void save({
-                    ...settings,
-                    defaultAiProvider: e.target
-                      .value as AppSettings["defaultAiProvider"],
-                  })
-                }
-              >
-                <option value="deepseek">DeepSeek</option>
-                <option value="openai">OpenAI</option>
-                <option value="claude">Claude</option>
-              </select>
-            </div>
-            {(["deepseek", "openai", "claude"] as const).map((p) => (
-              <div key={p} className="settings-row space-y-2">
-                <h3 className="text-[13px] font-semibold capitalize">{p}</h3>
-                <input
-                  type="password"
-                  placeholder="API key"
-                  className="field"
-                  value={settings.connectors[p].apiKey}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      connectors: {
-                        ...settings.connectors,
-                        [p]: {
-                          ...settings.connectors[p],
-                          apiKey: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                />
-                <input
-                  className="field"
-                  placeholder="Model"
-                  value={settings.connectors[p].model}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      connectors: {
-                        ...settings.connectors,
-                        [p]: {
-                          ...settings.connectors[p],
-                          model: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                />
-                <button
-                  type="button"
-                  className="text-[13px] font-medium text-[var(--accent)]"
-                  onClick={() => void save(settings)}
-                >
-                  Save {p}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "elevenlabs" && (
-          <div className="settings-group">
-            <div className="settings-row space-y-2">
-              <p className="text-[12px] text-[var(--text-secondary)]">
-                Text-to-speech for agent lines and auto voice.
-              </p>
-              <input
-                type="password"
-                placeholder="API key"
-                className="field"
-                value={settings.connectors.elevenlabs.apiKey}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    connectors: {
-                      ...settings.connectors,
-                      elevenlabs: {
-                        ...settings.connectors.elevenlabs,
-                        apiKey: e.target.value,
-                      },
-                    },
-                  })
-                }
-              />
-              <input
-                placeholder="Voice ID"
-                className="field"
-                value={settings.connectors.elevenlabs.voiceId}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    connectors: {
-                      ...settings.connectors,
-                      elevenlabs: {
-                        ...settings.connectors.elevenlabs,
-                        voiceId: e.target.value,
-                      },
-                    },
-                  })
-                }
-              />
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => void save(settings)}
-              >
-                Save ElevenLabs
-              </button>
             </div>
           </div>
         )}
@@ -343,21 +403,25 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {tab === "security" && <PasskeySettings />}
+
         {tab === "coming-soon" && (
           <div className="apple-card border-dashed p-5 opacity-80">
             <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
-              Gemini, Azure OpenAI, local models, and additional voice
-              providers will be added in a future release.
+              Additional personalization options will be added in a future
+              release.
             </p>
           </div>
         )}
-
-        <p className="mt-10 text-[11px] leading-relaxed text-[var(--text-secondary)]">
-          Disclaimer: This is a self-help guide, not a substitute for a licensed
-          therapist. If you feel overwhelmed, stop and seek professional
-          support.
-        </p>
       </main>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsPageContent />
+    </Suspense>
   );
 }

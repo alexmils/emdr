@@ -14,11 +14,14 @@ import type {
   Memory,
   MemorySet,
   Message,
+  SessionKind,
   Thread,
   ThreadMemorySet,
 } from "@/lib/types";
 import { DEFAULT_BLS, DEFAULT_SETTINGS } from "@/lib/types";
 import type { SessionMode } from "@/lib/protocol";
+import { fetchJson } from "@/lib/fetch-json";
+import { shouldBootstrapAgent } from "@/lib/session-mode";
 
 interface AppState {
   threads: Thread[];
@@ -30,11 +33,16 @@ interface AppState {
   bls: BlsSettings;
   sessionMode: SessionMode;
   setSessionMode: (m: SessionMode) => void;
-  setBls: (patch: Partial<BlsSettings>) => void;
+  setBls: (
+    patch:
+      | Partial<BlsSettings>
+      | ((prev: BlsSettings) => Partial<BlsSettings>)
+  ) => void;
   refreshThreads: () => Promise<void>;
   selectThread: (id: string) => Promise<void>;
   createThread: () => Promise<void>;
   updateThreadLocal: (id: string, patch: Partial<Thread>) => Promise<void>;
+  chooseSessionMode: (kind: Exclude<SessionKind, "pending">) => Promise<void>;
   deleteThread: (id: string) => Promise<void>;
   sendUserMessage: (text: string) => Promise<void>;
   requestCheckIn: () => Promise<void>;
@@ -62,45 +70,72 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [sessionMode, setSessionMode] = useState<SessionMode>("idle");
 
   const refreshThreads = useCallback(async () => {
-    const res = await fetch("/api/threads");
-    const data = await res.json();
-    setThreads(data.threads ?? []);
+    try {
+      const data = await fetchJson<{ threads?: Thread[] }>("/api/threads");
+      setThreads(data.threads ?? []);
+    } catch (err) {
+      console.error("refreshThreads failed:", err);
+    }
   }, []);
 
   const selectThread = useCallback(async (id: string) => {
-    const res = await fetch(`/api/threads?id=${id}`);
-    const data = await res.json();
-    setActiveThreadId(id);
-    setMessages(data.messages ?? []);
-    setThreadMemorySets(data.memorySets ?? []);
-    setMemorySets(data.allSets ?? []);
+    try {
+      const data = await fetchJson<{
+        messages?: Message[];
+        memorySets?: ThreadMemorySet[];
+        allSets?: MemorySet[];
+      }>(`/api/threads?id=${id}`);
+      setActiveThreadId(id);
+      setMessages(data.messages ?? []);
+      setThreadMemorySets(data.memorySets ?? []);
+      setMemorySets(data.allSets ?? []);
+    } catch (err) {
+      console.error("selectThread failed:", err);
+    }
   }, []);
 
   const createThread = useCallback(async () => {
-    const res = await fetch("/api/threads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create", title: "New session" }),
-    });
-    const data = await res.json();
-    await refreshThreads();
-    if (data.thread?.id) await selectThread(data.thread.id);
+    try {
+      const data = await fetchJson<{ thread?: Thread }>("/api/threads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", title: "New session" }),
+      });
+      await refreshThreads();
+      if (data.thread?.id) await selectThread(data.thread.id);
+    } catch (err) {
+      console.error("createThread failed:", err);
+    }
   }, [refreshThreads, selectThread]);
 
   const updateThreadLocal = useCallback(
     async (id: string, patch: Partial<Thread>) => {
-      const res = await fetch("/api/threads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update", id, patch }),
-      });
-      const data = await res.json();
-      if (data.thread) {
-        setThreads((t) => t.map((x) => (x.id === id ? data.thread : x)));
-        if (activeThreadId === id) await selectThread(id);
+      try {
+        const data = await fetchJson<{ thread?: Thread }>("/api/threads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "update", id, patch }),
+        });
+        if (data.thread) {
+          setThreads((t) => t.map((x) => (x.id === id ? data.thread! : x)));
+          if (activeThreadId === id) await selectThread(id);
+        }
+      } catch (err) {
+        console.error("updateThreadLocal failed:", err);
       }
     },
     [activeThreadId, selectThread]
+  );
+
+  const chooseSessionMode = useCallback(
+    async (kind: Exclude<SessionKind, "pending">) => {
+      if (!activeThreadId) return;
+      const patch: Partial<Thread> = { mode: kind };
+      if (kind === "free") patch.title = "Free session";
+      if (kind === "guided") patch.title = "Guided session";
+      await updateThreadLocal(activeThreadId, patch);
+    },
+    [activeThreadId, updateThreadLocal]
   );
 
   const deleteThread = useCallback(
@@ -130,21 +165,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setMessages((m) => [...m, optimistic]);
-      const res = await fetch("/api/chat", {
+      const data = await fetchJson<{
+        message?: Message;
+        thread?: Thread;
+      }>("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threadId: activeThreadId, userMessage: text }),
       });
-      const data = await res.json();
+      if (data.thread) {
+        setThreads((list) =>
+          list.map((t) => (t.id === data.thread!.id ? data.thread! : t))
+        );
+      }
       if (data.message) {
+        const assistantMsg = data.message;
         setMessages((m) => {
           const withoutTmp = m.filter((x) => x.id !== optimistic.id);
           const hasUser = withoutTmp.some(
             (x) => x.role === "user" && x.content === text
           );
           return hasUser
-            ? [...withoutTmp, data.message]
-            : [...withoutTmp, optimistic, data.message];
+            ? [...withoutTmp, assistantMsg]
+            : [...withoutTmp, optimistic, assistantMsg];
         });
       }
     },
@@ -153,43 +196,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const requestCheckIn = useCallback(async () => {
     if (!activeThreadId) return;
-    const res = await fetch("/api/chat", {
+    const data = await fetchJson<{ message?: Message }>("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ threadId: activeThreadId, afterSet: true }),
     });
-    const data = await res.json();
     if (data.message) {
-      setMessages((m) => [...m, data.message]);
+      const assistantMsg = data.message;
+      setMessages((m) => [...m, assistantMsg]);
     }
   }, [activeThreadId]);
 
   const bootstrapAgent = useCallback(async () => {
     if (!activeThreadId) return;
-    const res = await fetch("/api/chat", {
+    const data = await fetchJson<{ message?: Message }>("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ threadId: activeThreadId, bootstrap: true }),
     });
-    const data = await res.json();
     if (data.message) setMessages([data.message]);
   }, [activeThreadId]);
 
   const refreshSettings = useCallback(async () => {
-    const res = await fetch("/api/settings");
-    const data = await res.json();
-    setSettings(data.settings ?? DEFAULT_SETTINGS);
-    setMemories(data.memories ?? []);
-    setMemorySets(data.memorySets ?? []);
+    try {
+      const data = await fetchJson<{
+        settings?: AppSettings;
+        memories?: Memory[];
+        memorySets?: MemorySet[];
+      }>("/api/settings");
+      setSettings(data.settings ?? DEFAULT_SETTINGS);
+      setMemories(data.memories ?? []);
+      setMemorySets(data.memorySets ?? []);
+    } catch (err) {
+      console.error("refreshSettings failed:", err);
+    }
   }, []);
 
   const saveSettings = useCallback(async (s: AppSettings) => {
-    const res = await fetch("/api/settings", {
+    const data = await fetchJson<{ settings: AppSettings }>("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "save_settings", settings: s }),
     });
-    const data = await res.json();
     setSettings(data.settings);
   }, []);
 
@@ -198,25 +246,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setThreadMemorySet = useCallback(
     async (setId: string, enabled: boolean) => {
       if (!activeThreadId) return;
-      const res = await fetch("/api/threads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "set_memory",
-          threadId: activeThreadId,
-          setId,
-          enabled,
-        }),
-      });
-      const data = await res.json();
+      const data = await fetchJson<{ memorySets?: ThreadMemorySet[] }>(
+        "/api/threads",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_memory",
+            threadId: activeThreadId,
+            setId,
+            enabled,
+          }),
+        }
+      );
       setThreadMemorySets(data.memorySets ?? []);
     },
     [activeThreadId]
   );
 
-  const setBls = useCallback((patch: Partial<BlsSettings>) => {
-    setBlsState((b) => ({ ...b, ...patch }));
-  }, []);
+  const setBls = useCallback(
+    (
+      patch:
+        | Partial<BlsSettings>
+        | ((prev: BlsSettings) => Partial<BlsSettings>)
+    ) => {
+      setBlsState((b) => ({
+        ...b,
+        ...(typeof patch === "function" ? patch(b) : patch),
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
     void refreshThreads();
@@ -230,10 +290,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [threads, activeThreadId, selectThread]);
 
   useEffect(() => {
-    if (activeThreadId && messages.length === 0) {
+    const thread = threads.find((t) => t.id === activeThreadId);
+    if (
+      activeThreadId &&
+      thread &&
+      shouldBootstrapAgent(thread.mode, messages.length)
+    ) {
       void bootstrapAgent();
     }
-  }, [activeThreadId, messages.length, bootstrapAgent]);
+  }, [activeThreadId, messages.length, threads, bootstrapAgent]);
 
   const value = useMemo(
     () => ({
@@ -251,6 +316,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       selectThread,
       createThread,
       updateThreadLocal,
+      chooseSessionMode,
       deleteThread,
       sendUserMessage,
       requestCheckIn,
@@ -275,6 +341,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       selectThread,
       createThread,
       updateThreadLocal,
+      chooseSessionMode,
       deleteThread,
       sendUserMessage,
       requestCheckIn,

@@ -1,0 +1,23 @@
+---
+description: Product UI — ChatGPT / DeepSeek style (not Apple HIG)
+globs: app/**/*.tsx,app/**/*.css
+alwaysApply: false
+---
+
+# Product UI (AI chat apps)
+
+When editing UI in this project:
+
+1. **Do not** follow Apple HIG, frosted glass, or iOS blue (`#007AFF`). The `apple-design-ui` rule is retired.
+
+2. **Reference style**: familiar AI product layout (ChatGPT, DeepSeek, Claude web):
+   - Dark sidebar (`#171717`), light main canvas
+   - Flat surfaces, 1px borders, 6–8px radius (not pills everywhere)
+   - Accent: `#10a37f` (primary actions)
+   - Sentence case labels, no uppercase micro-labels unless necessary
+
+3. **Tokens**: use CSS variables in `app/globals.css` (`--sidebar-bg`, `--border`, `--accent`, etc.).
+
+4. **Typography**: Inter via `next/font/google`.
+
+5. **Copy**: English, concise.

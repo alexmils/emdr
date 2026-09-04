@@ -1,33 +1,9 @@
 ---
-description: Always apply Apple HIG via apple-design skill when building or editing UI
-globs: app/**/*.tsx,app/**/*.css
+description: DISABLED — replaced by product-ui.mdc (ChatGPT-style, not Apple HIG)
+globs: 
 alwaysApply: false
 ---
 
-# Apple design for UI work
+# Retired
 
-When creating or changing UI in this project (components, pages, styles, layout):
-
-1. **Read and follow** the global **`apple-design`** skill first:
-   - `~/.agents/skills/apple-design/SKILL.md`
-   - Use its HIG tokens, materials, typography scale, segmented controls, motion curves, and anti-patterns.
-
-2. **Also read** the project skill:
-   - `.cursor/skills/apple-ui/SKILL.md`
-
-3. **Typography**: Use **Inter** (`next/font/google`) on web — not SF Pro. Stack: `Inter, -apple-system, BlinkMacSystemFont, system-ui`.
-
-4. **Tokens**: Reuse CSS variables and utility classes in `app/globals.css` (`.glass-sidebar`, `.seg-group`, `.btn-primary`, `.text-headline`, etc.). Do not invent a parallel design system.
-
-5. **HIG essentials**:
-   - System blue `#007AFF`, grouped background `#F2F2F7`
-   - Frosted glass (`backdrop-filter` + saturate), hairline separators (0.5px)
-   - Min **44×44pt** touch targets on primary controls
-   - Spring easing `cubic-bezier(0.25, 1, 0.5, 1)`; active state `scale(0.965)`
-   - No harsh drop shadows, no purple-on-dark clichés, no sharp 0-radius controls
-
-6. **Sidebar**: No logo/icon in the header until the user provides one — text only.
-
-7. **Copy**: English UI, sentence case, concise labels.
-
-Before finishing UI changes, sanity-check against Apple HIG (clarity, deference, depth) — not generic “AI slop” styling.
+Apple HIG styling is no longer used. See **product-ui.mdc**.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { AnimationMode, SoundMode } from "@/lib/types";
+import type { AnimationMode, SoundMode, VibrationMode } from "@/lib/types";
 import { BlsAudioEngine } from "@/lib/bls-audio";
 import { rumble } from "@/lib/gamepad";
 
@@ -15,10 +15,11 @@ interface BallCanvasProps {
   sound: SoundMode;
   setLengthSec: number;
   repeats: "24" | "infinity";
-  vibrationIntensity: number;
+  vibration: VibrationMode;
   onSetComplete: () => void;
   onToggle: () => void;
-  onBallOptions?: () => void;
+  /** Idle center hint; guided wait/check-in hide free start messaging. */
+  idleHint?: "default" | "guided_wait" | "check_in";
 }
 
 export function BallCanvas({
@@ -31,13 +32,12 @@ export function BallCanvas({
   sound,
   setLengthSec,
   repeats,
-  vibrationIntensity,
+  vibration,
   onSetComplete,
   onToggle,
-  onBallOptions,
+  idleHint = "default",
 }: BallCanvasProps) {
   const [pos, setPos] = useState(0.5);
-  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef = useRef<BlsAudioEngine | null>(null);
   const posRef = useRef(0.5);
   const dirRef = useRef(1);
@@ -47,12 +47,12 @@ export function BallCanvas({
   const rafRef = useRef<number>(0);
   const speedRef = useRef(speedHz);
   const soundRef = useRef(sound);
-  const vibrationRef = useRef(vibrationIntensity);
+  const vibrationRef = useRef(vibration);
   const onCompleteRef = useRef(onSetComplete);
 
   speedRef.current = speedHz;
   soundRef.current = sound;
-  vibrationRef.current = vibrationIntensity;
+  vibrationRef.current = vibration;
   onCompleteRef.current = onSetComplete;
 
   useEffect(() => {
@@ -86,14 +86,14 @@ export function BallCanvas({
         next = 1;
         dirRef.current = -1;
         repeatCount.current += 1;
-        if (vibrationRef.current > 0) rumble(vibrationRef.current);
+        if (vibrationRef.current !== "none") rumble(vibrationRef.current);
         audioRef.current?.playPan("right", soundRef.current);
         lastSide.current = "right";
       } else if (next <= 0) {
         next = 0;
         dirRef.current = 1;
         repeatCount.current += 1;
-        if (vibrationRef.current > 0) rumble(vibrationRef.current);
+        if (vibrationRef.current !== "none") rumble(vibrationRef.current);
         audioRef.current?.playPan("left", soundRef.current);
         lastSide.current = "left";
       }
@@ -116,36 +116,18 @@ export function BallCanvas({
 
   const leftPct = pos * 100;
 
-  const handleClick = () => {
-    if (clickTimer.current) clearTimeout(clickTimer.current);
-    clickTimer.current = setTimeout(() => {
-      onToggle();
-      clickTimer.current = null;
-    }, 220);
-  };
-
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (clickTimer.current) {
-      clearTimeout(clickTimer.current);
-      clickTimer.current = null;
-    }
-    if (!running && onBallOptions) onBallOptions();
-  };
-
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
+      onClick={onToggle}
       onKeyDown={(e) => {
         if (e.code === "Space") {
           e.preventDefault();
           onToggle();
         }
       }}
-      className="canvas-surface relative h-full min-h-0 flex-1 overflow-hidden outline-none"
+      className="workspace-canvas relative h-full min-h-0 flex-1 overflow-hidden outline-none"
       style={{ background }}
     >
       {animation === "flash" && running && (
@@ -178,15 +160,17 @@ export function BallCanvas({
           }}
         />
       )}
-      {!running && (
-        <p className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed text-[var(--text-secondary)]">
+      {!running && idleHint === "default" && (
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
           <span>
-            Press <span className="font-medium text-[var(--text)]">Space</span> or
+            Press <span className="canvas-idle-hint-strong font-medium">Space</span> or
             click to start
-            <span className="text-caption block mt-1">
-              Double-click for ball options
-            </span>
           </span>
+        </p>
+      )}
+      {!running && idleHint === "check_in" && (
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
+          <span>Reply to the check-in, or use Repeat set if you missed this one</span>
         </p>
       )}
     </div>

@@ -1,0 +1,34 @@
+---
+description: Before finishing any task, verify the app works and there are no errors
+alwaysApply: true
+---
+
+# EMDR — verify before done
+
+Before ending your turn on any task that changes code, config, or behavior:
+
+## Required checks
+
+1. **Lint edited files** — run `ReadLints` on every file you created or modified; fix new issues you introduced.
+2. **Run tests** — `npm test` in the repo root. If tests fail, fix or explain before finishing.
+3. **Type/build sanity** — after non-trivial changes, run `npm run lint` (or `npm run build` if lint is insufficient). Do not leave a broken build.
+4. **Runtime smoke** — when touching API routes, auth, middleware, or DB schema:
+   - confirm the dev server starts or is already running on port **3471**;
+   - hit the affected route(s) or check terminal output for **500**, **tuple concurrently updated**, or stack traces;
+   - fix regressions before reporting done.
+5. **Report honestly** — if something could not be verified (no DB, no network, missing env), say what was checked, what was skipped, and why.
+
+## Do not
+
+- End a coding turn without running at least lint + tests when code changed.
+- Assume success without evidence from commands or terminal output.
+- Ignore errors in the dev server log the user pasted or that appear in your shell.
+
+## Quick command reference
+
+```bash
+npm test
+npm run lint
+```
+
+Postgres (if schema/auth touched): `npm run db:up` — Docker on port **5434**.

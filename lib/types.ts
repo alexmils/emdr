@@ -9,9 +9,16 @@ export type ProtocolPhase =
 export type AnimationMode = "dot" | "flash";
 export type SoundMode = "mute" | "click" | "pulse" | "tone";
 export type RepeatMode = "24" | "infinity";
+export type VibrationMode = "none" | "soft" | "hard";
+
+/** Session start choice: pending until user picks guided or free. */
+export type SessionKind = "pending" | "guided" | "free";
+
+export type SpeedPresetIndex = 0 | 1 | 2;
 
 export interface BlsSettings {
-  speedHz: number;
+  speedPresets: [number, number, number];
+  activeSpeedPreset: SpeedPresetIndex;
   repeats: RepeatMode;
   setLengthSec: number;
   sound: SoundMode;
@@ -19,12 +26,14 @@ export interface BlsSettings {
   ballColor: string;
   ballSize: number;
   background: string;
-  vibrationIntensity: number;
+  vibration: VibrationMode;
 }
 
 export interface Thread {
   id: string;
   title: string;
+  /** pending = start picker; guided = AI; free = BLS only. Locked after choice. */
+  mode: SessionKind;
   phase: ProtocolPhase;
   target?: string;
   negativeCognition?: string;
@@ -32,6 +41,8 @@ export interface Thread {
   suds?: number;
   voc?: number;
   summary?: string;
+  /** User-facing note under the session title (not AI clinical summary). */
+  description?: string;
   incomplete: boolean;
   createdAt: string;
   updatedAt: string;
@@ -72,19 +83,28 @@ export interface ConnectorConfig {
   enabled: boolean;
 }
 
+/** Per-user preferences only — AI/Voice API keys live in platform settings. */
 export interface AppSettings {
   autoVoice: boolean;
-  defaultAiProvider: AiProvider;
-  connectors: {
-    deepseek: ConnectorConfig;
-    openai: ConnectorConfig;
-    claude: ConnectorConfig;
-    elevenlabs: ConnectorConfig & { voiceId: string };
-  };
 }
 
+export const DEFAULT_AI_CONNECTORS = {
+  deepseek: { apiKey: "", model: "deepseek-chat", enabled: true },
+  // Chat-tuned (not gpt-5* reasoning): short protocol turns, temp control, low latency.
+  openai: { apiKey: "", model: "gpt-4.1-mini", enabled: true },
+  claude: { apiKey: "", model: "claude-3-5-haiku-latest", enabled: true },
+} as const satisfies Record<AiProvider, ConnectorConfig>;
+
+export const DEFAULT_VOICE_CONNECTOR = {
+  apiKey: "",
+  model: "eleven_multilingual_v2",
+  enabled: true,
+  voiceId: "EXAVITQu4vr4xnSDxMaL",
+} satisfies ConnectorConfig & { voiceId: string };
+
 export const DEFAULT_BLS: BlsSettings = {
-  speedHz: 1.0,
+  speedPresets: [0.5, 1.0, 2.0],
+  activeSpeedPreset: 1,
   repeats: "24",
   setLengthSec: 38,
   sound: "click",
@@ -92,21 +112,9 @@ export const DEFAULT_BLS: BlsSettings = {
   ballColor: "#111111",
   ballSize: 48,
   background: "#ffffff",
-  vibrationIntensity: 0.5,
+  vibration: "soft",
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   autoVoice: false,
-  defaultAiProvider: "deepseek",
-  connectors: {
-    deepseek: { apiKey: "", model: "deepseek-chat", enabled: false },
-    openai: { apiKey: "", model: "gpt-4o-mini", enabled: false },
-    claude: { apiKey: "", model: "claude-3-5-haiku-latest", enabled: false },
-    elevenlabs: {
-      apiKey: "",
-      model: "eleven_multilingual_v2",
-      enabled: false,
-      voiceId: "EXAVITQu4vr4xnSDxMaL",
-    },
-  },
 };

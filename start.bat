@@ -33,10 +33,14 @@ echo Freeing port 3471 if in use...
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3471" ^| findstr "LISTENING"') do (
   taskkill /PID %%a /F >nul 2>&1
 )
+timeout /t 1 /nobreak >nul
 
 echo.
 echo  App:  http://localhost:3471
-echo  Stop: Ctrl+C in this window
+echo  Dev:  npm run dev       (clears cache, stable)
+echo        npm run dev:fast  (no cache clear)
+echo  Stop: Ctrl+C
+echo  Tip:  do not delete .next while dev is running
 echo.
 
 start "" "http://localhost:3471"

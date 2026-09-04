@@ -1,0 +1,40 @@
+---
+description: Keep the repo clean — delete temporary helper/test scripts after use
+alwaysApply: true
+---
+
+# EMDR — clean repo (no leftover scripts)
+
+The repository must stay clean. Do not leave one-off helper, debug, or ad-hoc test scripts behind after a task.
+
+## Must delete after use
+
+After testing, debugging, seeding once, or verifying a fix, **delete** files you created only for that session, including:
+
+- Ad-hoc scripts under `scripts/` (e.g. `tmp-*.ts`, `check-*.ts`, `fix-*.ts`, `remove-typo-*.ts`, scratch migrators)
+- One-off Node/Python/PowerShell snippets saved to the repo
+- Temporary SQL dumps, fixtures, or `.bat`/`.ps1` helpers made for a single run
+- Local debug pages or unused API routes created only to probe behavior
+
+Prefer running one-liners via `npx tsx` / shell **without** committing a new file. If a file is required, delete it in the same turn after it succeeds (or fails and is no longer needed).
+
+## Keep (permanent project tooling)
+
+Do **not** delete durable project scripts unless the user asks:
+
+- `scripts/dev.mjs`, `scripts/recover-dev.bat`
+- `scripts/seed-admin.ts`, `scripts/seed-user.ts`, `scripts/invite-user.ts`
+- `tests/**/*.test.ts` and `npm test` harness
+- Documented `package.json` scripts
+
+If a “temporary” helper becomes a real product need, promote it: name it clearly, document in README/CHANGELOG, and keep it — otherwise delete it.
+
+## Before ending the turn
+
+1. Scan for new untracked/scratch files you added this session.
+2. Delete anything that is not permanent tooling or product code.
+3. Do not leave commented-out dumps, `console.log` debug scripts, or “TODO delete me” files in the tree.
+
+## Why
+
+A clean repo avoids clutter, accidental commits of secrets/credentials in scratch scripts, and confusion about which scripts are supported.

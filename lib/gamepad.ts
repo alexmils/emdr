@@ -1,24 +1,147 @@
-export type GamepadCallback = (action: "toggle" | "speed_up" | "speed_down" | "safe_place") => void;
+import type { VibrationMode } from "./types";
+
+export type GamepadCallback = (
+  action:
+    | "toggle"
+    | "safe_place"
+    | "nav_up"
+    | "nav_down"
+    | "nav_left"
+    | "nav_right"
+) => void;
+
+export const VIBRATION_INTENSITY: Record<VibrationMode, number> = {
+  none: 0,
+  soft: 0.35,
+  hard: 1,
+};
+
+/** @deprecated Use rumble(mode) profiles instead */
+export function vibrationIntensity(mode: VibrationMode): number {
+  return VIBRATION_INTENSITY[mode];
+}
+
+export interface RumbleProfile {
+  duration: number;
+  weakMagnitude: number;
+  strongMagnitude: number;
+}
+
+/** Per-mode rumble — soft is a short light tap, hard is a longer strong pulse. */
+export const RUMBLE_PROFILE: Record<
+  VibrationMode,
+  RumbleProfile | null
+> = {
+  none: null,
+  soft: {
+    duration: 45,
+    weakMagnitude: 0.28,
+    strongMagnitude: 0.1,
+  },
+  hard: {
+    duration: 140,
+    weakMagnitude: 0.55,
+    strongMagnitude: 1,
+  },
+};
+
+export function isGamepadConnected(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const pads = navigator.getGamepads?.() ?? [];
+  return Array.from(pads).some((p) => p && p.connected);
+}
 
 let rafId: number | null = null;
+let onActionRef: GamepadCallback | null = null;
+let activePadIndex: number | null = null;
 let prevButtons: boolean[] = [];
+let prevStick = { x: 0, y: 0 };
+let buttonsSynced = false;
+let lastToggleAt = 0;
+
+const STICK_DEADZONE = 0.45;
+const TOGGLE_COOLDOWN_MS = 450;
+
+function stickAxis(value: number): -1 | 0 | 1 {
+  if (value < -STICK_DEADZONE) return -1;
+  if (value > STICK_DEADZONE) return 1;
+  return 0;
+}
+
+function findPad(pads: (Gamepad | null)[]) {
+  if (activePadIndex !== null) {
+    const current = pads[activePadIndex];
+    if (current?.connected) return current;
+  }
+  return Array.from(pads).find((p) => p && p.connected) ?? null;
+}
+
+function syncPadState(pad: Gamepad) {
+  prevButtons = pad.buttons.map((b) => b.pressed);
+  prevStick = {
+    x: stickAxis(pad.axes[0] ?? 0),
+    y: stickAxis(pad.axes[1] ?? 0),
+  };
+  activePadIndex = pad.index;
+  buttonsSynced = true;
+}
+
+function edgeButton(buttons: boolean[], index: number) {
+  return Boolean(buttons[index] && !prevButtons[index]);
+}
 
 export function startGamepadLoop(onAction: GamepadCallback) {
-  stopGamepadLoop();
+  onActionRef = onAction;
+  if (rafId !== null) return;
 
   const tick = () => {
     const pads = navigator.getGamepads?.() ?? [];
-    const pad = Array.from(pads).find((p) => p && p.connected);
-    if (pad) {
-      const buttons = pad.buttons.map((b) => b.pressed);
-      if (buttons[0] && !prevButtons[0]) onAction("toggle");
-      if (buttons[1] && !prevButtons[1]) onAction("safe_place");
-      if (buttons[14] && !prevButtons[14]) onAction("speed_down");
-      if (buttons[15] && !prevButtons[15]) onAction("speed_up");
-      prevButtons = buttons;
+    const pad = findPad(pads);
+
+    if (!pad) {
+      activePadIndex = null;
+      buttonsSynced = false;
+      prevButtons = [];
+      prevStick = { x: 0, y: 0 };
+      rafId = requestAnimationFrame(tick);
+      return;
     }
+
+    if (activePadIndex !== pad.index || !buttonsSynced) {
+      syncPadState(pad);
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+
+    const buttons = pad.buttons.map((b) => b.pressed);
+    const fire = onActionRef;
+
+    if (edgeButton(buttons, 0)) {
+      const now = performance.now();
+      if (now - lastToggleAt >= TOGGLE_COOLDOWN_MS) {
+        lastToggleAt = now;
+        fire?.("toggle");
+      }
+    }
+    if (edgeButton(buttons, 1)) fire?.("safe_place");
+    if (edgeButton(buttons, 12)) fire?.("nav_up");
+    if (edgeButton(buttons, 13)) fire?.("nav_down");
+    if (edgeButton(buttons, 14)) fire?.("nav_left");
+    if (edgeButton(buttons, 15)) fire?.("nav_right");
+
+    prevButtons = buttons;
+
+    const stickX = stickAxis(pad.axes[0] ?? 0);
+    const stickY = stickAxis(pad.axes[1] ?? 0);
+    if (stickY === -1 && prevStick.y !== -1) fire?.("nav_up");
+    if (stickY === 1 && prevStick.y !== 1) fire?.("nav_down");
+    if (stickX === -1 && prevStick.x !== -1) fire?.("nav_left");
+    if (stickX === 1 && prevStick.x !== 1) fire?.("nav_right");
+    prevStick = { x: stickX, y: stickY };
+
     rafId = requestAnimationFrame(tick);
   };
+
   rafId = requestAnimationFrame(tick);
 }
 
@@ -27,21 +150,32 @@ export function stopGamepadLoop() {
     cancelAnimationFrame(rafId);
     rafId = null;
   }
+  onActionRef = null;
+  activePadIndex = null;
   prevButtons = [];
+  prevStick = { x: 0, y: 0 };
+  buttonsSynced = false;
+  lastToggleAt = 0;
 }
 
-export function rumble(intensity: number) {
+export function rumble(mode: VibrationMode) {
+  const profile = RUMBLE_PROFILE[mode];
+  if (!profile) return;
+
   const pads = navigator.getGamepads?.() ?? [];
-  for (const pad of pads) {
-    if (!pad?.vibrationActuator) continue;
-    pad.vibrationActuator.playEffect("dual-rumble", {
+  const pad =
+    activePadIndex !== null
+      ? pads[activePadIndex]
+      : Array.from(pads).find((p) => p && p.connected);
+
+  if (!pad?.vibrationActuator) return;
+
+  pad.vibrationActuator
+    .playEffect("dual-rumble", {
       startDelay: 0,
-      duration: 80,
-      weakMagnitude: intensity * 0.5,
-      strongMagnitude: intensity,
-    }).catch(() => {});
-  }
-  if (typeof navigator !== "undefined" && navigator.vibrate) {
-    navigator.vibrate(40);
-  }
+      duration: profile.duration,
+      weakMagnitude: profile.weakMagnitude,
+      strongMagnitude: profile.strongMagnitude,
+    })
+    .catch(() => {});
 }

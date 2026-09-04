@@ -1,70 +1,138 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
-import type { BlsSettings } from "@/lib/types";
+import { forwardRef } from "react";
+import { ChevronDown, ChevronUp, Settings } from "lucide-react";
+import type { BlsSettings, SpeedPresetIndex } from "@/lib/types";
+import { adjustSpeedPreset } from "@/lib/bls-speed";
+import type { BlsToolbarField } from "@/lib/bls-toolbar-nav";
+import { useGamepadConnected } from "@/lib/useGamepadConnected";
 
 interface BlsToolbarProps {
   bls: BlsSettings;
   onChange: (patch: Partial<BlsSettings>) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onOpenGear: () => void;
   dimmed?: boolean;
+  focusedField: BlsToolbarField;
+  onFocusField: (field: BlsToolbarField) => void;
 }
 
-function Seg({
+function BlsChip({
   label,
-  children,
+  value,
+  focused,
+  onSelect,
 }: {
   label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="seg-label">{label}</span>
-      <div className="seg-group">{children}</div>
-    </div>
-  );
-}
-
-function SegBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
+  value: string;
+  focused?: boolean;
+  onSelect: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`seg-btn ${active ? "seg-btn-active" : ""}`}
+      onClick={onSelect}
+      className={`bls-chip ${focused ? "bls-chip-focused" : ""}`}
     >
-      {children}
+      <span className="bls-chip-label">{label}</span>
+      <span className="bls-chip-value">{value}</span>
     </button>
   );
 }
 
-export function BlsToolbar({
-  bls,
-  onChange,
-  collapsed,
-  onToggleCollapse,
-  dimmed,
-}: BlsToolbarProps) {
+function SpeedPresetChip({
+  index,
+  value,
+  active,
+  focused,
+  onSelect,
+  onAdjust,
+}: {
+  index: SpeedPresetIndex;
+  value: number;
+  active: boolean;
+  focused: boolean;
+  onSelect: () => void;
+  onAdjust: (direction: 1 | -1) => void;
+}) {
+  return (
+    <div
+      className={`bls-speed-preset ${active ? "bls-speed-preset-active" : ""} ${
+        focused ? "bls-speed-preset-focused" : ""
+      }`}
+    >
+      <button
+        type="button"
+        className="bls-speed-arrow"
+        aria-label={`Increase speed preset ${index + 1}`}
+        onClick={() => onAdjust(1)}
+      >
+        <ChevronUp size={14} strokeWidth={2.25} />
+      </button>
+      <button
+        type="button"
+        className="bls-speed-value"
+        onClick={onSelect}
+        aria-label={`Speed preset ${value.toFixed(1)} Hz`}
+      >
+        {value.toFixed(1)}
+      </button>
+      <button
+        type="button"
+        className="bls-speed-arrow"
+        aria-label={`Decrease speed preset ${index + 1}`}
+        onClick={() => onAdjust(-1)}
+      >
+        <ChevronDown size={14} strokeWidth={2.25} />
+      </button>
+    </div>
+  );
+}
+
+const SPEED_FIELDS: BlsToolbarField[] = ["speed0", "speed1", "speed2"];
+
+export const BlsToolbar = forwardRef<HTMLDivElement, BlsToolbarProps>(
+  function BlsToolbar(
+    {
+      bls,
+      onChange,
+      collapsed,
+      onToggleCollapse,
+      onOpenGear,
+      dimmed,
+      focusedField,
+      onFocusField,
+    },
+    ref
+  ) {
+  const gamepadConnected = useGamepadConnected();
+
+  const selectSpeed = (index: SpeedPresetIndex, field: BlsToolbarField) => {
+    onFocusField(field);
+    onChange({ activeSpeedPreset: index });
+  };
+
+  const adjustSpeed = (index: SpeedPresetIndex, direction: 1 | -1) => {
+    onChange({
+      speedPresets: adjustSpeedPreset(bls.speedPresets, index, direction),
+      activeSpeedPreset: index,
+    });
+    onFocusField(SPEED_FIELDS[index]);
+  };
+
   if (collapsed) {
     return (
-      <div className="bls-dock bls-dock--collapsed">
+      <div ref={ref} className="bls-dock bls-dock--collapsed">
         <button
           type="button"
           onClick={onToggleCollapse}
-          className="bls-collapse-pill apple-spring-interactive pointer-events-auto"
-          aria-label="Show BLS controls"
+          className="bls-expand-btn pointer-events-auto"
+          aria-label="Show controls"
           aria-expanded={false}
         >
-          <ChevronUp size={16} strokeWidth={2.25} />
-          <span>BLS controls</span>
+          <ChevronUp size={14} strokeWidth={2} />
+          Controls
         </button>
       </div>
     );
@@ -72,86 +140,78 @@ export function BlsToolbar({
 
   return (
     <div
-      className={`bls-dock transition-opacity duration-300 ${
-        dimmed ? "pointer-events-none opacity-35" : ""
-      }`}
+      ref={ref}
+      className={`bls-dock ${dimmed ? "pointer-events-none opacity-40" : ""}`}
     >
-      <div className="glass-toolbar bls-toolbar-inner">
-        <div className="flex flex-1 flex-wrap items-end gap-x-5 gap-y-3">
-          <Seg label="Speed">
-            {[0.8, 1.0, 1.2].map((hz) => (
-              <SegBtn
-                key={hz}
-                active={bls.speedHz === hz}
-                onClick={() => onChange({ speedHz: hz })}
-              >
-                {hz}
-              </SegBtn>
-            ))}
-          </Seg>
-          <Seg label="Repeats">
-            <SegBtn
-              active={bls.repeats === "24"}
-              onClick={() => onChange({ repeats: "24" })}
-            >
-              24
-            </SegBtn>
-            <SegBtn
-              active={bls.repeats === "infinity"}
-              onClick={() => onChange({ repeats: "infinity" })}
-            >
-              ∞
-            </SegBtn>
-          </Seg>
-          <Seg label="Sound">
-            {(["mute", "click", "pulse", "tone"] as const).map((s) => (
-              <SegBtn
-                key={s}
-                active={bls.sound === s}
-                onClick={() => onChange({ sound: s })}
-              >
-                {s}
-              </SegBtn>
-            ))}
-          </Seg>
-          <Seg label="Animation">
-            <SegBtn
-              active={bls.animation === "dot"}
-              onClick={() => onChange({ animation: "dot" })}
-            >
-              dot
-            </SegBtn>
-            <SegBtn
-              active={bls.animation === "flash"}
-              onClick={() => onChange({ animation: "flash" })}
-            >
-              flash
-            </SegBtn>
-          </Seg>
-          <Seg label="Vibration">
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={bls.vibrationIntensity}
-              onChange={(e) =>
-                onChange({ vibrationIntensity: parseFloat(e.target.value) })
-              }
-              className="range-apple"
-            />
-          </Seg>
+      <div className="bls-bar">
+        <div className="bls-speed-group">
+          {bls.speedPresets.map((hz, index) => {
+            const i = index as SpeedPresetIndex;
+            const field = SPEED_FIELDS[index];
+            return (
+              <SpeedPresetChip
+                key={field}
+                index={i}
+                value={hz}
+                active={bls.activeSpeedPreset === i}
+                focused={focusedField === field}
+                onSelect={() => selectSpeed(i, field)}
+                onAdjust={(dir) => adjustSpeed(i, dir)}
+              />
+            );
+          })}
         </div>
+
+        <span className="bls-bar-sep" aria-hidden="true" />
+
+        <BlsChip
+          label="Repeats"
+          value={bls.repeats === "infinity" ? "∞" : bls.repeats}
+          focused={focusedField === "repeats"}
+          onSelect={() => onFocusField("repeats")}
+        />
+        <BlsChip
+          label="Sound"
+          value={bls.sound}
+          focused={focusedField === "sound"}
+          onSelect={() => onFocusField("sound")}
+        />
+        <BlsChip
+          label="Animation"
+          value={bls.animation}
+          focused={focusedField === "animation"}
+          onSelect={() => onFocusField("animation")}
+        />
+        <button
+          type="button"
+          onClick={onOpenGear}
+          className="btn-icon-sm bls-gear-btn"
+          aria-label="Ball adjustments"
+          title="Ball adjustments"
+        >
+          <Settings size={16} strokeWidth={2} />
+        </button>
+        {gamepadConnected ? (
+          <BlsChip
+            label="Vibration"
+            value={bls.vibration}
+            focused={focusedField === "vibration"}
+            onSelect={() => onFocusField("vibration")}
+          />
+        ) : null}
+
+        <div className="bls-bar-spacer" />
+
         <button
           type="button"
           onClick={onToggleCollapse}
-          className="btn-icon bls-hide-btn shrink-0"
-          aria-label="Hide BLS controls"
+          className="btn-icon-sm"
+          aria-label="Hide controls"
           aria-expanded={true}
         >
-          <ChevronDown size={17} strokeWidth={2.25} />
+          <ChevronDown size={16} strokeWidth={2} />
         </button>
       </div>
     </div>
   );
-}
+});

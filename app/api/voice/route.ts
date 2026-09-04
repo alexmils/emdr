@@ -1,26 +1,32 @@
 import { NextResponse } from "next/server";
-import { getSettings } from "@/lib/db";
 import { synthesizeSpeech } from "@/lib/llm";
+import { getLlmRuntimeConfig } from "@/lib/platform-settings";
+import { withAuth } from "@/lib/api-auth";
 
 export async function POST(request: Request) {
-  const { text } = await request.json();
-  if (!text || typeof text !== "string") {
-    return NextResponse.json({ error: "Missing text" }, { status: 400 });
-  }
+  return withAuth(async () => {
+    const { text } = await request.json();
+    if (!text || typeof text !== "string") {
+      return NextResponse.json({ error: "Missing text" }, { status: 400 });
+    }
 
-  const settings = await getSettings();
-  const audio = await synthesizeSpeech(settings, text);
-  if (!audio) {
-    return NextResponse.json(
-      { error: "Voice not configured. Add ElevenLabs API key in Settings." },
-      { status: 503 }
-    );
-  }
+    const settings = await getLlmRuntimeConfig();
+    const audio = await synthesizeSpeech(settings, text);
+    if (!audio) {
+      return NextResponse.json(
+        {
+          error:
+            "Voice not configured. Ask a platform admin to set the Voice API key.",
+        },
+        { status: 503 }
+      );
+    }
 
-  return new NextResponse(audio, {
-    headers: {
-      "Content-Type": "audio/mpeg",
-      "Cache-Control": "no-store",
-    },
+    return new NextResponse(audio, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "no-store",
+      },
+    });
   });
 }
