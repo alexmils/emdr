@@ -1,0 +1,33 @@
+---
+description: Commit/push when asked; remind if local changes pile up without a recent push
+alwaysApply: true
+---
+
+# EMDR — git commit & push
+
+## When the user asks to commit / push
+
+If the user says **commit**, **push**, **commit push**, **ship**, or similar:
+
+1. Follow the normal git safety protocol (status, diff, log; no force-push to main; no secrets).
+2. **Commit** relevant product/code/docs/rules changes in the same turn.
+3. **Push** to the tracked remote (`git push -u origin HEAD` if needed) in the same turn unless they said commit-only.
+4. Do not wait for a second confirmation after an explicit commit/push request.
+
+## Proactive reminder (no auto-push)
+
+Do **not** commit or push unprompted.
+
+At the end of a coding turn (or when starting a new task), if **either** is true, briefly remind the user once:
+
+1. **Many unpushed changes** — roughly **8+** modified/untracked product files, or a large diff vs `origin/main`, and nothing pushed yet for that work; or
+2. **Stale push** — local commits ahead of `origin`, or substantial dirty tree, and the latest `origin/main` tip is older than about **1 day** (or this chat has shipped several features without a push).
+
+Reminder tone: one short line, e.g. “Imamo dosta lokalnih izmena / nije bilo push-a odavno — hoćeš commit + push?”
+
+Skip the reminder if they just pushed, or the only leftovers are noise (`.next`, build info, scratch scripts).
+
+## What not to commit
+
+- `.env`, credentials, `node_modules`, `.next`, scratch `scripts/_tmp-*`, `*.tsbuildinfo`
+- Do not update git config; do not `--force` to `main`/`master`

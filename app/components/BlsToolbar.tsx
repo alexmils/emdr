@@ -33,6 +33,8 @@ function BlsChip({
     <button
       type="button"
       onClick={onSelect}
+      title={label}
+      aria-label={`${label}: ${value}`}
       className={`bls-chip ${focused ? "bls-chip-focused" : ""}`}
     >
       <span className="bls-chip-label">{label}</span>

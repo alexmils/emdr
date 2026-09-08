@@ -131,6 +131,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Main `/app` mobile shell: ChatGPT-style off-canvas sidebar (menu opens drawer; backdrop / X / Escape close; closes on New chat or thread select); main canvas uses full width when closed
 - Empty workspace: removed instructional “tap the menu…” copy; show a **New chat** button instead
 - Billing page: Plan/Status rows use spaced label–value layout (no “Statustrialing”); action buttons stacked with clear gaps
+- Mobile session canvas: idle hint is **Tap to start** (not Press Space); BLS bar stays one compact scrollable row (no wrap), clears Help FAB
+- Session `/app` on mobile: Help FAB hidden; BLS dock edge-to-edge full width (no cut-off options); shell uses `dvh` to avoid page vertical scroll
+- Cursor rule `.cursor/rules/git-commit-push.mdc` — commit/push when asked; remind if many local changes or push is stale
 
 ---
 

@@ -20,10 +20,13 @@ export function openHelpChat() {
   }
 }
 
-/** Auth / onboarding: use text link only — no floating FAB. */
+/** Auth / onboarding / active session: no floating FAB. */
 function shouldShowFab(pathname: string | null): boolean {
   if (!pathname) return false;
-  const hide = [
+  const hideExact = new Set([APP_BASE, `${APP_BASE}/`]);
+  if (hideExact.has(pathname)) return false;
+
+  const hidePrefix = [
     `${APP_BASE}/login`,
     `${APP_BASE}/forgot-password`,
     `${APP_BASE}/reset-password`,
@@ -31,7 +34,7 @@ function shouldShowFab(pathname: string | null): boolean {
     `${APP_BASE}/create-account`,
     `${APP_BASE}/onboarding`,
   ];
-  return !hide.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return !hidePrefix.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 type HelpMessage = {

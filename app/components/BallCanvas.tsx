@@ -162,10 +162,12 @@ export function BallCanvas({
       )}
       {!running && idleHint === "default" && (
         <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
-          <span>
-            Press <span className="canvas-idle-hint-strong font-medium">Space</span> or
-            click to start
+          <span className="canvas-idle-hint-desktop">
+            Press{" "}
+            <span className="canvas-idle-hint-strong font-medium">Space</span>{" "}
+            or click to start
           </span>
+          <span className="canvas-idle-hint-touch">Tap to start</span>
         </p>
       )}
       {!running && idleHint === "check_in" && (

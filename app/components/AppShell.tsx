@@ -16,7 +16,7 @@ function AppShellFrame() {
 
   return (
     <div
-      className={`app-shell flex h-screen overflow-hidden ${immersive ? "session-immersive" : ""} ${open ? "sidebar-drawer-open" : ""}`}
+      className={`app-shell flex h-dvh max-h-dvh overflow-hidden ${immersive ? "session-immersive" : ""} ${open ? "sidebar-drawer-open" : ""}`}
     >
       <SidebarBackdrop />
       <Sidebar />
