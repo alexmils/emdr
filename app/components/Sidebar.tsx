@@ -2,17 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ChevronDown, Plus, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, ChevronDown, Home, Plus, X } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { ThreadEditMenu } from "./ThreadEditMenu";
 import { Avatar } from "./Avatar";
 import { BrandLockup } from "./BrandLockup";
 import { displayNameFor, useCurrentUser } from "./useCurrentUser";
 import { useSidebarNav } from "./SidebarNavContext";
+import { APP_BASE, appPath } from "@/lib/app-base";
+
+const SIDEBAR_NAV = [
+  { href: APP_BASE, label: "Home", icon: Home, exact: true },
+  { href: appPath("/resources"), label: "Resources", icon: BookOpen, exact: false },
+] as const;
 
 export function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const {
     threads,
     activeThreadId,
@@ -81,6 +88,25 @@ export function Sidebar() {
           </button>
         )}
       </div>
+
+      <nav className="sidebar-primary-nav px-2 pb-1" aria-label="Main">
+        {SIDEBAR_NAV.map(({ href, label, icon: Icon, exact }) => {
+          const active = exact
+            ? pathname === href
+            : pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={closeSidebar}
+              className={`sidebar-nav-link ${active ? "sidebar-nav-link-active" : ""}`}
+            >
+              <Icon size={16} strokeWidth={2} aria-hidden="true" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
 
       <p className="text-sidebar-section px-4 pb-1 pt-2">Recent</p>
 
