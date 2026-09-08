@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { BILLING_PLANS, type BillingPlanId } from "@/lib/billing-constants";
+import {
+  BILLING_PLANS,
+  orderedBillingPlans,
+  type BillingPlanId,
+  type BillingPlanMeta,
+} from "@/lib/billing-constants";
 
 type UpgradeReason = "trial_limit_reached" | "bls_limit_reached" | "generic";
 
@@ -27,6 +32,8 @@ export function UpgradeModal({
   const [plan, setPlan] = useState<BillingPlanId>("yearly");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [plans, setPlans] =
+    useState<Record<BillingPlanId, BillingPlanMeta>>(BILLING_PLANS);
 
   useEffect(() => {
     if (!open) return;
@@ -36,6 +43,21 @@ export function UpgradeModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, busy, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    void (async () => {
+      try {
+        const res = await fetch("/api/billing/status");
+        const data = (await res.json()) as {
+          plans?: Record<BillingPlanId, BillingPlanMeta>;
+        };
+        if (res.ok && data.plans) setPlans(data.plans);
+      } catch {
+        /* keep defaults */
+      }
+    })();
+  }, [open]);
 
   const headline =
     reason === "bls_limit_reached"
@@ -117,8 +139,8 @@ export function UpgradeModal({
         <p className="admin-panel-sub mt-2">{detail}</p>
 
         <div className="upgrade-plan-list mt-4" role="radiogroup" aria-label="Plan">
-          {(Object.keys(BILLING_PLANS) as BillingPlanId[]).map((id) => {
-            const p = BILLING_PLANS[id];
+          {orderedBillingPlans(plans).map((p) => {
+            const id = p.id;
             return (
               <button
                 key={id}

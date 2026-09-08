@@ -75,6 +75,10 @@ export async function PUT(request: Request) {
           ...body.ai?.voice,
         },
       },
+      stripe: {
+        ...current.stripe,
+        ...body.stripe,
+      },
     });
 
     await writeAuditEvent({

@@ -14,6 +14,7 @@ import {
   normalizeAdsSettings,
   type PlatformAdsSettings,
 } from "@/lib/ads";
+import { BRAND_SPOKEN, chromeBrandName } from "@/lib/brand";
 
 export type { HelpSettings };
 export { DEFAULT_HELP_SETTINGS, normalizeHelpSettings };
@@ -41,6 +42,20 @@ export type PlatformAiConfig = {
   voice: PlatformVoiceConfig;
 };
 
+/** Stripe billing — edited in Admin → Billing (not env). */
+export type PlatformStripeConfig = {
+  secretKey: string;
+  webhookSecret: string;
+  publishableKey: string;
+  priceIdWeekly: string;
+  priceIdMonthly: string;
+  priceIdYearly: string;
+  /** Display labels shown on onboarding / billing (e.g. €4.99). */
+  displayPriceWeekly: string;
+  displayPriceMonthly: string;
+  displayPriceYearly: string;
+};
+
 export type PlatformSettings = {
   siteName: string;
   supportEmail: string;
@@ -55,6 +70,7 @@ export type PlatformSettings = {
   ai: PlatformAiConfig;
   help: HelpSettings;
   ads: PlatformAdsSettings;
+  stripe: PlatformStripeConfig;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -68,13 +84,25 @@ export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
   voice: { ...DEFAULT_VOICE_CONNECTOR },
 };
 
+export const DEFAULT_PLATFORM_STRIPE: PlatformStripeConfig = {
+  secretKey: "",
+  webhookSecret: "",
+  publishableKey: "",
+  priceIdWeekly: "",
+  priceIdMonthly: "",
+  priceIdYearly: "",
+  displayPriceWeekly: "€4.99",
+  displayPriceMonthly: "€14.99",
+  displayPriceYearly: "€99",
+};
+
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
-  siteName: "NuraHelp AI",
+  siteName: "Nura",
   supportEmail: "",
   publicAppUrl: "",
   invitesEnabled: true,
   maintenanceMessage: "",
-  fromName: "NuraHelp AI",
+  fromName: "Nura",
   fromAddress: "hi@contact.nurahelp.com",
   agentKnowledgeNotes: "",
   flags: {
@@ -86,7 +114,52 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   ai: { ...DEFAULT_PLATFORM_AI, connectors: { ...DEFAULT_AI_CONNECTORS }, voice: { ...DEFAULT_VOICE_CONNECTOR } },
   help: { ...DEFAULT_HELP_SETTINGS },
   ads: { ...DEFAULT_PLATFORM_ADS },
+  stripe: { ...DEFAULT_PLATFORM_STRIPE },
 };
+
+function normalizeStripe(raw: unknown): PlatformStripeConfig {
+  const r =
+    raw && typeof raw === "object"
+      ? (raw as Partial<PlatformStripeConfig>)
+      : {};
+  const str = (v: unknown, fallback = "") =>
+    typeof v === "string" ? v.trim() : fallback;
+  return {
+    secretKey: str(r.secretKey),
+    webhookSecret: str(r.webhookSecret),
+    publishableKey: str(r.publishableKey),
+    priceIdWeekly: str(r.priceIdWeekly),
+    priceIdMonthly: str(r.priceIdMonthly),
+    priceIdYearly: str(r.priceIdYearly),
+    displayPriceWeekly:
+      str(r.displayPriceWeekly) || DEFAULT_PLATFORM_STRIPE.displayPriceWeekly,
+    displayPriceMonthly:
+      str(r.displayPriceMonthly) || DEFAULT_PLATFORM_STRIPE.displayPriceMonthly,
+    displayPriceYearly:
+      str(r.displayPriceYearly) || DEFAULT_PLATFORM_STRIPE.displayPriceYearly,
+  };
+}
+
+/** One-time bootstrap from legacy STRIPE_* env when DB fields are empty. */
+function stripeFromEnvFallback(
+  current: PlatformStripeConfig
+): PlatformStripeConfig {
+  const env = (k: string) => process.env[k]?.trim() || "";
+  const pick = (cur: string, envKey: string) => cur || env(envKey);
+  return {
+    secretKey: pick(current.secretKey, "STRIPE_SECRET_KEY"),
+    webhookSecret: pick(current.webhookSecret, "STRIPE_WEBHOOK_SECRET"),
+    publishableKey: pick(current.publishableKey, "STRIPE_PUBLISHABLE_KEY"),
+    priceIdWeekly: pick(current.priceIdWeekly, "STRIPE_PRICE_ID_WEEKLY"),
+    priceIdMonthly:
+      pick(current.priceIdMonthly, "STRIPE_PRICE_ID_MONTHLY") ||
+      pick("", "STRIPE_PRICE_ID"),
+    priceIdYearly: pick(current.priceIdYearly, "STRIPE_PRICE_ID_YEARLY"),
+    displayPriceWeekly: current.displayPriceWeekly,
+    displayPriceMonthly: current.displayPriceMonthly,
+    displayPriceYearly: current.displayPriceYearly,
+  };
+}
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
 function isLegacyUserSettings(json: unknown): boolean {
@@ -181,6 +254,7 @@ function normalizeSettings(raw: unknown): PlatformSettings {
       },
       help: { ...DEFAULT_HELP_SETTINGS },
       ads: { ...DEFAULT_PLATFORM_ADS },
+      stripe: { ...DEFAULT_PLATFORM_STRIPE },
     };
   }
   const r = raw as Partial<PlatformSettings> & {
@@ -188,12 +262,12 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     connectors?: PlatformAiConnectors & { elevenlabs?: PlatformVoiceConfig };
   };
   return {
-    siteName: r.siteName?.trim() || DEFAULT_PLATFORM_SETTINGS.siteName,
+    siteName: chromeBrandName(r.siteName) || BRAND_SPOKEN,
     supportEmail: r.supportEmail?.trim() ?? "",
     publicAppUrl: r.publicAppUrl?.trim() ?? "",
     invitesEnabled: r.invitesEnabled !== false,
     maintenanceMessage: r.maintenanceMessage?.trim() ?? "",
-    fromName: r.fromName?.trim() || DEFAULT_PLATFORM_SETTINGS.fromName,
+    fromName: chromeBrandName(r.fromName) || BRAND_SPOKEN,
     fromAddress: r.fromAddress?.trim() || DEFAULT_PLATFORM_SETTINGS.fromAddress,
     agentKnowledgeNotes:
       typeof r.agentKnowledgeNotes === "string"
@@ -212,6 +286,7 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     ads: normalizeAdsSettings(
       (r as Partial<PlatformSettings>).ads ?? DEFAULT_PLATFORM_ADS
     ),
+    stripe: normalizeStripe((r as Partial<PlatformSettings>).stripe),
   };
 }
 
@@ -226,24 +301,43 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     "SELECT json FROM app_settings WHERE id = 1"
   );
   if (!rows[0]) {
-    await savePlatformSettings(DEFAULT_PLATFORM_SETTINGS);
-    return {
+    const seeded = {
       ...DEFAULT_PLATFORM_SETTINGS,
       ai: {
         ...DEFAULT_PLATFORM_AI,
         connectors: { ...DEFAULT_AI_CONNECTORS },
         voice: { ...DEFAULT_VOICE_CONNECTOR },
       },
+      stripe: stripeFromEnvFallback(DEFAULT_PLATFORM_STRIPE),
     };
+    await savePlatformSettings(seeded);
+    return normalizeSettings(seeded);
   }
-  const settings = normalizeSettings(rows[0].json);
+  let settings = normalizeSettings(rows[0].json);
   const raw = rows[0].json as Partial<PlatformSettings> | null;
   const missingSender =
     isLegacyUserSettings(rows[0].json) ||
     !raw ||
     typeof raw !== "object" ||
     !String((raw as PlatformSettings).fromAddress ?? "").trim();
-  if (missingSender) {
+  const stripeEmpty =
+    !settings.stripe.secretKey &&
+    !settings.stripe.webhookSecret &&
+    !settings.stripe.priceIdMonthly;
+  const stripeBootstrapped = stripeEmpty
+    ? stripeFromEnvFallback(settings.stripe)
+    : settings.stripe;
+  const needsStripePersist =
+    stripeEmpty &&
+    Boolean(
+      stripeBootstrapped.secretKey ||
+        stripeBootstrapped.webhookSecret ||
+        stripeBootstrapped.priceIdMonthly
+    );
+  if (needsStripePersist) {
+    settings = { ...settings, stripe: stripeBootstrapped };
+  }
+  if (missingSender || needsStripePersist) {
     await savePlatformSettings(settings);
   }
   return settings;

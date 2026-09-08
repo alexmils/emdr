@@ -5,27 +5,31 @@ import { mapStripeSubscription } from "../lib/stripe-admin.ts";
 
 describe("mapStripeSubscription", () => {
   it("maps trialing subscription fields", () => {
-    const mapped = mapStripeSubscription({
-      id: "sub_1",
-      status: "trialing",
-      customer: "cus_1",
-      items: {
-        data: [
-          {
-            price: {
-              id: "price_month",
-              unit_amount: 1499,
-              currency: "eur",
+    const mapped = mapStripeSubscription(
+      {
+        id: "sub_1",
+        status: "trialing",
+        customer: "cus_1",
+        items: {
+          data: [
+            {
+              price: {
+                id: "price_month",
+                unit_amount: 1499,
+                currency: "eur",
+              },
             },
-          },
-        ],
+          ],
+        },
+        current_period_end: 1_800_000_000,
+        trial_end: 1_700_000_000,
+        metadata: { user_id: "u1", plan: "monthly" },
       },
-      current_period_end: 1_800_000_000,
-      trial_end: 1_700_000_000,
-      metadata: { user_id: "u1", plan: "monthly" },
-    });
+      { monthly: "price_month" }
+    );
 
     assert.equal(mapped.status, "trialing");
+    assert.equal(mapped.plan, "monthly");
     assert.equal(mapped.amountCents, 1499);
     assert.equal(mapped.currency, "EUR");
     assert.equal(mapped.stripeCustomerId, "cus_1");
@@ -47,7 +51,18 @@ describe("mapStripeSubscription", () => {
 });
 
 describe("planIdFromStripePriceId", () => {
-  it("falls back to pro when env prices are unset", () => {
-    assert.equal(planIdFromStripePriceId("price_unknown"), "pro");
+  it("falls back to pro when price ids are unset", () => {
+    assert.equal(planIdFromStripePriceId("price_unknown", {}), "pro");
+  });
+
+  it("maps weekly monthly yearly from config", () => {
+    const ids = {
+      weekly: "price_w",
+      monthly: "price_m",
+      yearly: "price_y",
+    };
+    assert.equal(planIdFromStripePriceId("price_w", ids), "weekly");
+    assert.equal(planIdFromStripePriceId("price_m", ids), "monthly");
+    assert.equal(planIdFromStripePriceId("price_y", ids), "yearly");
   });
 });

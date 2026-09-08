@@ -11,6 +11,7 @@ import {
   notifyUserUpdated,
   useCurrentUser,
 } from "@/app/components/useCurrentUser";
+import { useToast } from "@/app/components/Toast";
 import { fileToAvatarDataUrl } from "@/lib/avatar-client";
 import type { AppSettings, Memory, MemorySet } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/types";
@@ -42,6 +43,7 @@ function SettingsPageContent() {
     isSettingsTab(tabParam) ? tabParam : "profile"
   );
   const { user, refresh: refreshUser } = useCurrentUser();
+  const { toast } = useToast();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
@@ -89,11 +91,20 @@ function SettingsPageContent() {
 
   const save = async (next: AppSettings) => {
     setSettings(next);
-    await fetch("/api/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "save_settings", settings: next }),
-    });
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save_settings", settings: next }),
+      });
+      if (!res.ok) throw new Error("Could not save settings");
+      toast("Settings saved");
+    } catch (err) {
+      toast(
+        err instanceof Error ? err.message : "Could not save settings",
+        "error"
+      );
+    }
   };
 
   const saveProfile = async () => {
@@ -109,8 +120,11 @@ function SettingsPageContent() {
       if (!res.ok) throw new Error(data.error || "Could not save");
       notifyUserUpdated();
       await refreshUser();
+      toast("Profile saved");
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : "Could not save");
+      const msg = err instanceof Error ? err.message : "Could not save";
+      setProfileError(msg);
+      toast(msg, "error");
     } finally {
       setProfileSaving(false);
     }
@@ -131,8 +145,11 @@ function SettingsPageContent() {
       if (!res.ok) throw new Error(data.error || "Could not upload");
       notifyUserUpdated();
       await refreshUser();
+      toast("Photo uploaded");
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : "Upload failed");
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setProfileError(msg);
+      toast(msg, "error");
     } finally {
       setAvatarBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -154,8 +171,11 @@ function SettingsPageContent() {
       }
       notifyUserUpdated();
       await refreshUser();
+      toast("Photo removed");
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : "Remove failed");
+      const msg = err instanceof Error ? err.message : "Remove failed";
+      setProfileError(msg);
+      toast(msg, "error");
     } finally {
       setAvatarBusy(false);
     }
@@ -313,18 +333,29 @@ function SettingsPageContent() {
                 type="button"
                 className="btn-primary w-full sm:w-auto"
                 onClick={async () => {
-                  await fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      action: "create_memory",
-                      title: newMemTitle,
-                      body: newMemBody,
-                    }),
-                  });
-                  setNewMemTitle("");
-                  setNewMemBody("");
-                  void load();
+                  try {
+                    const res = await fetch("/api/settings", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "create_memory",
+                        title: newMemTitle,
+                        body: newMemBody,
+                      }),
+                    });
+                    if (!res.ok) throw new Error("Could not create memory");
+                    setNewMemTitle("");
+                    setNewMemBody("");
+                    void load();
+                    toast("Memory created");
+                  } catch (err) {
+                    toast(
+                      err instanceof Error
+                        ? err.message
+                        : "Could not create memory",
+                      "error"
+                    );
+                  }
                 }}
               >
                 New memory
@@ -341,16 +372,27 @@ function SettingsPageContent() {
                 type="button"
                 className="btn-secondary w-full sm:w-auto"
                 onClick={async () => {
-                  await fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      action: "create_set",
-                      name: newSetName,
-                    }),
-                  });
-                  setNewSetName("");
-                  void load();
+                  try {
+                    const res = await fetch("/api/settings", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "create_set",
+                        name: newSetName,
+                      }),
+                    });
+                    if (!res.ok) throw new Error("Could not create set");
+                    setNewSetName("");
+                    void load();
+                    toast("Memory set created");
+                  } catch (err) {
+                    toast(
+                      err instanceof Error
+                        ? err.message
+                        : "Could not create set",
+                      "error"
+                    );
+                  }
                 }}
               >
                 New set
@@ -386,16 +428,27 @@ function SettingsPageContent() {
                 className="btn-primary w-full sm:w-auto"
                 disabled={!addToSetId || !addMemId}
                 onClick={async () => {
-                  await fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      action: "add_to_set",
-                      setId: addToSetId,
-                      memoryId: addMemId,
-                    }),
-                  });
-                  void load();
+                  try {
+                    const res = await fetch("/api/settings", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "add_to_set",
+                        setId: addToSetId,
+                        memoryId: addMemId,
+                      }),
+                    });
+                    if (!res.ok) throw new Error("Could not add to set");
+                    void load();
+                    toast("Added to set");
+                  } catch (err) {
+                    toast(
+                      err instanceof Error
+                        ? err.message
+                        : "Could not add to set",
+                      "error"
+                    );
+                  }
                 }}
               >
                 Add to set

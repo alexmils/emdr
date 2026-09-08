@@ -75,6 +75,9 @@ export default function AdminPlatformPage() {
               className="field"
             />
           </label>
+          <p className="admin-panel-sub">
+            Spoken name shown in the app (Nura). Legal lockup is NuraHelp.
+          </p>
           <label className="admin-field-label">
             Support email
             <input

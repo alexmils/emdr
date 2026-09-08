@@ -10,10 +10,12 @@ import {
 import { HelpChatLink } from "@/app/components/HelpChatWidget";
 import {
   BILLING_PLANS,
+  orderedBillingPlans,
   TRIAL_BLS_SECONDS,
   TRIAL_DAYS,
   TRIAL_GUIDED_SESSIONS,
   type BillingPlanId,
+  type BillingPlanMeta,
 } from "@/lib/billing-constants";
 import { APP_BASE } from "@/lib/app-base";
 
@@ -29,6 +31,7 @@ type BillingStatus = {
   isTrialLimited: boolean;
   stripeConfigured: boolean;
   onboardingCompletedAt: string | null;
+  plans?: Record<BillingPlanId, BillingPlanMeta>;
 };
 
 type Step = "welcome" | "plan" | "tutorial";
@@ -42,7 +45,7 @@ function OnboardingFlow() {
 
   const [step, setStep] = useState<Step>("welcome");
   const [plan, setPlan] = useState<BillingPlanId>(
-    canceledPlan === "monthly" ? "monthly" : "yearly"
+    canceledPlan === "weekly" || canceledPlan === "monthly" ? canceledPlan : "yearly"
   );
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -217,8 +220,8 @@ function OnboardingFlow() {
             <AuthError message="Stripe is not configured yet. Ask your admin to set price IDs." />
           )}
           <div className="upgrade-plan-list" role="radiogroup" aria-label="Plan">
-            {(Object.keys(BILLING_PLANS) as BillingPlanId[]).map((id) => {
-              const p = BILLING_PLANS[id];
+            {orderedBillingPlans(status?.plans ?? BILLING_PLANS).map((p) => {
+              const id = p.id;
               return (
                 <button
                   key={id}

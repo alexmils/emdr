@@ -229,7 +229,7 @@ export default function AdminEmailPage() {
                       setSettings({ ...settings, fromName: e.target.value })
                     }
                     className="field"
-                    placeholder="NuraHelp AI"
+                    placeholder="Nura"
                   />
                 </label>
                 <label className="admin-field-label">

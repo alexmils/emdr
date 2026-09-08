@@ -2,7 +2,7 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-title NuraHelp AI - reset
+title NuraHelp - reset
 
 rem Kill whatever holds :3471 (previous npm/next), then start fresh via start.bat.
 rem Same idea as Hubcast restart_hubcast.bat → stop then pokreni.

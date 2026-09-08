@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { AppAccessGate } from "@/app/components/AppAccessGate";
 import { HelpChatWidget } from "@/app/components/HelpChatWidget";
+import { ToastProvider } from "@/app/components/Toast";
+import { BRAND_PRODUCT, BRAND_SPOKEN } from "@/lib/brand";
 
 /** Console under /app — do not index; do not reuse frontend OG url. */
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
   openGraph: {
     url: "/app",
-    title: "NuraHelp AI",
-    description: "EMDR Support sessions",
+    title: BRAND_SPOKEN,
+    description: `${BRAND_PRODUCT} sessions`,
   },
 };
 
@@ -19,8 +21,10 @@ export default function AppConsoleLayout({
 }) {
   return (
     <AppAccessGate>
-      {children}
-      <HelpChatWidget showFab />
+      <ToastProvider>
+        {children}
+        <HelpChatWidget showFab />
+      </ToastProvider>
     </AppAccessGate>
   );
 }

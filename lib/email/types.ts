@@ -49,6 +49,6 @@ export async function getFromAddress(): Promise<{ email: string; name: string }>
       platform.fromName.trim() ||
       process.env.EMAIL_FROM_NAME?.trim() ||
       platform.siteName ||
-      "NuraHelp AI",
+      "Nura",
   };
 }

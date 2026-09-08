@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 72" fill="none" role="img" aria-labelledby="nura-lockup-title">
+  <title id="nura-lockup-title">NuraHelp</title>
+  <circle cx="12" cy="14" r="5" fill="#785135"/>
+  <circle cx="52" cy="14" r="5" fill="#785135"/>
+  <path d="M18.5 14 Q 32 4 45.5 14" stroke="#785135" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="0" y="48" fill="#785135" font-family="Fraunces, Georgia, serif" font-size="28" font-weight="500" letter-spacing="-0.04em">nura</text>
+  <text x="72" y="46" fill="#2A2118" font-family="Source Sans 3, ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="500" letter-spacing="0.12em">help</text>
+</svg>

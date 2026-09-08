@@ -5,7 +5,9 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   BILLING_PLANS,
+  orderedBillingPlans,
   type BillingPlanId,
+  type BillingPlanMeta,
 } from "@/lib/billing-constants";
 import { UpgradeModal } from "@/app/components/UpgradeModal";
 
@@ -26,6 +28,7 @@ type Status = {
   blsSecondsRemaining: number;
   isTrialLimited: boolean;
   stripeConfigured: boolean;
+  plans?: Record<BillingPlanId, BillingPlanMeta>;
 };
 
 function BillingPageInner() {
@@ -157,8 +160,8 @@ function BillingPageInner() {
           {status?.needsPayment && (
             <>
               <div className="upgrade-plan-list mt-4">
-                {(Object.keys(BILLING_PLANS) as BillingPlanId[]).map((id) => {
-                  const p = BILLING_PLANS[id];
+                {orderedBillingPlans(status.plans ?? BILLING_PLANS).map((p) => {
+                  const id = p.id;
                   return (
                     <button
                       key={id}

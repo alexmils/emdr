@@ -2,7 +2,14 @@ import { APP_BASE, LOGIN_PATH, isAppConsolePath } from "@/lib/app-base";
 
 const FRONTEND_EXACT = new Set(["/", ""]);
 
-const FRONTEND_PREFIXES = ["/privacy", "/terms"] as const;
+const FRONTEND_PREFIXES = [
+  "/privacy",
+  "/terms",
+  "/emdr",
+  "/therapy",
+  "/resources",
+  "/therapists",
+] as const;
 
 const AUTH_PUBLIC_PREFIXES = [
   LOGIN_PATH,

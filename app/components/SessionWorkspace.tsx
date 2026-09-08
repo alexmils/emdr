@@ -423,7 +423,7 @@ export function SessionWorkspace() {
             <div className="workspace-header-lead">
               <WorkspaceMenuButton />
               <div className="min-w-0">
-                <h1 className="workspace-title">NuraHelp AI</h1>
+                <h1 className="workspace-title">Nura</h1>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the NuraHelp AI project are documented here.
+All notable changes to the NuraHelp project are documented here.
 New entries are appended at the bottom of each section (newest last under `[Unreleased]`).
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -30,12 +30,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Cloudflare Tunnel **`nurahelp-dev`**: `https://dev.nurahelp.com` → localhost **3471**; Access email one-time PIN with Allow Everyone (credentials in `%USERPROFILE%\.cloudflared\`, not git)
 - **Consumer onboarding + billing**: `/app/onboarding` (welcome → plan → Stripe Checkout 7-day trial → tutorial); monthly/yearly prices; trial limits **3 guided sessions** + **10 min Free/BLS**; upgrade modal; Customer Portal; entitlement gate; grandfather existing password users as `legacy`
 - **Create account**: `/app/create-account` + `POST /api/auth/register`; link from login footer and landing header; new users land on onboarding
-- **Stripe project `nurahelp`**: dedicated test sandbox (`acct_1UCsfAAiWsQlzMVG`, Dashboard name **Nura sandbox**); product NuraHelp AI with monthly €14.99 / yearly €99 prices; Customer Portal; webhook → `https://dev.nurahelp.com/api/webhooks/stripe`; keys + price IDs wired in local `.env` (CLI profile `-p nurahelp`); claimed and verified Checkout branding
+- **Stripe project `nurahelp`**: dedicated test sandbox (`acct_1UCsfAAiWsQlzMVG`, Dashboard name **Nura sandbox**); product NuraHelp AI with weekly €4.99 / monthly €14.99 / yearly €99; Customer Portal; webhook → `https://dev.nurahelp.com/api/webhooks/stripe`; claimed and verified Checkout branding
+- **Admin Stripe settings**: secret key, webhook secret, Price IDs, and display prices editable at `/admin/billing` (stored in `app_settings.stripe`); runtime no longer requires `STRIPE_*` env (optional one-time env bootstrap); **Sync from Stripe** pulls active week/month/year prices via `POST /api/admin/billing/sync`; support role cannot read live secrets; empty secret fields on save leave stored values unchanged; catalog vs webhook readiness shown separately
 - **Help chat**: right-side drawer (“Need help?”) under `/app`; AI first reply with keyword RAG (`help_knowledge`) + allow/deny topics; admin inbox + email notify at `/admin/help`; settings stored in platform `help` block
 - **Guided intake phase (EMDR Phase 1)**: new `intake` protocol phase before grounding; conversational history-taking + safety screen; persistent `client_profiles` table (RLS); returning users get short re-evaluation opener; interpreter extracts intake fields; BLS disabled until after intake
 - **Free-session ads**: interstitial before BLS start for trial users only (`lib/ads.ts` + `AdInterstitial`); admin frequency controls (per session / every N minutes / every N sets); AdSense + placeholder + GAM seam; paying users never receive ad config from `/api/billing/status`
 - Free-session ads fixes: Upgrade no longer starts BLS; frequency counted only on Continue; AdSense script loads only when ads are active for the trial user; ad freq keyed by user id in localStorage
 - Root **`reset.bat`**: kills anything on port **3471**, then runs `start.bat` (same pattern as Hubcast `restart_hubcast.bat`)
+- Password **show/hide eye** on shared `AuthField` (`app/components/AuthShell.tsx` + `.auth-field-eye` in `globals.css`) — login, create-account, reset, create-password
+- Brand system: `docs/brand.md`, SVG mark/lockup + favicon, `BrandLockup`, public pages `/emdr`, `/therapy`, `/resources`, `/therapists`
+- Cursor rule `.cursor/rules/nura-brand.mdc` (`alwaysApply`) — spoken Nura, legal NuraHelp, tokens, no “NuraHelp AI”
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
@@ -81,6 +85,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin **AI & Voice** UI: provider cards + Configure modal; model/voice dropdowns from provider list APIs; live **Connection OK / Failed** check on API key (`POST /api/admin/ai/models`, `/api/admin/ai/test-connection`)
 - Default provider dropdown disables providers without an API key (or with a failed connection)
 - Auth + session URLs moved under `/app` (`/app/login`, `/app/settings`, `/app/billing`); legacy paths 308-redirect; admin still `/admin` (blocked from `/app`); invite/reset emails and Stripe return URLs updated; `fetchJson` 401 only redirects from console paths
+- Spoken brand **Nura**, legal lockup **NuraHelp**; drop public “NuraHelp AI”; paper/gold/earth tokens and Fraunces + Source Sans 3 replace Inter and OpenAI green; landing hero “Support for therapy. Starting with EMDR.”
+- Brand follow-up: earth field borders (gold only on focus), leftover help copy remapped, footer links for Resources/Therapists, admin lockup stays in `/admin`, WebAuthn `rpName` via `chromeBrandName`
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -137,6 +143,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **BLS mobile toolbar**: Control Center–style panel (like reference apps) — labeled groups (Speed / Repeats / Stereo sound / Animation / Vibrations / Adjustments), large segmented tap targets, icon options; replaces cramped single-row steppers; fine speed still via gear + gamepad/keyboard
 - **BLS Adjustments sheet**: live ball preview + play/pause, quick chips, accordion Details (Speed / Repeats & duration / Sound / Animation / Look / rumble); light product style (not a copy of third-party dark iOS sheets); single Reset + Done
 - **Home + Resources**: sidebar links (Home, Resources); `/app/resources` library (Read / Watch / Safety); **Learn** teaser on session start and empty home; ChatGPT-style sidebar kept (no bottom tab bar)
+- BLS Adjustments + mobile Control Center restyled to Nura paper/earth (Fraunces title, earth play control, gold focus rings); leftover ChatGPT green (`#10a37f`) dropped from gear, admin chips, upgrade badge, and help bubbles
+- Settings mobile chrome: Back stacks above **Settings** (not side-by-side); more header/tab padding; hide duplicate panel title under tabs
+- Toast notifications for Settings actions (photo upload/remove, save profile, voice/memory saves)
 
 ---
 

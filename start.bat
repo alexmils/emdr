@@ -2,10 +2,10 @@
 setlocal
 cd /d "%~dp0"
 
-title NuraHelp AI
+title NuraHelp
 
 echo.
-echo  NuraHelp AI - starting...
+echo  NuraHelp - starting...
 echo.
 
 if not exist "node_modules\" (
