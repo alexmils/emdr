@@ -12,8 +12,10 @@ import { BroadcastForm, TemplateEditor } from "@/app/components/admin/EmailTools
 type Tab = "settings" | "templates" | "log";
 
 type HealthStatus = {
+  gmailConfigured?: boolean;
   brevoConfigured: boolean;
-  gmailFallbackConfigured: boolean;
+  gmailFallbackConfigured?: boolean;
+  primaryProvider?: "gmail" | "brevo" | "none";
   appUrl: string;
   fromAddress: string | null;
   fromName: string | null;
@@ -117,7 +119,7 @@ export default function AdminEmailPage() {
           fromAddress: settings.fromAddress,
         }),
       });
-      setMsg("Sender settings saved.");
+      setMsg("Send-as settings saved.");
       await load();
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Save failed");
@@ -183,26 +185,40 @@ export default function AdminEmailPage() {
                     health.brevoConfigured ? "admin-health-ok" : "admin-health-warn"
                   }`}
                 >
-                  Brevo {health.brevoConfigured ? "configured" : "not configured"}
+                  Brevo{" "}
+                  {health.brevoConfigured
+                    ? health.primaryProvider === "brevo"
+                      ? "primary"
+                      : "ready"
+                    : "not configured"}
                 </span>
                 <span
                   className={`admin-health-chip ${
-                    health.gmailFallbackConfigured
+                    health.gmailConfigured || health.gmailFallbackConfigured
                       ? "admin-health-ok"
                       : "admin-health-warn"
                   }`}
                 >
                   Gmail fallback{" "}
-                  {health.gmailFallbackConfigured ? "ready" : "not configured"}
+                  {health.gmailConfigured || health.gmailFallbackConfigured
+                    ? health.primaryProvider === "gmail"
+                      ? "primary"
+                      : "ready"
+                    : "not configured"}
                 </span>
               </div>
               <p className="admin-panel-sub">
-                API keys stay in environment variables (.env). This panel never stores secrets.
+                Brevo is the primary sender. Gmail API is the fallback on quota.
+                OAuth keys stay in .env; send-as address below is used for Gmail
+                (and as the Brevo From when set).
               </p>
             </section>
 
             <section className="admin-panel">
-              <h2 className="admin-panel-title">Sender</h2>
+              <h2 className="admin-panel-title">Send as</h2>
+              <p className="admin-panel-sub mb-3">
+                Outgoing From name and address. Default: hi@contact.nurahelp.com
+              </p>
               <form className="admin-form-stack" onSubmit={(e) => void saveSender(e)}>
                 <label className="admin-field-label">
                   From name
@@ -213,11 +229,11 @@ export default function AdminEmailPage() {
                       setSettings({ ...settings, fromName: e.target.value })
                     }
                     className="field"
-                    placeholder="EMDR Guide"
+                    placeholder="NuraHelp AI"
                   />
                 </label>
                 <label className="admin-field-label">
-                  From address
+                  Send-as address
                   <input
                     type="email"
                     value={settings.fromAddress}
@@ -225,11 +241,11 @@ export default function AdminEmailPage() {
                       setSettings({ ...settings, fromAddress: e.target.value })
                     }
                     className="field"
-                    placeholder="hello@example.com"
+                    placeholder="hi@contact.nurahelp.com"
                   />
                 </label>
                 <button type="submit" disabled={busy} className="btn-primary w-fit">
-                  {busy ? "Saving…" : "Save sender"}
+                  {busy ? "Saving…" : "Save send-as"}
                 </button>
               </form>
             </section>

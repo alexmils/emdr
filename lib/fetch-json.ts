@@ -1,3 +1,6 @@
+import { LOGIN_PATH } from "@/lib/app-base";
+import { shouldRedirectToLoginOn401 } from "@/lib/public-paths";
+
 type JsonRecord = Record<string, unknown>;
 
 export class FetchJsonError extends Error {
@@ -12,10 +15,12 @@ export class FetchJsonError extends Error {
 
 function redirectToLogin() {
   if (typeof window === "undefined") return;
+  const pathname = window.location.pathname;
+  if (!shouldRedirectToLoginOn401(pathname)) return;
   const next = encodeURIComponent(
-    `${window.location.pathname}${window.location.search}`
+    `${pathname}${window.location.search}`
   );
-  window.location.href = `/login?next=${next}`;
+  window.location.href = `${LOGIN_PATH}?next=${next}`;
 }
 
 /** Client fetch that never throws on empty/invalid JSON; redirects on 401. */

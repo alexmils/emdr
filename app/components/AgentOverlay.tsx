@@ -44,7 +44,9 @@ export function AgentOverlay({
   const lastAgent = [...messages].reverse().find((m) => m.role === "agent");
   const prevId = useRef<string | null>(null);
   const checkIn = sessionMode === "check_in";
-  const quickReplies = checkIn ? checkInQuickReplies(phase) : [];
+  const intake = phase === "intake";
+  const showQuickReplies = checkIn || intake;
+  const quickReplies = showQuickReplies ? checkInQuickReplies(phase) : [];
   const canSend = reply.trim().length > 0;
   const userInitial = userDisplayName.trim().charAt(0) || "U";
   /** Chat bubbles only after the user has replied once; open session = centered prompt. */
@@ -59,10 +61,10 @@ export function AgentOverlay({
   }, [lastAgent, autoVoice, hidden, onPlayLine]);
 
   useEffect(() => {
-    if (checkIn && !hidden) {
+    if ((checkIn || intake) && !hidden) {
       inputRef.current?.focus();
     }
-  }, [checkIn, hidden, lastAgent?.id]);
+  }, [checkIn, intake, hidden, lastAgent?.id]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -87,7 +89,9 @@ export function AgentOverlay({
         value={reply}
         onChange={(e) => setReply(e.target.value)}
         placeholder={
-          checkIn ? checkInPlaceholder(phase) : "Message the guide…"
+          checkIn || intake
+            ? checkInPlaceholder(phase)
+            : "Message the guide…"
         }
         className="agent-composer-input"
         aria-label="Message the guide"

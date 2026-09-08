@@ -96,7 +96,7 @@ export function ThreadEditMenu({
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="text-[13px] font-medium">Memory sets</p>
           <Link
-            href="/settings?tab=memory"
+            href="/app/settings?tab=memory"
             className="text-[12px] font-medium text-[var(--accent)] hover:underline"
             onClick={onClose}
           >

@@ -1,34 +1,76 @@
 import { ensureSchemaReady, getPool } from "@/lib/db";
+import { planIdFromStripePriceId } from "@/lib/billing-constants";
 
 export function isStripeConfigured(): boolean {
   return Boolean(
     process.env.STRIPE_SECRET_KEY?.trim() &&
-      process.env.STRIPE_WEBHOOK_SECRET?.trim()
+      process.env.STRIPE_WEBHOOK_SECRET?.trim() &&
+      (process.env.STRIPE_PRICE_ID_MONTHLY?.trim() ||
+        process.env.STRIPE_PRICE_ID?.trim())
   );
 }
 
-export async function syncSubscriptionFromStripe(input: {
+export type SyncSubscriptionInput = {
   userId: string;
   plan: string;
   status: string;
   amountCents: number;
   currency?: string;
   renewsAt?: string | null;
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
-}) {
+  trialEndsAt?: string | null;
+  accessTier?: string;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripePriceId?: string | null;
+  eventCreatedAt?: number | null;
+};
+
+function accessTierForStatus(status: string, explicit?: string): string {
+  if (explicit) return explicit;
+  if (status === "legacy") return "legacy";
+  if (status === "trialing") return "trialing";
+  if (status === "active") return "active";
+  return "none";
+}
+
+export async function syncSubscriptionFromStripe(input: SyncSubscriptionInput) {
   await ensureSchemaReady();
+  const accessTier = accessTierForStatus(input.status, input.accessTier);
+  const eventAt = input.eventCreatedAt
+    ? new Date(input.eventCreatedAt * 1000).toISOString()
+    : null;
+
+  // Out-of-order protection: skip if we already applied a newer Stripe event.
+  if (eventAt && input.stripeSubscriptionId) {
+    const { rows } = await getPool().query<{ last_stripe_event_at: string | null }>(
+      `SELECT last_stripe_event_at FROM subscriptions
+       WHERE user_id = $1 AND stripe_subscription_id = $2`,
+      [input.userId, input.stripeSubscriptionId]
+    );
+    const last = rows[0]?.last_stripe_event_at;
+    if (last && new Date(last).getTime() > new Date(eventAt).getTime()) {
+      return { skipped: true as const };
+    }
+  }
+
   await getPool().query(
-    `INSERT INTO subscriptions (user_id, plan, status, amount_cents, currency, renews_at, stripe_customer_id, stripe_subscription_id, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+    `INSERT INTO subscriptions (
+       user_id, plan, status, amount_cents, currency, renews_at, trial_ends_at,
+       access_tier, stripe_customer_id, stripe_subscription_id, stripe_price_id,
+       last_stripe_event_at, created_at, updated_at
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),NOW())
      ON CONFLICT (user_id) DO UPDATE SET
        plan = EXCLUDED.plan,
        status = EXCLUDED.status,
        amount_cents = EXCLUDED.amount_cents,
        currency = EXCLUDED.currency,
        renews_at = EXCLUDED.renews_at,
-       stripe_customer_id = EXCLUDED.stripe_customer_id,
-       stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+       trial_ends_at = EXCLUDED.trial_ends_at,
+       access_tier = EXCLUDED.access_tier,
+       stripe_customer_id = COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id),
+       stripe_subscription_id = COALESCE(EXCLUDED.stripe_subscription_id, subscriptions.stripe_subscription_id),
+       stripe_price_id = COALESCE(EXCLUDED.stripe_price_id, subscriptions.stripe_price_id),
+       last_stripe_event_at = COALESCE(EXCLUDED.last_stripe_event_at, subscriptions.last_stripe_event_at),
        updated_at = NOW()`,
     [
       input.userId,
@@ -37,10 +79,112 @@ export async function syncSubscriptionFromStripe(input: {
       input.amountCents,
       input.currency ?? "EUR",
       input.renewsAt ?? null,
+      input.trialEndsAt ?? null,
+      accessTier,
       input.stripeCustomerId ?? null,
       input.stripeSubscriptionId ?? null,
+      input.stripePriceId ?? null,
+      eventAt,
     ]
   );
+  return { skipped: false as const };
+}
+
+export async function markStripeEventProcessed(
+  eventId: string,
+  eventType: string
+): Promise<boolean> {
+  await ensureSchemaReady();
+  const { rowCount } = await getPool().query(
+    `INSERT INTO stripe_webhook_events (event_id, event_type, processed_at)
+     VALUES ($1, $2, NOW())
+     ON CONFLICT (event_id) DO NOTHING`,
+    [eventId, eventType]
+  );
+  return (rowCount ?? 0) > 0;
+}
+
+/** Release a claimed event so Stripe can retry after a failed handler. */
+export async function releaseStripeEvent(eventId: string): Promise<void> {
+  await ensureSchemaReady();
+  await getPool().query(
+    `DELETE FROM stripe_webhook_events WHERE event_id = $1`,
+    [eventId]
+  );
+}
+
+export async function getSubscriptionByUserId(userId: string) {
+  await ensureSchemaReady();
+  const { rows } = await getPool().query<{
+    plan: string;
+    status: string;
+    amount_cents: number;
+    currency: string;
+    renews_at: string | null;
+    trial_ends_at: string | null;
+    access_tier: string;
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string | null;
+    stripe_price_id: string | null;
+  }>(`SELECT * FROM subscriptions WHERE user_id = $1`, [userId]);
+  return rows[0] ?? null;
+}
+
+export async function findUserIdByStripeCustomer(
+  customerId: string
+): Promise<string | null> {
+  await ensureSchemaReady();
+  const { rows } = await getPool().query<{ user_id: string }>(
+    `SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1 LIMIT 1`,
+    [customerId]
+  );
+  return rows[0]?.user_id ?? null;
+}
+
+export function mapStripeSubscription(sub: {
+  id: string;
+  status: string;
+  customer: string | { id: string };
+  items: {
+    data: {
+      price?: {
+        id?: string;
+        unit_amount?: number | null;
+        currency?: string;
+      } | null;
+    }[];
+  };
+  current_period_end?: number | null;
+  trial_end?: number | null;
+  metadata?: { user_id?: string; user_email?: string; plan?: string };
+}) {
+  const price = sub.items.data[0]?.price;
+  const priceId = price?.id ?? null;
+  const planFromPrice = planIdFromStripePriceId(priceId);
+  const status = sub.status;
+  const plan =
+    status === "active" || status === "trialing"
+      ? planFromPrice === "pro"
+        ? "pro"
+        : planFromPrice
+      : "free";
+
+  return {
+    plan,
+    status,
+    amountCents: price?.unit_amount ?? 0,
+    currency: (price?.currency ?? "eur").toUpperCase(),
+    renewsAt: sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null,
+    trialEndsAt: sub.trial_end
+      ? new Date(sub.trial_end * 1000).toISOString()
+      : null,
+    stripeCustomerId:
+      typeof sub.customer === "string" ? sub.customer : sub.customer.id,
+    stripeSubscriptionId: sub.id,
+    stripePriceId: priceId,
+  };
 }
 
 export type AdminBillingRow = {

@@ -14,6 +14,14 @@ export type SessionInterpretation = {
   needsGrounding: boolean;
   summary: string;
   userFacingHint: string | null;
+  presentingProblem: string | null;
+  historyNotes: string | null;
+  triggers: string | null;
+  resources: string | null;
+  goals: string | null;
+  riskFlag: boolean;
+  riskNotes: string | null;
+  intakeComplete: boolean;
 };
 
 export const EMPTY_INTERPRETATION: SessionInterpretation = {
@@ -27,6 +35,14 @@ export const EMPTY_INTERPRETATION: SessionInterpretation = {
   needsGrounding: false,
   summary: "",
   userFacingHint: null,
+  presentingProblem: null,
+  historyNotes: null,
+  triggers: null,
+  resources: null,
+  goals: null,
+  riskFlag: false,
+  riskNotes: null,
+  intakeComplete: false,
 };
 
 const PHASE_SET = new Set<string>(PHASE_ORDER);
@@ -76,6 +92,8 @@ export function parseSessionInterpretation(
 ): SessionInterpretation {
   if (!raw || typeof raw !== "object") return { ...EMPTY_INTERPRETATION };
   const o = raw as Record<string, unknown>;
+  const distress = asDistress(o.distress);
+  const riskFlag = Boolean(o.riskFlag);
   return {
     suds: clampInt(o.suds, 0, 10),
     voc: clampInt(o.voc, 0, 7),
@@ -83,10 +101,19 @@ export function parseSessionInterpretation(
     negativeCognition: asTrimmedString(o.negativeCognition),
     positiveCognition: asTrimmedString(o.positiveCognition),
     suggestedPhase: asPhase(o.suggestedPhase),
-    distress: asDistress(o.distress),
-    needsGrounding: Boolean(o.needsGrounding) || asDistress(o.distress) === "overwhelm",
+    distress,
+    needsGrounding:
+      Boolean(o.needsGrounding) || distress === "overwhelm" || riskFlag,
     summary: asTrimmedString(o.summary, 400) ?? "",
     userFacingHint: asTrimmedString(o.userFacingHint, 200),
+    presentingProblem: asTrimmedString(o.presentingProblem, 400),
+    historyNotes: asTrimmedString(o.historyNotes, 600),
+    triggers: asTrimmedString(o.triggers, 400),
+    resources: asTrimmedString(o.resources, 400),
+    goals: asTrimmedString(o.goals, 400),
+    riskFlag,
+    riskNotes: asTrimmedString(o.riskNotes, 400),
+    intakeComplete: Boolean(o.intakeComplete),
   };
 }
 
@@ -100,17 +127,27 @@ Return ONLY a single JSON object (no markdown, no prose) with this exact shape:
   "target": string|null,
   "negativeCognition": string|null,
   "positiveCognition": string|null,
-  "suggestedPhase": "grounding"|"assessment"|"desensitization"|"installation"|"body_scan"|"closure"|null,
+  "suggestedPhase": "intake"|"grounding"|"assessment"|"desensitization"|"installation"|"body_scan"|"closure"|null,
   "distress": "ok"|"elevated"|"overwhelm",
   "needsGrounding": boolean,
   "summary": string,
-  "userFacingHint": string|null
+  "userFacingHint": string|null,
+  "presentingProblem": string|null,
+  "historyNotes": string|null,
+  "triggers": string|null,
+  "resources": string|null,
+  "goals": string|null,
+  "riskFlag": boolean,
+  "riskNotes": string|null,
+  "intakeComplete": boolean
 }
 
 Rules:
 - suds is 0-10 disturbance; voc is 0-7 validity of positive cognition. Use null if not clearly stated.
 - Extract target/NC/PC only when the user clearly names them; do not invent.
-- suggestedPhase: only when the conversation clearly warrants advancing or returning (e.g. SUDs 0-1 in desensitization → installation; overwhelm → grounding). Prefer null if unsure.
+- During intake: fill presentingProblem/historyNotes/triggers/resources/goals when the user shares them; set intakeComplete true only when a concrete starting target is agreed AND safety screening is OK (no crisis).
+- riskFlag true if suicidality, active crisis, severe dissociation, or feels unsafe — also set riskNotes briefly.
+- suggestedPhase: only when the conversation clearly warrants advancing or returning (e.g. intakeComplete → grounding; SUDs 0-1 in desensitization → installation; overwhelm → grounding). Prefer null if unsure.
 - needsGrounding true if user asks for safe place, feels flooded, dissociated, or unsafe.
 - summary: one short clinical note for the guide agent (not shown verbatim to user unless needed).
 - userFacingHint: optional one short line the guide may use; null if none.
@@ -124,6 +161,8 @@ export function interpretationContextBlock(
     "Structured interpretation of the latest user turn (for your guidance only):",
     `- distress: ${interp.distress}`,
     `- needsGrounding: ${interp.needsGrounding}`,
+    `- riskFlag: ${interp.riskFlag}`,
+    `- intakeComplete: ${interp.intakeComplete}`,
     interp.suds != null ? `- suds: ${interp.suds}` : null,
     interp.voc != null ? `- voc: ${interp.voc}` : null,
     interp.target ? `- target: ${interp.target}` : null,
@@ -133,6 +172,14 @@ export function interpretationContextBlock(
     interp.positiveCognition
       ? `- positiveCognition: ${interp.positiveCognition}`
       : null,
+    interp.presentingProblem
+      ? `- presentingProblem: ${interp.presentingProblem}`
+      : null,
+    interp.historyNotes ? `- historyNotes: ${interp.historyNotes}` : null,
+    interp.triggers ? `- triggers: ${interp.triggers}` : null,
+    interp.resources ? `- resources: ${interp.resources}` : null,
+    interp.goals ? `- goals: ${interp.goals}` : null,
+    interp.riskNotes ? `- riskNotes: ${interp.riskNotes}` : null,
     interp.suggestedPhase
       ? `- suggestedPhase: ${interp.suggestedPhase}`
       : null,
@@ -160,17 +207,54 @@ export function threadPatchFromInterpretation(
     patch.positiveCognition = interp.positiveCognition;
   }
 
-  if (interp.needsGrounding || interp.distress === "overwhelm") {
-    patch.phase = "grounding";
-    patch.incomplete = true;
-    return patch;
+  if (interp.riskFlag || interp.needsGrounding || interp.distress === "overwhelm") {
+    if (thread.phase === "intake" && interp.riskFlag) {
+      // Stay in resourcing: still force grounding + incomplete
+      patch.phase = "grounding";
+      patch.incomplete = true;
+      return patch;
+    }
+    if (interp.needsGrounding || interp.distress === "overwhelm") {
+      patch.phase = "grounding";
+      patch.incomplete = true;
+      return patch;
+    }
+  }
+
+  if (interp.intakeComplete) {
+    patch.intakeComplete = true;
   }
 
   if (interp.suggestedPhase) {
-    patch.phase = interp.suggestedPhase;
+    // Intake may only advance to grounding when complete + target exists
+    if (thread.phase === "intake") {
+      const hasTarget = Boolean(interp.target || thread.target);
+      if (
+        interp.intakeComplete &&
+        hasTarget &&
+        !interp.riskFlag &&
+        (interp.suggestedPhase === "grounding" ||
+          interp.suggestedPhase === "assessment")
+      ) {
+        patch.phase = "grounding";
+        patch.intakeComplete = true;
+      }
+      // else stay in intake
+    } else {
+      patch.phase = interp.suggestedPhase;
+    }
   } else {
     // Heuristic phase advances when interpreter left suggestedPhase null
-    if (thread.phase === "grounding" && (interp.target || interp.negativeCognition)) {
+    if (thread.phase === "intake") {
+      const hasTarget = Boolean(interp.target || thread.target);
+      if (interp.intakeComplete && hasTarget && !interp.riskFlag) {
+        patch.phase = "grounding";
+        patch.intakeComplete = true;
+      }
+    } else if (
+      thread.phase === "grounding" &&
+      (interp.target || interp.negativeCognition)
+    ) {
       patch.phase = "assessment";
     } else if (
       thread.phase === "assessment" &&
@@ -193,5 +277,33 @@ export function threadPatchFromInterpretation(
     }
   }
 
+  return patch;
+}
+
+/** Build a client_profiles upsert patch from an interpretation. */
+export function clientProfilePatchFromInterpretation(
+  interp: SessionInterpretation,
+  hadCompletedIntake: boolean
+): {
+  presentingProblem?: string;
+  historyNotes?: string;
+  triggers?: string;
+  resources?: string;
+  goals?: string;
+  riskNotes?: string;
+  redFlag?: boolean;
+  intakeCompletedAt?: string;
+} {
+  const patch: ReturnType<typeof clientProfilePatchFromInterpretation> = {};
+  if (interp.presentingProblem) patch.presentingProblem = interp.presentingProblem;
+  if (interp.historyNotes) patch.historyNotes = interp.historyNotes;
+  if (interp.triggers) patch.triggers = interp.triggers;
+  if (interp.resources) patch.resources = interp.resources;
+  if (interp.goals) patch.goals = interp.goals;
+  if (interp.riskNotes) patch.riskNotes = interp.riskNotes;
+  if (interp.riskFlag) patch.redFlag = true;
+  if (interp.intakeComplete && !hadCompletedIntake) {
+    patch.intakeCompletedAt = new Date().toISOString();
+  }
   return patch;
 }

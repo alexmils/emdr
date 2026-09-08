@@ -1,4 +1,5 @@
 export type ProtocolPhase =
+  | "intake"
   | "grounding"
   | "assessment"
   | "desensitization"
@@ -43,6 +44,8 @@ export interface Thread {
   summary?: string;
   /** User-facing note under the session title (not AI clinical summary). */
   description?: string;
+  /** True once Phase 1 intake for this thread agreed a starting target. */
+  intakeComplete?: boolean;
   incomplete: boolean;
   createdAt: string;
   updatedAt: string;

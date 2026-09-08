@@ -28,7 +28,7 @@ export function getWebAuthnConfig() {
   const rpID = process.env.WEBAUTHN_RP_ID ?? url.hostname;
   const origin = process.env.WEBAUTHN_ORIGIN ?? url.origin;
   return {
-    rpName: process.env.EMAIL_FROM_NAME ?? "EMDR Guide",
+    rpName: process.env.EMAIL_FROM_NAME ?? "NuraHelp AI",
     rpID,
     origin,
   };

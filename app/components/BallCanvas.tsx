@@ -19,7 +19,7 @@ interface BallCanvasProps {
   onSetComplete: () => void;
   onToggle: () => void;
   /** Idle center hint; guided wait/check-in hide free start messaging. */
-  idleHint?: "default" | "guided_wait" | "check_in";
+  idleHint?: "default" | "guided_wait" | "check_in" | "intake";
 }
 
 export function BallCanvas({
@@ -171,6 +171,13 @@ export function BallCanvas({
       {!running && idleHint === "check_in" && (
         <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
           <span>Reply to the check-in, or use Repeat set if you missed this one</span>
+        </p>
+      )}
+      {!running && idleHint === "intake" && (
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
+          <span>
+            We&apos;ll set up the ball once we know what we&apos;re working on
+          </span>
         </p>
       )}
     </div>

@@ -29,13 +29,31 @@ const CHOICES: {
 ];
 
 export function SessionStartScreen() {
-  const { chooseSessionMode } = useApp();
+  const { chooseSessionMode, entitlement, openUpgradeModal } = useApp();
   const [focused, setFocused] = useState<Choice>("guided");
   const [busy, setBusy] = useState(false);
+
+  const guidedBlocked =
+    entitlement?.isTrialLimited &&
+    entitlement.guidedRemaining !== undefined &&
+    entitlement.guidedRemaining <= 0;
+
+  const blsBlocked =
+    entitlement?.isTrialLimited &&
+    entitlement.blsSecondsRemaining !== undefined &&
+    entitlement.blsSecondsRemaining <= 0;
 
   const pick = useCallback(
     async (kind: Choice) => {
       if (busy) return;
+      if (kind === "guided" && guidedBlocked) {
+        openUpgradeModal("trial_limit_reached");
+        return;
+      }
+      if (kind === "free" && blsBlocked) {
+        openUpgradeModal("bls_limit_reached");
+        return;
+      }
       setBusy(true);
       try {
         await chooseSessionMode(kind);
@@ -43,7 +61,7 @@ export function SessionStartScreen() {
         setBusy(false);
       }
     },
-    [busy, chooseSessionMode]
+    [busy, chooseSessionMode, guidedBlocked, blsBlocked, openUpgradeModal]
   );
 
   useEffect(() => {
@@ -80,28 +98,63 @@ export function SessionStartScreen() {
         <p className="session-start-subtitle">
           Choose how you want to work. This choice stays for this session.
         </p>
+        {entitlement?.isTrialLimited && (
+          <p className="session-start-trial">
+            Trial: {Math.max(0, entitlement.guidedRemaining)} guided left ·{" "}
+            {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)} min
+            BLS left
+            {(guidedBlocked || blsBlocked) && (
+              <>
+                {" "}
+                ·{" "}
+                <button
+                  type="button"
+                  className="text-[var(--accent)] underline"
+                  onClick={() =>
+                    openUpgradeModal(
+                      guidedBlocked ? "trial_limit_reached" : "bls_limit_reached"
+                    )
+                  }
+                >
+                  Upgrade
+                </button>
+              </>
+            )}
+          </p>
+        )}
         <div
           className="session-start-cards"
           role="listbox"
           aria-label="Session type"
         >
-          {CHOICES.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              role="option"
-              aria-selected={focused === c.id}
-              disabled={busy}
-              className={`session-start-card ${focused === c.id ? "session-start-card--focused" : ""}`}
-              onMouseEnter={() => setFocused(c.id)}
-              onFocus={() => setFocused(c.id)}
-              onClick={() => void pick(c.id)}
-            >
-              <span className="session-start-card-key">{c.keyHint}</span>
-              <span className="session-start-card-title">{c.title}</span>
-              <span className="session-start-card-desc">{c.description}</span>
-            </button>
-          ))}
+          {CHOICES.map((c) => {
+            const blocked =
+              (c.id === "guided" && guidedBlocked) ||
+              (c.id === "free" && blsBlocked);
+            return (
+              <button
+                key={c.id}
+                type="button"
+                role="option"
+                aria-selected={focused === c.id}
+                disabled={busy}
+                className={`session-start-card ${focused === c.id ? "session-start-card--focused" : ""} ${blocked ? "session-start-card--blocked" : ""}`}
+                onMouseEnter={() => setFocused(c.id)}
+                onFocus={() => setFocused(c.id)}
+                onClick={() => void pick(c.id)}
+              >
+                <span className="session-start-card-key">{c.keyHint}</span>
+                <span className="session-start-card-title">{c.title}</span>
+                <span className="session-start-card-desc">
+                  {blocked
+                    ? c.id === "guided"
+                      ? "Trial guided sessions used — upgrade to continue."
+                      : "Trial BLS time used — upgrade to continue."
+                    : c.description}
+                </span>
+              </button>
+            );
+          })}
         </div>
         <p className="session-start-hint">
           Press 1 or 2 · arrows to move · Enter to confirm

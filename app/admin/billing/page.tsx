@@ -77,7 +77,7 @@ export default function AdminBillingPage() {
             <p className="admin-panel-sub">
               User billing checkout is available when Stripe env vars are set.
               See{" "}
-              <Link href="/billing" className="admin-link">
+              <Link href="/app/billing" className="admin-link">
                 user billing page
               </Link>{" "}
               for the client-facing stub until checkout is wired.

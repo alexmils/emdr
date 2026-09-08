@@ -4,6 +4,21 @@ import {
   DEFAULT_AI_CONNECTORS,
   DEFAULT_VOICE_CONNECTOR,
 } from "@/lib/types";
+import {
+  DEFAULT_HELP_SETTINGS,
+  normalizeHelpSettings,
+  type HelpSettings,
+} from "@/lib/help-settings";
+import {
+  DEFAULT_PLATFORM_ADS,
+  normalizeAdsSettings,
+  type PlatformAdsSettings,
+} from "@/lib/ads";
+
+export type { HelpSettings };
+export { DEFAULT_HELP_SETTINGS, normalizeHelpSettings };
+export type { PlatformAdsSettings };
+export { DEFAULT_PLATFORM_ADS, normalizeAdsSettings };
 
 export type PlatformFeatureFlags = {
   voice: boolean;
@@ -38,6 +53,8 @@ export type PlatformSettings = {
   agentKnowledgeNotes: string;
   flags: PlatformFeatureFlags;
   ai: PlatformAiConfig;
+  help: HelpSettings;
+  ads: PlatformAdsSettings;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -52,13 +69,13 @@ export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
 };
 
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
-  siteName: "EMDR Guide",
+  siteName: "NuraHelp AI",
   supportEmail: "",
   publicAppUrl: "",
   invitesEnabled: true,
   maintenanceMessage: "",
-  fromName: "",
-  fromAddress: "",
+  fromName: "NuraHelp AI",
+  fromAddress: "hi@contact.nurahelp.com",
   agentKnowledgeNotes: "",
   flags: {
     voice: true,
@@ -67,6 +84,8 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
     sessionInterpreter: true,
   },
   ai: { ...DEFAULT_PLATFORM_AI, connectors: { ...DEFAULT_AI_CONNECTORS }, voice: { ...DEFAULT_VOICE_CONNECTOR } },
+  help: { ...DEFAULT_HELP_SETTINGS },
+  ads: { ...DEFAULT_PLATFORM_ADS },
 };
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
@@ -160,6 +179,8 @@ function normalizeSettings(raw: unknown): PlatformSettings {
         connectors: { ...DEFAULT_AI_CONNECTORS },
         voice: { ...DEFAULT_VOICE_CONNECTOR },
       },
+      help: { ...DEFAULT_HELP_SETTINGS },
+      ads: { ...DEFAULT_PLATFORM_ADS },
     };
   }
   const r = raw as Partial<PlatformSettings> & {
@@ -172,8 +193,8 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     publicAppUrl: r.publicAppUrl?.trim() ?? "",
     invitesEnabled: r.invitesEnabled !== false,
     maintenanceMessage: r.maintenanceMessage?.trim() ?? "",
-    fromName: r.fromName?.trim() ?? "",
-    fromAddress: r.fromAddress?.trim() ?? "",
+    fromName: r.fromName?.trim() || DEFAULT_PLATFORM_SETTINGS.fromName,
+    fromAddress: r.fromAddress?.trim() || DEFAULT_PLATFORM_SETTINGS.fromAddress,
     agentKnowledgeNotes:
       typeof r.agentKnowledgeNotes === "string"
         ? r.agentKnowledgeNotes.slice(0, 4000)
@@ -185,6 +206,12 @@ function normalizeSettings(raw: unknown): PlatformSettings {
       sessionInterpreter: r.flags?.sessionInterpreter !== false,
     },
     ai: normalizeAi(r.ai ?? r),
+    help: normalizeHelpSettings(
+      (r as Partial<PlatformSettings>).help ?? DEFAULT_HELP_SETTINGS
+    ),
+    ads: normalizeAdsSettings(
+      (r as Partial<PlatformSettings>).ads ?? DEFAULT_PLATFORM_ADS
+    ),
   };
 }
 
@@ -210,7 +237,13 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     };
   }
   const settings = normalizeSettings(rows[0].json);
-  if (isLegacyUserSettings(rows[0].json)) {
+  const raw = rows[0].json as Partial<PlatformSettings> | null;
+  const missingSender =
+    isLegacyUserSettings(rows[0].json) ||
+    !raw ||
+    typeof raw !== "object" ||
+    !String((raw as PlatformSettings).fromAddress ?? "").trim();
+  if (missingSender) {
     await savePlatformSettings(settings);
   }
   return settings;

@@ -16,18 +16,24 @@ export {
   type EmailTemplateData,
 } from "./templates";
 
+/**
+ * Primary: Brevo. Fallback: Gmail API (send-as from Admin → Email)
+ * when Brevo is missing or hits quota.
+ */
 export async function sendEmail(
   input: SendEmailInput
 ): Promise<SendEmailResult> {
   const brevoKey = process.env.BREVO_API_KEY;
+  const gmailReady = isGmailConfigured();
 
   try {
     let result: SendEmailResult;
+
     if (brevoKey) {
       try {
         result = await sendViaBrevo(input);
       } catch (err) {
-        if (isQuotaError(err) && isGmailConfigured()) {
+        if (isQuotaError(err) && gmailReady) {
           console.warn("[email] Brevo quota hit, falling back to Gmail API");
           result = await sendViaGmail(input);
         } else if (isQuotaError(err)) {
@@ -38,11 +44,11 @@ export async function sendEmail(
           throw err;
         }
       }
-    } else if (isGmailConfigured()) {
+    } else if (gmailReady) {
       result = await sendViaGmail(input);
     } else {
       throw new Error(
-        "No email provider configured. Set BREVO_API_KEY or Gmail API credentials."
+        "No email provider configured. Set BREVO_API_KEY (preferred) or Gmail API credentials."
       );
     }
 
@@ -57,7 +63,7 @@ export async function sendEmail(
     await logEmailEvent({
       toEmail: input.to,
       templateId: input.templateId ?? null,
-      provider: brevoKey ? "brevo" : isGmailConfigured() ? "gmail" : null,
+      provider: brevoKey ? "brevo" : gmailReady ? "gmail" : null,
       status: "failed",
       error: err instanceof Error ? err.message : "Send failed",
     });

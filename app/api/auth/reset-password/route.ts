@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     try {
       await sendTemplateEmail(user.email, "password_changed", {
         name: user.name ?? user.email.split("@")[0],
-        loginUrl: await getAppUrl("/login"),
+        loginUrl: await getAppUrl("/app/login"),
       });
     } catch (err) {
       console.warn("[auth/reset-password] confirmation email failed:", err);

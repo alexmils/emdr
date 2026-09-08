@@ -1,6 +1,6 @@
 ---
 description: Product UI — ChatGPT / DeepSeek style (not Apple HIG)
-globs: app/**/*.tsx,app/**/*.css
+globs: app/app/**/*.tsx,app/admin/**/*.tsx,app/components/**/*.tsx,app/globals.css
 alwaysApply: false
 ---
 
@@ -21,3 +21,5 @@ When editing UI in this project:
 4. **Typography**: Inter via `next/font/google`.
 
 5. **Copy**: English, concise.
+
+6. **Exclude frontend site**: do not apply this rule to `app/components/frontend/**`, `app/page.tsx`, `app/privacy/**`, or `app/terms/**` — those use `.frontend-home` styles.

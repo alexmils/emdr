@@ -90,6 +90,7 @@ describe("session mode helpers", () => {
   });
 
   it("allows BLS sets only in processing phases", () => {
+    assert.equal(phaseAllowsBlsSet("intake"), false);
     assert.equal(phaseAllowsBlsSet("grounding"), false);
     assert.equal(phaseAllowsBlsSet("assessment"), false);
     assert.equal(phaseAllowsBlsSet("closure"), false);
@@ -99,6 +100,14 @@ describe("session mode helpers", () => {
   });
 
   it("gates starting BLS in guided by phase and idle mode", () => {
+    assert.equal(
+      canStartBls({
+        sessionKind: "guided",
+        phase: "intake",
+        sessionMode: "idle",
+      }),
+      false
+    );
     assert.equal(
       canStartBls({
         sessionKind: "free",

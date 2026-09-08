@@ -8,12 +8,15 @@ import {
   AuthError,
   AuthLink,
 } from "@/app/components/AuthShell";
+import { APP_BASE, LOGIN_PATH, safeAppNext } from "@/lib/app-base";
 
-function CreatePasswordForm() {
+function CreateAccountForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = params.get("token") ?? "";
+  const next = params.get("next");
 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -23,32 +26,33 @@ function CreatePasswordForm() {
     e.preventDefault();
     setError("");
 
-    if (!token) {
-      setError("Missing invitation token.");
-      return;
-    }
-
     if (password !== confirm) {
       setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
-
     try {
-      const res = await fetch("/api/auth/create-password", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          name: name.trim() || undefined,
+        }),
       });
       const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error ?? "Setup failed");
+        setError(data.error ?? "Could not create account");
         return;
       }
 
-      router.push("/");
+      // New consumers go through onboarding; honor deep links only under /app.
+      const dest = next
+        ? safeAppNext(next, `${APP_BASE}/onboarding`)
+        : `${APP_BASE}/onboarding`;
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Network error. Try again.");
@@ -57,34 +61,38 @@ function CreatePasswordForm() {
     }
   };
 
-  if (!token) {
-    return (
-      <AuthShell
-        title="Invalid link"
-        subtitle="This invitation link is missing or expired"
-        footer={
-          <p>
-            <AuthLink href="/login">Sign in</AuthLink>
-          </p>
-        }
-      >
-        <AuthError message="No invitation token found. Ask your administrator for a new invite." />
-      </AuthShell>
-    );
-  }
-
   return (
     <AuthShell
-      title="Create password"
-      subtitle="Set up your account to get started"
+      title="Create account"
+      subtitle="Start your EMDR Support trial"
       footer={
         <p>
-          Already have a password? <AuthLink href="/login">Sign in</AuthLink>
+          Already have an account?{" "}
+          <AuthLink href={LOGIN_PATH}>Sign in</AuthLink>
         </p>
       }
     >
       <form onSubmit={submit}>
         {error && <AuthError message={error} />}
+        <AuthField
+          id="name"
+          label="Name"
+          type="text"
+          value={name}
+          onChange={setName}
+          autoComplete="name"
+          placeholder="Optional"
+          required={false}
+        />
+        <AuthField
+          id="email"
+          label="Email"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          autoComplete="email"
+          placeholder="you@example.com"
+        />
         <AuthField
           id="password"
           label="Password"
@@ -110,17 +118,22 @@ function CreatePasswordForm() {
           disabled={loading}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
-          {loading ? "Creating…" : "Create password"}
+          {loading ? "Creating…" : "Create account"}
         </button>
+        <p className="text-caption mt-4 text-center">
+          By creating an account you agree to our{" "}
+          <AuthLink href="/terms">Terms</AuthLink> and{" "}
+          <AuthLink href="/privacy">Privacy</AuthLink>.
+        </p>
       </form>
     </AuthShell>
   );
 }
 
-export default function CreatePasswordPage() {
+export default function CreateAccountPage() {
   return (
     <Suspense>
-      <CreatePasswordForm />
+      <CreateAccountForm />
     </Suspense>
   );
 }

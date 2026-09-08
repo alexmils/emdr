@@ -48,7 +48,8 @@ export default function ForgotPasswordPage() {
       subtitle="We'll email you a reset link"
       footer={
         <p>
-          Remember your password? <AuthLink href="/login">Sign in</AuthLink>
+          Remember your password?{" "}
+          <AuthLink href="/app/login">Sign in</AuthLink>
         </p>
       }
     >

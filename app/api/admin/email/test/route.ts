@@ -31,9 +31,9 @@ export async function POST(request: Request) {
     const id = templateId && VALID.includes(templateId) ? templateId : "welcome";
     const sample = {
       name: "Test User",
-      resetUrl: await getAppUrl("/reset-password?token=test"),
-      createPasswordUrl: await getAppUrl("/create-password?token=test"),
-      loginUrl: await getAppUrl("/login"),
+      resetUrl: await getAppUrl("/app/reset-password?token=test"),
+      createPasswordUrl: await getAppUrl("/app/create-password?token=test"),
+      loginUrl: await getAppUrl("/app/login"),
       expiresIn: "72 hours",
     };
 

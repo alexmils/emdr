@@ -72,7 +72,7 @@ function ctaButton(href: string, label: string): string {
 export function renderEmailTemplate<T extends EmailTemplateId>(
   id: T,
   data: EmailTemplateData[T],
-  siteName = "EMDR Guide"
+  siteName = "NuraHelp AI"
 ): { subject: string; html: string; text: string } {
   switch (id) {
     case "password_reset": {
@@ -124,7 +124,7 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
         siteName,
         "Welcome",
         `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Your account is ready. Sign in to start guided EMDR sessions.</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Your account is ready. Sign in to start EMDR Support sessions.</p>
          ${ctaButton(d.loginUrl, "Sign in")}`
       );
       return { subject, html, text };

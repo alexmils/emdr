@@ -11,7 +11,7 @@
 
 import type { ProtocolPhase } from "./types";
 
-export const PROTOCOL_KNOWLEDGE_VERSION = "2026-09-02";
+export const PROTOCOL_KNOWLEDGE_VERSION = "2026-09-07";
 
 /** Always-on rules for every phase. */
 export const GLOBAL_GUIDE_RULES = `You are a calm self-guided EMDR session guide. English only.
@@ -43,6 +43,24 @@ export const GROUNDING_TOOLS = `Preparation / grounding tools the app can remind
 Use these if SUDs spike, the user floods, or they ask to pause.`;
 
 export const PHASE_KNOWLEDGE: Record<ProtocolPhase, string> = {
+  intake: `Phase focus: HISTORY TAKING / CLIENT HISTORY (EMDR Phase 1) — before preparation or processing.
+Goals: get to know the user, understand the presenting problem, screen for safety, and agree on ONE concrete starting target.
+Ask ONE question at a time. Keep each turn under 3 short sentences. Warm, curious, non-clinical tone.
+
+Suggested order (skip what is already known from the client profile; for returning users do a SHORT re-evaluation only):
+1) What is bothering them / what they want to work on today
+2) When it started, how often it shows up now, how it affects daily life (brief — no trauma narrative)
+3) Triggers and current coping / support (resources)
+4) What "better" would look like (goal)
+5) Safety screening (brief, one item at a time): prior EMDR or therapy; dissociation or feeling unreal; self-harm or suicidal thoughts; current crisis / feeling unsafe
+6) Agree on one concrete starting target (a short phrase), then hand over to grounding / safe-place preparation
+
+Hard rules:
+- Do NOT dig into detailed trauma narrative or invite reliving. Ask permission before going deeper.
+- Do NOT interpret, diagnose, or analyze. Do not start BLS or ask for SUDs/VoC yet.
+- On ANY red flag (suicidality, active crisis, severe dissociation, feels unsafe): stop history taking immediately, offer grounding / butterfly hug / breath only, encourage professional / emergency help, and do not advance to processing.
+- When a starting target is clearly agreed and safety is OK, say you will move to grounding next (the app advances the phase).`,
+
   grounding: `Phase focus: PREPARATION / GROUNDING (before active processing).
 Goals: build safety, confirm the user can self-soothe, introduce safe place and/or butterfly hug.
 Ask for a short description of their safe place. Keep it under 3 sentences.
@@ -107,7 +125,10 @@ export function knowledgeBlockForPhase(phase: ProtocolPhase): string {
       ? `${NC_THEMES}\n\n${COGNITION_EXAMPLES}`
       : NC_THEMES,
     "",
-    phase === "grounding" || phase === "closure" || phase === "desensitization"
+    phase === "intake" ||
+    phase === "grounding" ||
+    phase === "closure" ||
+    phase === "desensitization"
       ? GROUNDING_TOOLS
       : "",
   ]

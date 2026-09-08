@@ -1,18 +1,28 @@
 import { NextResponse } from "next/server";
 import {
   addMessage,
+  clientProfileContextBlock,
+  getClientProfile,
   getEnabledMemoryContext,
   getThread,
   listMessages,
   updateThread,
+  upsertClientProfile,
 } from "@/lib/db";
 import { chatCompletion } from "@/lib/llm";
-import { checkInLine, guidedFallbackReply, openingLine, systemPromptForPhase } from "@/lib/protocol";
+import {
+  checkInLine,
+  guidedFallbackReply,
+  openingLine,
+  reevaluationOpeningLine,
+  systemPromptForPhase,
+} from "@/lib/protocol";
 import {
   getLlmRuntimeConfig,
   getPlatformSettings,
 } from "@/lib/platform-settings";
 import {
+  clientProfilePatchFromInterpretation,
   extractJsonObject,
   interpretationContextBlock,
   interpreterSystemPrompt,
@@ -21,6 +31,7 @@ import {
   type SessionInterpretation,
 } from "@/lib/session-interpreter";
 import { withAuth } from "@/lib/api-auth";
+import { getRlsContext } from "@/lib/rls";
 
 async function runInterpreter(opts: {
   settings: Awaited<ReturnType<typeof getLlmRuntimeConfig>>;
@@ -79,13 +90,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const { userId } = getRlsContext();
     const settings = await getLlmRuntimeConfig();
     const platform = await getPlatformSettings();
     const memoryContext = await getEnabledMemoryContext(threadId);
+    const profile = await getClientProfile(userId);
+    const profileContext = clientProfileContextBlock(profile);
     const history = await listMessages(threadId);
 
     if (bootstrap && history.length === 0) {
-      const line = openingLine(thread.phase);
+      const line =
+        profile?.intakeCompletedAt && thread.phase === "intake"
+          ? reevaluationOpeningLine(profile.presentingProblem)
+          : openingLine(thread.phase);
       const msg = await addMessage(threadId, "agent", line);
       return NextResponse.json({ message: msg });
     }
@@ -103,10 +120,7 @@ export async function POST(request: Request) {
     let interpretation: SessionInterpretation | null = null;
     let workingThread = thread;
 
-    if (
-      userMessage &&
-      platform.flags.sessionInterpreter !== false
-    ) {
+    if (userMessage && platform.flags.sessionInterpreter !== false) {
       const recent = (await listMessages(threadId)).slice(-8).map((m) => ({
         role: m.role,
         content: m.content,
@@ -121,6 +135,8 @@ export async function POST(request: Request) {
           `PC=${thread.positiveCognition ?? ""}`,
           `suds=${thread.suds ?? ""}`,
           `voc=${thread.voc ?? ""}`,
+          `intakeComplete=${thread.intakeComplete ?? false}`,
+          profileContext ? `profile:\n${profileContext}` : "profile: none",
         ].join("\n"),
         recentMessages: recent,
         userMessage,
@@ -132,9 +148,39 @@ export async function POST(request: Request) {
           const updated = await updateThread(threadId, patch);
           if (updated) workingThread = updated;
         }
+
+        const profilePatch = clientProfilePatchFromInterpretation(
+          interpretation,
+          Boolean(profile?.intakeCompletedAt)
+        );
+        if (Object.keys(profilePatch).length > 0) {
+          await upsertClientProfile(profilePatch, userId);
+        }
       }
     } else if (userMessage) {
       // Legacy regex fallbacks when interpreter is disabled
+      if (thread.phase === "intake" && userMessage.length > 2) {
+        const msgs = await listMessages(threadId);
+        const userTurns = msgs.filter((m) => m.role === "user").length;
+        // Keep in intake for a few turns, then move to grounding
+        if (userTurns >= 3) {
+          const updated = await updateThread(threadId, {
+            phase: "grounding",
+            intakeComplete: true,
+            target: thread.target ?? userMessage.slice(0, 120),
+          });
+          if (updated) workingThread = updated;
+          if (!profile?.intakeCompletedAt) {
+            await upsertClientProfile(
+              {
+                presentingProblem: userMessage.slice(0, 280),
+                intakeCompletedAt: new Date().toISOString(),
+              },
+              userId
+            );
+          }
+        }
+      }
       if (thread.phase === "grounding" && userMessage.length > 2) {
         const updated = await updateThread(threadId, { phase: "assessment" });
         if (updated) workingThread = updated;
@@ -170,9 +216,17 @@ export async function POST(request: Request) {
       }
     }
 
+    const freshProfile =
+      interpretation != null ? await getClientProfile(userId) : profile;
+    const freshProfileContext = clientProfileContextBlock(freshProfile);
+
     const adminNotes = platform.agentKnowledgeNotes?.trim();
     const system =
-      systemPromptForPhase(workingThread.phase, memoryContext) +
+      systemPromptForPhase(
+        workingThread.phase,
+        memoryContext,
+        freshProfileContext
+      ) +
       (adminNotes
         ? `\n\nAdmin protocol notes (platform):\n${adminNotes.slice(0, 4000)}`
         : "") +
@@ -214,14 +268,17 @@ export async function POST(request: Request) {
               suggestedPhase: interpretation.suggestedPhase,
               distress: interpretation.distress,
               needsGrounding: interpretation.needsGrounding,
+              intakeComplete: interpretation.intakeComplete,
+              riskFlag: interpretation.riskFlag,
             }
           : null,
       });
     } catch (e) {
       console.warn("[chat] LLM failed:", e);
-      const fallback = interpretation?.needsGrounding
-        ? "Let's pause and ground. Cross your arms for a butterfly hug, or picture your safe place. When you feel steadier, tell me what you notice."
-        : guidedFallbackReply(workingThread.phase, userMessage);
+      const fallback =
+        interpretation?.needsGrounding || interpretation?.riskFlag
+          ? "Let's pause and ground. Cross your arms for a butterfly hug, or picture your safe place. When you feel steadier, tell me what you notice. If you are in crisis, please seek professional or emergency help."
+          : guidedFallbackReply(workingThread.phase, userMessage);
       const agentMsg = await addMessage(threadId, "agent", fallback);
       return NextResponse.json({
         message: agentMsg,
@@ -233,6 +290,8 @@ export async function POST(request: Request) {
               suggestedPhase: interpretation.suggestedPhase,
               distress: interpretation.distress,
               needsGrounding: interpretation.needsGrounding,
+              intakeComplete: interpretation.intakeComplete,
+              riskFlag: interpretation.riskFlag,
             }
           : null,
         warning: e instanceof Error ? e.message : "LLM error",

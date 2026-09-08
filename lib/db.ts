@@ -168,13 +168,170 @@ async function runSchemaMigrations(db: PoolClient) {
       last_used_at TIMESTAMPTZ
     );
     CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_user ON webauthn_credentials(user_id);
+    CREATE TABLE IF NOT EXISTS client_profiles (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      presenting_problem TEXT,
+      history_notes TEXT,
+      triggers TEXT,
+      resources TEXT,
+      goals TEXT,
+      risk_notes TEXT,
+      red_flag BOOLEAN NOT NULL DEFAULT FALSE,
+      intake_completed_at TIMESTAMPTZ,
+      updated_at TIMESTAMPTZ NOT NULL
+    );
   `);
 
   await db.query(`
     ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ;
     ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
     ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ;
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS access_tier TEXT NOT NULL DEFAULT 'none';
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_price_id TEXT;
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS last_stripe_event_at TIMESTAMPTZ;
   `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS trial_usage (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      guided_sessions_used INTEGER NOT NULL DEFAULT 0,
+      bls_seconds_used INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS trial_guided_ledger (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      thread_id TEXT NOT NULL,
+      consumed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, thread_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_trial_guided_ledger_user
+      ON trial_guided_ledger(user_id);
+    CREATE TABLE IF NOT EXISTS trial_bls_ledger (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      seconds INTEGER NOT NULL CHECK (seconds > 0),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_trial_bls_ledger_user
+      ON trial_bls_ledger(user_id);
+    CREATE TABLE IF NOT EXISTS stripe_webhook_events (
+      event_id TEXT PRIMARY KEY,
+      event_type TEXT NOT NULL,
+      processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  // One-time only — never re-run on every boot (that falsely marked new
+  // self-registered users as legacy and skipped onboarding/payment).
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      id TEXT PRIMARY KEY,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  const { rows: legacyMig } = await db.query<{ id: string }>(
+    `SELECT id FROM schema_migrations WHERE id = 'legacy_grandfather_v2'`
+  );
+  if (!legacyMig.length) {
+    // Grandfather invited/seeded password users (not self-register).
+    await db.query(`
+      UPDATE users u
+      SET onboarding_completed_at = COALESCE(u.onboarding_completed_at, u.created_at)
+      WHERE u.role = 'user'
+        AND u.password_hash IS NOT NULL
+        AND u.onboarding_completed_at IS NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM audit_events ae
+          WHERE ae.target_user_id = u.id
+            AND ae.action = 'user.created'
+            AND COALESCE(ae.detail->>'source', '') = 'self_register'
+        )
+    `);
+    await db.query(`
+      INSERT INTO subscriptions (
+        user_id, plan, status, amount_cents, currency, access_tier, created_at, updated_at
+      )
+      SELECT u.id, 'legacy', 'legacy', 0, 'EUR', 'legacy', NOW(), NOW()
+      FROM users u
+      WHERE u.role = 'user'
+        AND u.password_hash IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM subscriptions s WHERE s.user_id = u.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM audit_events ae
+          WHERE ae.target_user_id = u.id
+            AND ae.action = 'user.created'
+            AND COALESCE(ae.detail->>'source', '') = 'self_register'
+        )
+    `);
+    await db.query(`
+      UPDATE subscriptions s
+      SET access_tier = 'legacy',
+          status = CASE WHEN s.status = 'active' AND s.plan = 'free' THEN 'legacy' ELSE s.status END,
+          plan = CASE WHEN s.plan = 'free' THEN 'legacy' ELSE s.plan END,
+          updated_at = NOW()
+      FROM users u
+      WHERE s.user_id = u.id
+        AND u.role = 'user'
+        AND u.password_hash IS NOT NULL
+        AND u.onboarding_completed_at IS NOT NULL
+        AND s.stripe_subscription_id IS NULL
+        AND s.stripe_customer_id IS NULL
+        AND s.access_tier = 'none'
+        AND NOT EXISTS (
+          SELECT 1 FROM audit_events ae
+          WHERE ae.target_user_id = u.id
+            AND ae.action = 'user.created'
+            AND COALESCE(ae.detail->>'source', '') = 'self_register'
+        )
+    `);
+
+    // Repair: self-registered users wrongly granted legacy by the old boot loop.
+    await db.query(`
+      UPDATE users u
+      SET onboarding_completed_at = NULL,
+          updated_at = NOW()
+      WHERE u.role = 'user'
+        AND EXISTS (
+          SELECT 1 FROM audit_events ae
+          WHERE ae.target_user_id = u.id
+            AND ae.action = 'user.created'
+            AND COALESCE(ae.detail->>'source', '') = 'self_register'
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM subscriptions s
+          WHERE s.user_id = u.id
+            AND (
+              s.stripe_subscription_id IS NOT NULL
+              OR s.stripe_customer_id IS NOT NULL
+            )
+        )
+    `);
+    await db.query(`
+      UPDATE subscriptions s
+      SET access_tier = 'none',
+          status = 'none',
+          plan = 'free',
+          updated_at = NOW()
+      FROM users u
+      WHERE s.user_id = u.id
+        AND u.role = 'user'
+        AND s.stripe_subscription_id IS NULL
+        AND s.stripe_customer_id IS NULL
+        AND EXISTS (
+          SELECT 1 FROM audit_events ae
+          WHERE ae.target_user_id = u.id
+            AND ae.action = 'user.created'
+            AND COALESCE(ae.detail->>'source', '') = 'self_register'
+        )
+    `);
+
+    await db.query(
+      `INSERT INTO schema_migrations (id) VALUES ('legacy_grandfather_v2')`
+    );
+  }
 
   await db.query(`
     DO $$ BEGIN
@@ -200,6 +357,7 @@ async function runSchemaMigrations(db: PoolClient) {
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'guided';
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS description TEXT;
+    ALTER TABLE threads ADD COLUMN IF NOT EXISTS intake_complete BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE memories ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
     ALTER TABLE memory_sets ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
   `);
@@ -274,10 +432,130 @@ function rowToThread(row: QueryResultRow): Thread {
     voc: row.voc != null ? Number(row.voc) : undefined,
     summary: (row.summary as string) ?? undefined,
     description: (row.description as string) ?? undefined,
+    intakeComplete: Boolean(row.intake_complete),
     incomplete: Boolean(row.incomplete),
     createdAt: new Date(row.created_at as string).toISOString(),
     updatedAt: new Date(row.updated_at as string).toISOString(),
   };
+}
+
+export type ClientProfile = {
+  userId: string;
+  presentingProblem?: string;
+  historyNotes?: string;
+  triggers?: string;
+  resources?: string;
+  goals?: string;
+  riskNotes?: string;
+  redFlag: boolean;
+  intakeCompletedAt?: string;
+  updatedAt: string;
+};
+
+function rowToClientProfile(row: QueryResultRow): ClientProfile {
+  return {
+    userId: row.user_id as string,
+    presentingProblem: (row.presenting_problem as string) ?? undefined,
+    historyNotes: (row.history_notes as string) ?? undefined,
+    triggers: (row.triggers as string) ?? undefined,
+    resources: (row.resources as string) ?? undefined,
+    goals: (row.goals as string) ?? undefined,
+    riskNotes: (row.risk_notes as string) ?? undefined,
+    redFlag: Boolean(row.red_flag),
+    intakeCompletedAt: row.intake_completed_at
+      ? new Date(row.intake_completed_at as string).toISOString()
+      : undefined,
+    updatedAt: new Date(row.updated_at as string).toISOString(),
+  };
+}
+
+export async function getClientProfile(
+  userId?: string
+): Promise<ClientProfile | null> {
+  const uid = userId ?? getRlsContext().userId;
+  const { rows } = await dbQuery(
+    "SELECT * FROM client_profiles WHERE user_id = $1",
+    [uid]
+  );
+  return rows[0] ? rowToClientProfile(rows[0]) : null;
+}
+
+export type ClientProfilePatch = Partial<
+  Omit<ClientProfile, "userId" | "updatedAt">
+>;
+
+export async function upsertClientProfile(
+  patch: ClientProfilePatch,
+  userId?: string
+): Promise<ClientProfile> {
+  const uid = userId ?? getRlsContext().userId;
+  const existing = await getClientProfile(uid);
+  const now = new Date().toISOString();
+  const merged = {
+    presentingProblem:
+      patch.presentingProblem ?? existing?.presentingProblem ?? null,
+    historyNotes: patch.historyNotes ?? existing?.historyNotes ?? null,
+    triggers: patch.triggers ?? existing?.triggers ?? null,
+    resources: patch.resources ?? existing?.resources ?? null,
+    goals: patch.goals ?? existing?.goals ?? null,
+    riskNotes: patch.riskNotes ?? existing?.riskNotes ?? null,
+    redFlag: patch.redFlag ?? existing?.redFlag ?? false,
+    intakeCompletedAt:
+      patch.intakeCompletedAt !== undefined
+        ? patch.intakeCompletedAt
+        : (existing?.intakeCompletedAt ?? null),
+  };
+  await dbQuery(
+    `INSERT INTO client_profiles (
+       user_id, presenting_problem, history_notes, triggers, resources,
+       goals, risk_notes, red_flag, intake_completed_at, updated_at
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     ON CONFLICT (user_id) DO UPDATE SET
+       presenting_problem = EXCLUDED.presenting_problem,
+       history_notes = EXCLUDED.history_notes,
+       triggers = EXCLUDED.triggers,
+       resources = EXCLUDED.resources,
+       goals = EXCLUDED.goals,
+       risk_notes = EXCLUDED.risk_notes,
+       red_flag = EXCLUDED.red_flag,
+       intake_completed_at = EXCLUDED.intake_completed_at,
+       updated_at = EXCLUDED.updated_at`,
+    [
+      uid,
+      merged.presentingProblem,
+      merged.historyNotes,
+      merged.triggers,
+      merged.resources,
+      merged.goals,
+      merged.riskNotes,
+      merged.redFlag,
+      merged.intakeCompletedAt,
+      now,
+    ]
+  );
+  return (await getClientProfile(uid))!;
+}
+
+/** Compact profile text for the guide system prompt. */
+export function clientProfileContextBlock(
+  profile: ClientProfile | null
+): string {
+  if (!profile) return "";
+  const lines = [
+    profile.presentingProblem
+      ? `- presenting problem: ${profile.presentingProblem}`
+      : null,
+    profile.historyNotes ? `- history: ${profile.historyNotes}` : null,
+    profile.triggers ? `- triggers: ${profile.triggers}` : null,
+    profile.resources ? `- resources: ${profile.resources}` : null,
+    profile.goals ? `- goals: ${profile.goals}` : null,
+    profile.riskNotes ? `- risk notes: ${profile.riskNotes}` : null,
+    profile.redFlag ? `- redFlag: true` : null,
+    profile.intakeCompletedAt
+      ? `- intake completed: ${profile.intakeCompletedAt}`
+      : `- intake completed: no`,
+  ].filter(Boolean);
+  return lines.length ? lines.join("\n") : "";
 }
 
 export async function listThreads(): Promise<Thread[]> {
@@ -299,8 +577,8 @@ export async function createThread(title: string): Promise<Thread> {
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
   await dbQuery(
-    `INSERT INTO threads (id, user_id, title, phase, mode, incomplete, created_at, updated_at)
-     VALUES ($1, $2, $3, 'grounding', 'pending', TRUE, $4, $4)`,
+    `INSERT INTO threads (id, user_id, title, phase, mode, incomplete, intake_complete, created_at, updated_at)
+     VALUES ($1, $2, $3, 'intake', 'pending', TRUE, FALSE, $4, $4)`,
     [id, userId, title, now]
   );
   return (await getThread(id))!;
@@ -315,7 +593,8 @@ export async function updateThread(
   const merged = { ...existing, ...patch, updatedAt: new Date().toISOString() };
   await dbQuery(
     `UPDATE threads SET title=$1, phase=$2, target=$3, negative_cognition=$4, positive_cognition=$5,
-     suds=$6, voc=$7, summary=$8, incomplete=$9, mode=$10, description=$11, updated_at=$12 WHERE id=$13`,
+     suds=$6, voc=$7, summary=$8, incomplete=$9, mode=$10, description=$11, intake_complete=$12,
+     updated_at=$13 WHERE id=$14`,
     [
       merged.title,
       merged.phase,
@@ -328,6 +607,7 @@ export async function updateThread(
       merged.incomplete,
       merged.mode,
       merged.description?.trim() ? merged.description.trim() : null,
+      merged.intakeComplete ?? false,
       merged.updatedAt,
       id,
     ]

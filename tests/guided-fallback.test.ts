@@ -3,6 +3,17 @@ import { describe, it } from "node:test";
 import { guidedFallbackReply } from "../lib/protocol.ts";
 
 describe("guidedFallbackReply", () => {
+  it("asks what to work on in intake", () => {
+    const line = guidedFallbackReply("intake");
+    assert.match(line, /work on/i);
+  });
+
+  it("continues intake after content without echoing", () => {
+    const line = guidedFallbackReply("intake", "anxiety at work");
+    assert.match(line, /daily life|start/i);
+    assert.doesNotMatch(line, /anxiety at work/i);
+  });
+
   it("acknowledges a safe-place answer in grounding", () => {
     const line = guidedFallbackReply("grounding", "Ok I am in train");
     assert.match(line, /safe place/i);

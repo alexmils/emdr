@@ -30,6 +30,7 @@ export async function ensureRlsPolicies(client?: SqlClient) {
     "memory_set_items",
     "thread_memory_sets",
     "user_settings",
+    "client_profiles",
   ];
 
   for (const table of tables) {
@@ -99,6 +100,13 @@ export async function ensureRlsPolicies(client?: SqlClient) {
 
     DROP POLICY IF EXISTS user_settings_all ON user_settings;
     CREATE POLICY user_settings_all ON user_settings FOR ALL USING (
+      user_id = app_current_user_id()
+    ) WITH CHECK (
+      user_id = app_current_user_id()
+    );
+
+    DROP POLICY IF EXISTS client_profiles_all ON client_profiles;
+    CREATE POLICY client_profiles_all ON client_profiles FOR ALL USING (
       user_id = app_current_user_id()
     ) WITH CHECK (
       user_id = app_current_user_id()

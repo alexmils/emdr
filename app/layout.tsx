@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "EMDR Guide",
-  description: "Guided EMDR sessions with bilateral stimulation",
+  title: "NuraHelp AI",
+  description: "EMDR Support with bilateral stimulation",
 };
 
 export default function RootLayout({

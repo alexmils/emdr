@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     if (user) {
       const raw = await createAuthToken(user.id, "reset");
       const resetUrl = `${await getAppUrl(
-        `/reset-password?token=${encodeURIComponent(raw)}`
+        `/app/reset-password?token=${encodeURIComponent(raw)}`
       )}`;
 
       try {

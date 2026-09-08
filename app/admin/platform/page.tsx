@@ -59,7 +59,7 @@ export default function AdminPlatformPage() {
     <div className="admin-page">
       <AdminPageHeader
         title="Platform"
-        subtitle="Site identity, invites, maintenance, feature flags, and agent protocol notes."
+        subtitle="Site identity, invites, maintenance, feature flags, ads, and agent protocol notes."
       />
       <main className="admin-main">
         <form className="admin-form-stack admin-panel" onSubmit={(e) => void save(e)}>
@@ -95,7 +95,7 @@ export default function AdminPlatformPage() {
                 setSettings({ ...settings, publicAppUrl: e.target.value })
               }
               className="field"
-              placeholder="https://app.example.com"
+              placeholder="https://dev.nurahelp.com"
             />
           </label>
           <p className="admin-panel-sub">
@@ -183,6 +183,186 @@ export default function AdminPlatformPage() {
                   flags: {
                     ...settings.flags,
                     sessionInterpreter: e.target.checked,
+                  },
+                })
+              }
+            />
+          </label>
+
+          <h2 className="admin-panel-title mt-4">Ads (free sessions)</h2>
+          <p className="admin-panel-sub">
+            Interstitial shown before BLS starts in free sessions for trial
+            users. Paying users never see ads. Frequency mirrors Elementor-style
+            popup timing.
+          </p>
+          <label className="admin-toggle-row">
+            <span>Enable ads</span>
+            <input
+              type="checkbox"
+              checked={settings.ads?.enabled === true}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  ads: { ...settings.ads, enabled: e.target.checked },
+                })
+              }
+            />
+          </label>
+          <label className="admin-field-label">
+            Provider
+            <select
+              className="field"
+              value={settings.ads?.provider ?? "placeholder"}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  ads: {
+                    ...settings.ads,
+                    provider: e.target.value as
+                      | "placeholder"
+                      | "adsense"
+                      | "gam",
+                  },
+                })
+              }
+            >
+              <option value="placeholder">Placeholder (dev)</option>
+              <option value="adsense">Google AdSense</option>
+              <option value="gam">Google Ad Manager (video — soon)</option>
+            </select>
+          </label>
+          {(settings.ads?.provider ?? "placeholder") === "adsense" && (
+            <>
+              <label className="admin-field-label">
+                AdSense client ID
+                <input
+                  type="text"
+                  className="field"
+                  value={settings.ads?.adsenseClient ?? ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      ads: {
+                        ...settings.ads,
+                        adsenseClient: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="ca-pub-xxxxxxxxxxxxxxxx"
+                />
+              </label>
+              <label className="admin-field-label">
+                AdSense ad slot
+                <input
+                  type="text"
+                  className="field"
+                  value={settings.ads?.adsenseSlot ?? ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      ads: {
+                        ...settings.ads,
+                        adsenseSlot: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="1234567890"
+                />
+              </label>
+            </>
+          )}
+          <label className="admin-field-label">
+            Frequency
+            <select
+              className="field"
+              value={settings.ads?.frequencyMode ?? "per_session"}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  ads: {
+                    ...settings.ads,
+                    frequencyMode: e.target.value as
+                      | "per_session"
+                      | "every_minutes"
+                      | "every_n_sets"
+                      | "per_set",
+                  },
+                })
+              }
+            >
+              <option value="per_session">Once per browser session</option>
+              <option value="every_minutes">Every N minutes</option>
+              <option value="every_n_sets">
+                After every N completed sets (first N starts are ad-free)
+              </option>
+              <option value="per_set">Every BLS set</option>
+            </select>
+          </label>
+          {(settings.ads?.frequencyMode ?? "per_session") ===
+            "every_n_sets" && (
+            <p className="admin-panel-sub">
+              Counts completed free BLS sets. Example N=3: sets 1–3 free, ad
+              before set 4, then again after 3 more, and so on.
+            </p>
+          )}
+          {(settings.ads?.frequencyMode ?? "per_session") ===
+            "every_minutes" && (
+            <label className="admin-field-label">
+              Every N minutes
+              <input
+                type="number"
+                className="field"
+                min={1}
+                max={120}
+                value={settings.ads?.everyMinutes ?? 5}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    ads: {
+                      ...settings.ads,
+                      everyMinutes: Number(e.target.value) || 5,
+                    },
+                  })
+                }
+              />
+            </label>
+          )}
+          {(settings.ads?.frequencyMode ?? "per_session") ===
+            "every_n_sets" && (
+            <label className="admin-field-label">
+              Every N sets
+              <input
+                type="number"
+                className="field"
+                min={1}
+                max={50}
+                value={settings.ads?.everyNSets ?? 3}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    ads: {
+                      ...settings.ads,
+                      everyNSets: Number(e.target.value) || 3,
+                    },
+                  })
+                }
+              />
+            </label>
+          )}
+          <label className="admin-field-label">
+            Minimum watch seconds before Continue
+            <input
+              type="number"
+              className="field"
+              min={0}
+              max={60}
+              value={settings.ads?.minWatchSeconds ?? 5}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  ads: {
+                    ...settings.ads,
+                    minWatchSeconds: Number(e.target.value) || 0,
                   },
                 })
               }

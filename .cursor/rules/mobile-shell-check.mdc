@@ -1,0 +1,47 @@
+---
+description: When editing any page/UI, verify the mobile shell before finishing
+globs: app/**/page.tsx,app/components/**/*.tsx,app/globals.css,app/app/**/*.tsx,app/admin/**/*.tsx
+alwaysApply: false
+---
+
+# EMDR — mobile shell check
+
+Any task that adds or changes a **page**, **layout**, **shell**, **nav/tabs**, or **page-level CSS** must be verified on a phone-width viewport before the turn ends.
+
+## When this applies
+
+- New or edited `page.tsx` / layout under `/app`, `/admin`, or the public site
+- Shared chrome: sidebar, headers, tab bars, drawers, sticky bars, FABs
+- CSS that affects page structure (`.settings-shell`, grids, flex shells, etc.)
+
+Skip only for pure API/DB/logic with no UI surface.
+
+## Required verification
+
+1. Open the affected route on port **3471** (or tunnel).
+2. Set viewport to **~390×844** (iPhone-class) — browser DevTools or CDP `Emulation.setDeviceMetricsOverride`.
+3. Confirm with a **screenshot** and/or measured layout (`getBoundingClientRect` / computed styles), not desktop-only judgment.
+
+## Pass criteria
+
+- Content uses full width (no empty side column or squashed strip)
+- Nav / tabs: readable; prefer horizontal scroll over chaotic wrap; active tab visible
+- Sticky headers / back links do not overlap content
+- Forms stack; no overflow-x on the page; primary actions reachable
+- Safe-area + bottom padding so FABs (e.g. Help) do not cover controls
+- No flex-wrap on a parent that mixes title, back link, and tab buttons
+
+## Anti-patterns
+
+```css
+/* ❌ BAD — wraps Back + title + tabs together */
+.settings-sidebar { display: flex; flex-wrap: wrap; }
+
+/* ✅ GOOD — header block + separate scrollable nav */
+.settings-sidebar-top { /* back + title */ }
+.settings-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; }
+```
+
+## Done bar
+
+If you changed UI and did not run a mobile check, the task is **not done**. Say what viewport you used and what you saw.

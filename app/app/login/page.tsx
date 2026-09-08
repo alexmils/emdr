@@ -9,22 +9,31 @@ import {
   AuthError,
   AuthLink,
 } from "@/app/components/AuthShell";
+import { APP_BASE, LOGIN_PATH, appPath } from "@/lib/app-base";
+import { resolveAccessRedirect } from "@/lib/access-gate";
 
 function redirectAfterLogin(
   next: string,
-  role?: string
-): string {
-  if (next !== "/") {
-    return next.startsWith("/") ? next : "/";
+  role?: string,
+  entitlement?: {
+    needsOnboarding?: boolean;
+    needsPayment?: boolean;
+    canUseApp?: boolean;
   }
-  if (role === "platform_admin" || role === "support") return "/admin";
-  return "/";
+): string {
+  return resolveAccessRedirect({
+    role,
+    needsOnboarding: entitlement?.needsOnboarding,
+    needsPayment: entitlement?.needsPayment,
+    canUseApp: entitlement?.canUseApp,
+    next,
+  });
 }
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/";
+  const next = params.get("next") ?? APP_BASE;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +59,9 @@ function LoginForm() {
         return;
       }
 
-      router.push(redirectAfterLogin(next, data.user?.role));
+      router.push(
+        redirectAfterLogin(next, data.user?.role, data.entitlement)
+      );
       router.refresh();
     } catch {
       setError("Network error. Try again.");
@@ -91,7 +102,9 @@ function LoginForm() {
         return;
       }
 
-      router.push(redirectAfterLogin(next, verifyData.user?.role));
+      router.push(
+        redirectAfterLogin(next, verifyData.user?.role, verifyData.entitlement)
+      );
       router.refresh();
     } catch (err) {
       const name = err instanceof Error ? err.name : "";
@@ -112,11 +125,16 @@ function LoginForm() {
   return (
     <AuthShell
       title="Sign in"
-      subtitle="Access your EMDR sessions"
+      subtitle="Access your EMDR Support sessions"
       footer={
         <p>
           Forgot your password?{" "}
-          <AuthLink href="/forgot-password">Reset it</AuthLink>
+          <AuthLink href={appPath("/forgot-password")}>Reset it</AuthLink>
+          <br />
+          <span className="mt-2 inline-block">
+            No account?{" "}
+            <AuthLink href={appPath("/create-account")}>Create one</AuthLink>
+          </span>
         </p>
       }
     >

@@ -15,6 +15,11 @@ import {
 } from "@/lib/passkeys";
 import { getUserById, publicUser } from "@/lib/users";
 import { clientIp, recordUserLogin } from "@/lib/audit-log";
+import {
+  getEntitlementForUser,
+  publicEntitlement,
+} from "@/lib/entitlements";
+import { ensureUserAccessStub } from "@/lib/user-access";
 
 export async function POST(request: Request) {
   try {
@@ -77,7 +82,19 @@ export async function POST(request: Request) {
     jar.set(sessionCookieOptions(token));
     await recordUserLogin(user.id, clientIp(request));
 
-    return NextResponse.json({ user: publicUser(user) });
+    if (user.role === "user") {
+      await ensureUserAccessStub(user.id);
+    }
+    const entitlement = await getEntitlementForUser({
+      userId: user.id,
+      role: user.role,
+      onboardingCompletedAt: user.onboardingCompletedAt,
+    });
+
+    return NextResponse.json({
+      user: publicUser(user),
+      entitlement: publicEntitlement(entitlement),
+    });
   } catch (err) {
     console.error("[passkey/login/verify]", err);
     return NextResponse.json(

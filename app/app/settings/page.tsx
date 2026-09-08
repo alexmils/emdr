@@ -76,6 +76,17 @@ function SettingsPageContent() {
     if (isSettingsTab(tabParam)) setTab(tabParam);
   }, [tabParam]);
 
+  useEffect(() => {
+    const active = document.querySelector(
+      ".settings-nav-item-active"
+    ) as HTMLElement | null;
+    active?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [tab]);
+
   const save = async (next: AppSettings) => {
     setSettings(next);
     await fetch("/api/settings", {
@@ -156,18 +167,19 @@ function SettingsPageContent() {
   return (
     <div className="settings-shell">
       <aside className="settings-sidebar">
-        <Link
-          href="/"
-          className="mb-4 block px-2 text-[13px] font-medium text-[var(--accent)] hover:underline"
-        >
-          ← Back
-        </Link>
-        <p className="text-headline mb-4 px-2">Settings</p>
-        <nav>
+        <div className="settings-sidebar-top">
+          <Link href="/app" className="settings-back">
+            ← Back
+          </Link>
+          <p className="settings-page-title">Settings</p>
+        </div>
+        <nav className="settings-nav" aria-label="Settings sections">
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
+              role="tab"
+              aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
               className={`settings-nav-item ${
                 tab === t.id ? "settings-nav-item-active" : ""
@@ -239,13 +251,13 @@ function SettingsPageContent() {
                 onChange={(e) => setProfileName(e.target.value)}
               />
             </label>
-            <div className="settings-row flex items-center justify-between gap-2">
-              <p className="text-[12px] text-[var(--text-muted)]">
+            <div className="settings-row flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="min-w-0 break-all text-[12px] text-[var(--text-muted)]">
                 {user?.email}
               </p>
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto"
                 disabled={profileSaving}
                 onClick={() => void saveProfile()}
               >
@@ -299,7 +311,7 @@ function SettingsPageContent() {
               </div>
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto"
                 onClick={async () => {
                   await fetch("/api/settings", {
                     method: "POST",
@@ -318,16 +330,16 @@ function SettingsPageContent() {
                 New memory
               </button>
             </div>
-            <div className="settings-row flex flex-wrap gap-2">
+            <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <input
                 placeholder="New set name"
-                className="field min-w-[10rem] flex-1"
+                className="field min-w-0 flex-1"
                 value={newSetName}
                 onChange={(e) => setNewSetName(e.target.value)}
               />
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-secondary w-full sm:w-auto"
                 onClick={async () => {
                   await fetch("/api/settings", {
                     method: "POST",
@@ -344,9 +356,9 @@ function SettingsPageContent() {
                 New set
               </button>
             </div>
-            <div className="settings-row flex flex-wrap gap-2">
+            <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <select
-                className="field !w-auto min-w-[8rem]"
+                className="field settings-select"
                 value={addToSetId}
                 onChange={(e) => setAddToSetId(e.target.value)}
               >
@@ -358,7 +370,7 @@ function SettingsPageContent() {
                 ))}
               </select>
               <select
-                className="field !w-auto min-w-[8rem]"
+                className="field settings-select"
                 value={addMemId}
                 onChange={(e) => setAddMemId(e.target.value)}
               >
@@ -371,7 +383,7 @@ function SettingsPageContent() {
               </select>
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto"
                 disabled={!addToSetId || !addMemId}
                 onClick={async () => {
                   await fetch("/api/settings", {

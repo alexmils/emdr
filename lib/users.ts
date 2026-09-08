@@ -13,6 +13,7 @@ export type User = {
   role: UserRole;
   status: UserStatus;
   lastLoginAt: string | null;
+  onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -35,6 +36,9 @@ function rowToUser(row: Record<string, unknown>): User {
     lastLoginAt: row.last_login_at
       ? new Date(row.last_login_at as string).toISOString()
       : null,
+    onboardingCompletedAt: row.onboarding_completed_at
+      ? new Date(row.onboarding_completed_at as string).toISOString()
+      : null,
     createdAt: new Date(row.created_at as string).toISOString(),
     updatedAt: new Date(row.updated_at as string).toISOString(),
   };
@@ -50,7 +54,20 @@ export function publicUser(user: User) {
     role: user.role,
     status: user.status,
     hasPassword: Boolean(user.passwordHash),
+    onboardingCompletedAt: user.onboardingCompletedAt,
   };
+}
+
+export async function markOnboardingCompleted(userId: string): Promise<User | null> {
+  await ensureSchemaReady();
+  await getPool().query(
+    `UPDATE users
+     SET onboarding_completed_at = COALESCE(onboarding_completed_at, NOW()),
+         updated_at = NOW()
+     WHERE id = $1`,
+    [userId]
+  );
+  return getUserById(userId);
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {

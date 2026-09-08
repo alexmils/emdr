@@ -13,6 +13,7 @@ export interface ProtocolState {
 }
 
 export const PHASE_ORDER: ProtocolPhase[] = [
+  "intake",
   "grounding",
   "assessment",
   "desensitization",
@@ -30,18 +31,24 @@ export function nextPhaseAfterDesensitization(
 
 export function systemPromptForPhase(
   phase: ProtocolPhase,
-  memoryContext: string
+  memoryContext: string,
+  profileContext = ""
 ): string {
   const knowledge = knowledgeBlockForPhase(phase);
   const memory = memoryContext
     ? `\n\nEnabled memory sets for this session (user-owned context only):\n${memoryContext}`
     : "";
+  const profile = profileContext
+    ? `\n\nClient profile (persistent across sessions — use for continuity):\n${profileContext}`
+    : "";
 
-  return `${knowledge}\n\n(Knowledge version: ${PROTOCOL_KNOWLEDGE_VERSION})${memory}`;
+  return `${knowledge}\n\n(Knowledge version: ${PROTOCOL_KNOWLEDGE_VERSION})${memory}${profile}`;
 }
 
 export function checkInLine(phase: ProtocolPhase): string {
   switch (phase) {
+    case "intake":
+      return "Take a breath. What else feels important for me to know before we continue?";
     case "desensitization":
       return "Let it go, take a deep breath. What do you notice now?";
     case "installation":
@@ -55,6 +62,8 @@ export function checkInLine(phase: ProtocolPhase): string {
 
 export function openingLine(phase: ProtocolPhase): string {
   switch (phase) {
+    case "intake":
+      return "Welcome. Before we start any processing, I'd like to understand what brings you here. In a few words — what would you like to work on today?";
     case "grounding":
       return "Welcome. Before we work a target, let's ground. Notice your breath. When you're ready, describe your safe place in a few words — real or imagined.";
     case "assessment":
@@ -70,6 +79,14 @@ export function openingLine(phase: ProtocolPhase): string {
   }
 }
 
+/** Short opener for returning users who already completed intake. */
+export function reevaluationOpeningLine(presentingProblem?: string): string {
+  const prior = presentingProblem?.trim()
+    ? ` Last time we noted: ${presentingProblem.trim().slice(0, 120)}.`
+    : "";
+  return `Welcome back.${prior} Before we continue — what has changed since last time, and what would you like to work on today?`;
+}
+
 /**
  * Protocol-faithful reply when the LLM is unavailable — never a generic chatbot line.
  * Never paste the user's words back in parentheses (reads as a broken bot).
@@ -81,6 +98,11 @@ export function guidedFallbackReply(
   const hasContent = (userMessage ?? "").trim().length > 1;
 
   switch (phase) {
+    case "intake":
+      if (hasContent) {
+        return "Thank you. When did this start to feel most present, and how does it show up in daily life now?";
+      }
+      return "In a few words — what would you like to work on today?";
     case "grounding":
       if (hasContent) {
         return "Good — hold that safe place. Notice one calm detail: a color, sound, or feeling. When you feel a bit steadier, say \"ready\" and we'll choose a target.";

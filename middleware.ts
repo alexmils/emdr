@@ -1,28 +1,41 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { APP_BASE, LOGIN_PATH, isAppConsolePath } from "@/lib/app-base";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import {
   ROLE_SYNC_COOKIE,
   ROLE_SYNC_MAX_AGE_SEC,
 } from "@/lib/auth/role-sync";
-import { canManagePlatformSettings, isAdminRole, type UserRole } from "@/lib/roles";
+import {
+  isAuthPublicPath,
+  isUnauthenticatedPublicPath,
+  legacyConsolePath,
+} from "@/lib/public-paths";
+import {
+  canManagePlatformSettings,
+  isAdminRole,
+  type UserRole,
+} from "@/lib/roles";
 
-const PUBLIC_PREFIXES = [
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-  "/create-password",
-  "/api/auth/login",
-  "/api/auth/logout",
-  "/api/auth/me",
-  "/api/auth/forgot-password",
-  "/api/auth/reset-password",
-  "/api/auth/create-password",
-  "/api/webhooks/stripe",
-];
-
-const PUBLIC_EXACT = ["/favicon.ico"];
 const SYNC_SESSION_PATH = "/api/auth/sync-session";
+const NOINDEX_ROBOTS = "noindex, nofollow, noarchive";
+
+/**
+ * Internal origin for middleware → route fetches.
+ * Must NOT use the public tunnel host (dev.nurahelp.com) — Cloudflare Access
+ * would intercept and cause redirect loops.
+ */
+function internalOrigin(request: NextRequest): string {
+  const port =
+    request.nextUrl.port ||
+    process.env.PORT ||
+    (request.nextUrl.protocol === "https:" ? "443" : "3471");
+  // Prefer loopback: tunnel terminates on localhost; Access never sees this hop.
+  if (port === "443" || port === "80") {
+    return `http://127.0.0.1:${process.env.PORT || "3471"}`;
+  }
+  return `http://127.0.0.1:${port}`;
+}
 
 function jwtRole(session: { role?: UserRole }): UserRole {
   if (session.role === "platform_admin") return "platform_admin";
@@ -78,7 +91,7 @@ async function resolveRoleFromDb(
   if (!session) return { role: null, setCookies: [], synced: false };
 
   try {
-    const syncUrl = new URL(SYNC_SESSION_PATH, request.url);
+    const syncUrl = new URL(SYNC_SESSION_PATH, internalOrigin(request));
     const res = await fetch(syncUrl, {
       headers: {
         cookie: request.headers.get("cookie") ?? "",
@@ -107,7 +120,11 @@ async function resolveRoleFromDb(
   }
 }
 
-function withCookies(response: NextResponse, setCookies: string[], synced: boolean) {
+function withCookies(
+  response: NextResponse,
+  setCookies: string[],
+  synced: boolean
+) {
   for (const cookie of setCookies) {
     response.headers.append("set-cookie", cookie);
   }
@@ -115,8 +132,21 @@ function withCookies(response: NextResponse, setCookies: string[], synced: boole
   return response;
 }
 
+function applyCrawlHeaders(pathname: string, res: NextResponse): NextResponse {
+  if (
+    isAppConsolePath(pathname) ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/")
+  ) {
+    res.headers.set("X-Robots-Tag", NOINDEX_ROBOTS);
+  }
+  return res;
+}
+
 function isSupportWriteBlocked(pathname: string, method: string) {
   if (method === "GET" || method === "HEAD") return false;
+  // Support may reply in the help inbox.
+  if (pathname.startsWith("/api/admin/help")) return false;
   return pathname.startsWith("/api/admin");
 }
 
@@ -133,23 +163,47 @@ function isSupportPageBlocked(pathname: string) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (
-    PUBLIC_EXACT.includes(pathname) ||
-    PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
-  ) {
-    if (pathname.startsWith("/login")) {
+  // Frontend + auth screens + public APIs: never require login.
+  if (isUnauthenticatedPublicPath(pathname)) {
+    if (isAuthPublicPath(pathname)) {
       const session = await getSessionFromRequest(request);
       if (session) {
         const { role, setCookies, synced } = await resolveRoleFromDb(request);
-        const dest = isAdminRole(role ?? "user") ? "/admin" : "/";
+        // Do not call /api/auth/access here — under Cloudflare Access that
+        // nested public-URL fetch causes ERR_TOO_MANY_REDIRECTS.
+        // Send consumers to /app; AppAccessGate + APIs enforce onboarding.
+        const dest = isAdminRole(role ?? "user") ? "/admin" : APP_BASE;
+        if (dest === pathname) {
+          return applyCrawlHeaders(
+            pathname,
+            withCookies(NextResponse.next(), setCookies, synced)
+          );
+        }
         const response = NextResponse.redirect(new URL(dest, request.url));
-        return withCookies(response, setCookies, synced);
+        return applyCrawlHeaders(
+          pathname,
+          withCookies(response, setCookies, synced)
+        );
       }
     }
-    return NextResponse.next();
+    return applyCrawlHeaders(pathname, NextResponse.next());
   }
 
-  if (pathname === SYNC_SESSION_PATH) {
+  // Old console bookmarks / email links (before /app prefix).
+  // Unknown frontend paths fall through to not-found (do not soft-redirect to `/`).
+  if (!isAppConsolePath(pathname) && !pathname.startsWith("/admin")) {
+    const mapped = legacyConsolePath(pathname);
+    if (mapped) {
+      const url = request.nextUrl.clone();
+      url.pathname = mapped;
+      return applyCrawlHeaders(pathname, NextResponse.redirect(url, 308));
+    }
+    if (!pathname.startsWith("/api/")) {
+      return applyCrawlHeaders(pathname, NextResponse.next());
+    }
+  }
+
+  if (pathname === SYNC_SESSION_PATH || pathname === "/api/auth/access") {
     return NextResponse.next();
   }
 
@@ -158,9 +212,10 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const login = new URL("/login", request.url);
-    login.searchParams.set("next", pathname);
-    return NextResponse.redirect(login);
+    const login = new URL(LOGIN_PATH, request.url);
+    const nextTarget = `${pathname}${request.nextUrl.search || ""}` || APP_BASE;
+    login.searchParams.set("next", nextTarget);
+    return applyCrawlHeaders(pathname, NextResponse.redirect(login));
   }
 
   const sync = shouldFetchDbRole(request, pathname, session);
@@ -175,16 +230,22 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/api/auth/");
     if (!adminAllowed) {
       if (pathname.startsWith("/api/")) {
-        return withCookies(
-          NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-          setCookies,
-          synced
+        return applyCrawlHeaders(
+          pathname,
+          withCookies(
+            NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+            setCookies,
+            synced
+          )
         );
       }
-      return withCookies(
-        NextResponse.redirect(new URL("/admin", request.url)),
-        setCookies,
-        synced
+      return applyCrawlHeaders(
+        pathname,
+        withCookies(
+          NextResponse.redirect(new URL("/admin", request.url)),
+          setCookies,
+          synced
+        )
       );
     }
   }
@@ -192,16 +253,22 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     if (!isAdminRole(role ?? "user")) {
       if (pathname.startsWith("/api/")) {
-        return withCookies(
-          NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-          setCookies,
-          synced
+        return applyCrawlHeaders(
+          pathname,
+          withCookies(
+            NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+            setCookies,
+            synced
+          )
         );
       }
-      return withCookies(
-        NextResponse.redirect(new URL("/", request.url)),
-        setCookies,
-        synced
+      return applyCrawlHeaders(
+        pathname,
+        withCookies(
+          NextResponse.redirect(new URL(APP_BASE, request.url)),
+          setCookies,
+          synced
+        )
       );
     }
 
@@ -211,16 +278,22 @@ export async function middleware(request: NextRequest) {
         isSupportWriteBlocked(pathname, request.method)
       ) {
         if (pathname.startsWith("/api/")) {
-          return withCookies(
-            NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-            setCookies,
-            synced
+          return applyCrawlHeaders(
+            pathname,
+            withCookies(
+              NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+              setCookies,
+              synced
+            )
           );
         }
-        return withCookies(
-          NextResponse.redirect(new URL("/admin", request.url)),
-          setCookies,
-          synced
+        return applyCrawlHeaders(
+          pathname,
+          withCookies(
+            NextResponse.redirect(new URL("/admin", request.url)),
+            setCookies,
+            synced
+          )
         );
       }
     }
@@ -232,21 +305,34 @@ export async function middleware(request: NextRequest) {
   ) {
     if (!canManagePlatformSettings(role ?? "user")) {
       if (pathname.startsWith("/api/")) {
-        return withCookies(
-          NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-          setCookies,
-          synced
+        return applyCrawlHeaders(
+          pathname,
+          withCookies(
+            NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+            setCookies,
+            synced
+          )
         );
       }
-      return withCookies(
-        NextResponse.redirect(new URL("/admin", request.url)),
-        setCookies,
-        synced
+      return applyCrawlHeaders(
+        pathname,
+        withCookies(
+          NextResponse.redirect(new URL("/admin", request.url)),
+          setCookies,
+          synced
+        )
       );
     }
   }
 
-  return withCookies(NextResponse.next(), setCookies, synced);
+  // Onboarding / payment UX gate lives in AppAccessGate (client) + APIs.
+  // Middleware must not nested-fetch /api/auth/access via the public host —
+  // Cloudflare Access on dev.nurahelp.com turns that into redirect loops.
+
+  return applyCrawlHeaders(
+    pathname,
+    withCookies(NextResponse.next(), setCookies, synced)
+  );
 }
 
 export const config = {

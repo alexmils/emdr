@@ -26,7 +26,7 @@ async function main() {
   const user = await createUser(email, name);
   const raw = await createAuthToken(user.id, "invite");
   const createPasswordUrl = `${await getAppUrl(
-    `/create-password?token=${encodeURIComponent(raw)}`
+    `/app/create-password?token=${encodeURIComponent(raw)}`
   )}`;
 
   await sendTemplateEmail(user.email, "welcome_invite", {

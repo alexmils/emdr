@@ -9,7 +9,7 @@ import {
   AuthLink,
 } from "@/app/components/AuthShell";
 
-function ResetPasswordForm() {
+function CreatePasswordForm() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token") ?? "";
@@ -24,7 +24,7 @@ function ResetPasswordForm() {
     setError("");
 
     if (!token) {
-      setError("Missing reset token. Request a new link.");
+      setError("Missing invitation token.");
       return;
     }
 
@@ -36,7 +36,7 @@ function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await fetch("/api/auth/create-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
@@ -44,11 +44,13 @@ function ResetPasswordForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Reset failed");
+        setError(data.error ?? "Setup failed");
         return;
       }
 
-      router.push("/");
+      router.push(
+        typeof data.redirectTo === "string" ? data.redirectTo : "/app"
+      );
       router.refresh();
     } catch {
       setError("Network error. Try again.");
@@ -61,25 +63,26 @@ function ResetPasswordForm() {
     return (
       <AuthShell
         title="Invalid link"
-        subtitle="This reset link is missing or expired"
+        subtitle="This invitation link is missing or expired"
         footer={
           <p>
-            <AuthLink href="/forgot-password">Request a new link</AuthLink>
+            <AuthLink href="/app/login">Sign in</AuthLink>
           </p>
         }
       >
-        <AuthError message="No reset token found. Please request a new password reset email." />
+        <AuthError message="No invitation token found. Ask your administrator for a new invite." />
       </AuthShell>
     );
   }
 
   return (
     <AuthShell
-      title="New password"
-      subtitle="Choose a strong password"
+      title="Create password"
+      subtitle="Set up your account to get started"
       footer={
         <p>
-          <AuthLink href="/login">Back to sign in</AuthLink>
+          Already have a password?{" "}
+          <AuthLink href="/app/login">Sign in</AuthLink>
         </p>
       }
     >
@@ -87,7 +90,7 @@ function ResetPasswordForm() {
         {error && <AuthError message={error} />}
         <AuthField
           id="password"
-          label="New password"
+          label="Password"
           type="password"
           value={password}
           onChange={setPassword}
@@ -110,17 +113,17 @@ function ResetPasswordForm() {
           disabled={loading}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
-          {loading ? "Saving…" : "Update password"}
+          {loading ? "Creating…" : "Create password"}
         </button>
       </form>
     </AuthShell>
   );
 }
 
-export default function ResetPasswordPage() {
+export default function CreatePasswordPage() {
   return (
     <Suspense>
-      <ResetPasswordForm />
+      <CreatePasswordForm />
     </Suspense>
   );
 }

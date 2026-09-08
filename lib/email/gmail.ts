@@ -8,8 +8,17 @@ import {
 
 async function buildRawMessage(input: SendEmailInput): Promise<string> {
   const from = await getFromAddress();
-  const sender = process.env.GMAIL_SENDER ?? from.email;
-  const boundary = `emdr_${Date.now()}`;
+  // Send-as: Admin → Email "From address", then GMAIL_SENDER / EMAIL_FROM_ADDRESS.
+  const sender =
+    from.email ||
+    process.env.GMAIL_SENDER?.trim() ||
+    process.env.EMAIL_FROM_ADDRESS?.trim();
+  if (!sender) {
+    throw new Error(
+      "Gmail send-as address is not set. Configure Admin → Email → From address."
+    );
+  }
+  const boundary = `nurahelp_${Date.now()}`;
 
   const lines = [
     `From: ${from.name} <${sender}>`,

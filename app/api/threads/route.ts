@@ -12,6 +12,8 @@ import {
 } from "@/lib/db";
 import { withAuth } from "@/lib/api-auth";
 import { isChoosableSessionMode } from "@/lib/session-mode";
+import { consumeGuidedSessionIfNeeded, TrialLimitError } from "@/lib/trial-usage";
+import { getEntitlementForUser, publicEntitlement } from "@/lib/entitlements";
 
 export async function GET(request: Request) {
   return withAuth(async () => {
@@ -32,7 +34,26 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  return withAuth(async () => {
+  return withAuth(async (ctx) => {
+    const entitlement = await getEntitlementForUser({
+      userId: ctx.user.id,
+      role: ctx.user.role,
+      onboardingCompletedAt: ctx.user.onboardingCompletedAt,
+    });
+
+    if (ctx.user.role === "user" && !entitlement.canUseApp) {
+      return NextResponse.json(
+        {
+          error: entitlement.needsOnboarding
+            ? "Complete onboarding first"
+            : "Subscription required",
+          code: entitlement.needsOnboarding ? "needs_onboarding" : "needs_payment",
+          entitlement: publicEntitlement(entitlement),
+        },
+        { status: 402 }
+      );
+    }
+
     const body = await request.json();
     if (body.action === "create") {
       const thread = await createThread(body.title || "New session");
@@ -46,6 +67,41 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+
+      if (patch.mode !== undefined) {
+        const existing = await getThread(body.id);
+        if (!existing) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        try {
+          const nextEntitlement = await consumeGuidedSessionIfNeeded({
+            userId: ctx.user.id,
+            role: ctx.user.role,
+            onboardingCompletedAt: ctx.user.onboardingCompletedAt,
+            threadId: body.id,
+            previousMode: existing.mode,
+            nextMode: patch.mode,
+          });
+          const thread = await updateThread(body.id, patch);
+          return NextResponse.json({
+            thread,
+            entitlement: publicEntitlement(nextEntitlement),
+          });
+        } catch (err) {
+          if (err instanceof TrialLimitError) {
+            return NextResponse.json(
+              {
+                error: err.message,
+                code: err.code,
+                entitlement: publicEntitlement(err.entitlement),
+              },
+              { status: 402 }
+            );
+          }
+          throw err;
+        }
+      }
+
       const thread = await updateThread(body.id, patch);
       return NextResponse.json({ thread });
     }

@@ -2,6 +2,7 @@ import type { ProtocolPhase } from "./types";
 import type { SessionMode } from "./protocol";
 
 export const PHASE_LABELS: Record<ProtocolPhase, string> = {
+  intake: "Getting to know you",
   grounding: "Grounding",
   assessment: "Assessment",
   desensitization: "Desensitization",
@@ -25,6 +26,13 @@ export type QuickReply = { label: string; value: string };
 /** Suggested replies after a BLS set, by protocol phase. */
 export function checkInQuickReplies(phase: ProtocolPhase): QuickReply[] {
   switch (phase) {
+    case "intake":
+      return [
+        { label: "Anxiety", value: "I'd like to work on anxiety." },
+        { label: "Stress", value: "I'd like to work on stress." },
+        { label: "A specific memory", value: "There's a specific memory I want to work on." },
+        { label: "Not sure yet", value: "I'm not sure yet — can you help me figure it out?" },
+      ];
     case "desensitization":
       return [
         { label: "SUDs 0", value: "SUDs is 0" },
@@ -59,6 +67,8 @@ export function checkInQuickReplies(phase: ProtocolPhase): QuickReply[] {
 
 export function checkInPlaceholder(phase: ProtocolPhase): string {
   switch (phase) {
+    case "intake":
+      return "What would you like to work on?";
     case "desensitization":
       return "What do you notice? Or rate SUDs 0–10…";
     case "installation":

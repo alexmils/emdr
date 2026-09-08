@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 const NAV = [
   { href: "/admin", label: "Overview", exact: true },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/help", label: "Help" },
   { href: "/admin/activity", label: "Activity" },
   { href: "/admin/email", label: "Email", adminOnly: true },
   { href: "/admin/ai", label: "AI & Voice", adminOnly: true },
@@ -24,28 +25,48 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
+  const [helpUnread, setHelpUnread] = useState(0);
 
   useEffect(() => {
     void fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
-        // null user → login (not "/") — admin middleware would bounce / → /admin forever
+        // null user → login (not "/app") — admin middleware would bounce /app → /admin forever
         if (!d.user) {
-          router.replace("/login");
+          router.replace("/app/login");
           return;
         }
         if (d.user.role !== "platform_admin" && d.user.role !== "support") {
-          router.replace("/");
+          router.replace("/app");
           return;
         }
         setUser(d.user);
       })
-      .catch(() => router.replace("/login"));
+      .catch(() => router.replace("/app/login"));
   }, [router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const pull = async () => {
+      try {
+        const res = await fetch("/api/admin/help?view=unread");
+        const data = await res.json();
+        if (!cancelled && res.ok) setHelpUnread(Number(data.unread ?? 0));
+      } catch {
+        /* ignore */
+      }
+    };
+    void pull();
+    const id = window.setInterval(() => void pull(), 20000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/app/login");
     router.refresh();
   };
 
@@ -56,7 +77,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-head">
-          <p className="admin-sidebar-kicker">EMDR admin</p>
+          <p className="admin-sidebar-kicker">NuraHelp admin</p>
           <p className="admin-sidebar-title">Control panel</p>
         </div>
         <nav className="admin-sidebar-nav">
@@ -72,6 +93,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               }`}
             >
               {item.label}
+              {item.href === "/admin/help" && helpUnread > 0 && (
+                <span className="admin-nav-badge">{helpUnread}</span>
+              )}
             </Link>
           ))}
         </nav>
@@ -80,7 +104,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             {user?.name ?? user?.email ?? "Admin"}
           </p>
           {user?.role === "support" && (
-            <p className="admin-sidebar-role">Support (read-only)</p>
+            <p className="admin-sidebar-role">Support (help replies allowed)</p>
           )}
           <button
             type="button"

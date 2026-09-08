@@ -3,42 +3,82 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, X } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { ThreadEditMenu } from "./ThreadEditMenu";
 import { Avatar } from "./Avatar";
 import { displayNameFor, useCurrentUser } from "./useCurrentUser";
+import { useSidebarNav } from "./SidebarNavContext";
 
 export function Sidebar() {
   const router = useRouter();
-  const { threads, activeThreadId, selectThread, createThread } = useApp();
+  const {
+    threads,
+    activeThreadId,
+    selectThread,
+    createThread,
+    entitlement,
+    openUpgradeModal,
+  } = useApp();
   const { user } = useCurrentUser();
+  const { closeSidebar } = useSidebarNav();
   const [accountOpen, setAccountOpen] = useState(false);
   const [editThreadId, setEditThreadId] = useState<string | null>(null);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/app/login");
     router.refresh();
   };
 
   const label = displayNameFor(user);
 
+  const onSelectThread = (id: string) => {
+    void selectThread(id);
+    closeSidebar();
+  };
+
+  const onNewChat = () => {
+    void createThread();
+    closeSidebar();
+  };
+
   return (
     <aside className="app-sidebar flex h-full w-[260px] shrink-0 flex-col">
-      <div className="px-4 pb-3 pt-4">
-        <p className="text-sidebar-title">EMDR Guide</p>
+      <div className="app-sidebar-top">
+        <p className="text-sidebar-title">NuraHelp AI</p>
+        <button
+          type="button"
+          className="app-sidebar-close"
+          aria-label="Close sidebar"
+          onClick={closeSidebar}
+        >
+          <X size={18} strokeWidth={2} />
+        </button>
       </div>
 
       <div className="px-3 pb-2">
         <button
           type="button"
-          onClick={() => void createThread()}
+          onClick={onNewChat}
           className="btn-primary flex w-full !min-h-[36px] !text-[13px]"
         >
           <Plus size={15} strokeWidth={2} />
           New chat
         </button>
+        {entitlement?.isTrialLimited && (
+          <button
+            type="button"
+            className="sidebar-trial-chip mt-2 w-full text-left"
+            onClick={() => {
+              openUpgradeModal("generic");
+              closeSidebar();
+            }}
+          >
+            Trial · {Math.max(0, entitlement.guidedRemaining)} guided ·{" "}
+            {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m BLS
+          </button>
+        )}
       </div>
 
       <p className="text-sidebar-section px-4 pb-1 pt-2">Recent</p>
@@ -53,7 +93,7 @@ export function Sidebar() {
           <button
             key={t.id}
             type="button"
-            onClick={() => void selectThread(t.id)}
+            onClick={() => onSelectThread(t.id)}
             onContextMenu={(e) => {
               e.preventDefault();
               setEditThreadId(t.id);
@@ -96,14 +136,26 @@ export function Sidebar() {
         {accountOpen && (
           <div className="dropdown-menu absolute bottom-full left-2 right-2 mb-1 py-1">
             {(user?.role === "platform_admin" || user?.role === "support") && (
-              <Link href="/admin" className="dropdown-item">
+              <Link
+                href="/admin"
+                className="dropdown-item"
+                onClick={closeSidebar}
+              >
                 Admin dashboard
               </Link>
             )}
-            <Link href="/settings?tab=profile" className="dropdown-item">
+            <Link
+              href="/app/settings?tab=profile"
+              className="dropdown-item"
+              onClick={closeSidebar}
+            >
               Settings
             </Link>
-            <Link href="/billing" className="dropdown-item">
+            <Link
+              href="/app/billing"
+              className="dropdown-item"
+              onClick={closeSidebar}
+            >
               Billing
             </Link>
             <button

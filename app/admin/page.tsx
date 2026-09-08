@@ -10,8 +10,10 @@ import type { AuditEvent } from "@/lib/audit-log";
 import { fetchJson } from "@/lib/fetch-json";
 
 type HealthStatus = {
+  gmailConfigured?: boolean;
   brevoConfigured: boolean;
-  gmailFallbackConfigured: boolean;
+  gmailFallbackConfigured?: boolean;
+  primaryProvider?: "gmail" | "brevo" | "none";
   appUrl: string;
   fromAddress: string | null;
   fromName: string | null;
@@ -113,24 +115,26 @@ export default function AdminOverviewPage() {
                   health.brevoConfigured ? "admin-health-ok" : "admin-health-warn"
                 }`}
               >
-                Brevo {health.brevoConfigured ? "configured" : "not configured"}
+                Brevo {health.brevoConfigured ? "primary" : "not configured"}
               </span>
               <span
                 className={`admin-health-chip ${
-                  health.gmailFallbackConfigured
+                  health.gmailConfigured || health.gmailFallbackConfigured
                     ? "admin-health-ok"
                     : "admin-health-warn"
                 }`}
               >
-                Gmail fallback{" "}
-                {health.gmailFallbackConfigured ? "ready" : "not configured"}
+                Gmail{" "}
+                {health.gmailConfigured || health.gmailFallbackConfigured
+                  ? "fallback"
+                  : "not configured"}
               </span>
               <span className="admin-health-chip admin-health-neutral">
                 App URL {health.appUrl}
               </span>
               {health.fromAddress && (
                 <span className="admin-health-chip admin-health-neutral">
-                  From {health.fromName} &lt;{health.fromAddress}&gt;
+                  Send as {health.fromName} &lt;{health.fromAddress}&gt;
                 </span>
               )}
             </div>

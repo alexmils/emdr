@@ -12,6 +12,12 @@ import {
 import { getUserById, publicUser, setUserPassword } from "@/lib/users";
 import { getAppUrl, sendTemplateEmail } from "@/lib/email";
 import { clientIp, recordUserLogin, writeAuditEvent } from "@/lib/audit-log";
+import { grantInvitedUserLegacyAccess } from "@/lib/user-access";
+import {
+  getEntitlementForUser,
+  publicEntitlement,
+} from "@/lib/entitlements";
+import { resolveAccessRedirect } from "@/lib/access-gate";
 
 export async function POST(request: Request) {
   try {
@@ -55,18 +61,22 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(password);
     await setUserPassword(user.id, passwordHash);
 
+    if (user.role === "user") {
+      await grantInvitedUserLegacyAccess(user.id);
+    }
+
     await writeAuditEvent({
       actorUserId: user.id,
       targetUserId: user.id,
       action: "user.password_set",
-      detail: { email: user.email },
+      detail: { email: user.email, source: "invite" },
       ip: clientIp(request),
     });
 
     try {
       await sendTemplateEmail(user.email, "welcome", {
         name: user.name ?? user.email.split("@")[0],
-        loginUrl: await getAppUrl("/login"),
+        loginUrl: await getAppUrl("/app/login"),
       });
     } catch (err) {
       console.warn("[auth/create-password] welcome email failed:", err);
@@ -83,7 +93,24 @@ export async function POST(request: Request) {
 
     await recordUserLogin(user.id, clientIp(request));
 
-    return NextResponse.json({ user: publicUser({ ...user, passwordHash }) });
+    const refreshed = await getUserById(user.id);
+    const entitlement = await getEntitlementForUser({
+      userId: user.id,
+      role: user.role,
+      onboardingCompletedAt: refreshed?.onboardingCompletedAt ?? null,
+    });
+    const redirectTo = resolveAccessRedirect({
+      role: user.role,
+      needsOnboarding: entitlement.needsOnboarding,
+      needsPayment: entitlement.needsPayment,
+      canUseApp: entitlement.canUseApp,
+    });
+
+    return NextResponse.json({
+      user: publicUser(refreshed ?? { ...user, passwordHash }),
+      entitlement: publicEntitlement(entitlement),
+      redirectTo,
+    });
   } catch (err) {
     console.error("[auth/create-password]", err);
     return NextResponse.json({ error: "Setup failed" }, { status: 500 });

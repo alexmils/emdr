@@ -40,7 +40,7 @@ export async function inviteUserByEmail(
   const user = await createUser(trimmed, name, "user");
   const raw = await createAuthToken(user.id, "invite");
   const createPasswordUrl = `${await getAppUrl(
-    `/create-password?token=${encodeURIComponent(raw)}`
+    `/app/create-password?token=${encodeURIComponent(raw)}`
   )}`;
 
   try {

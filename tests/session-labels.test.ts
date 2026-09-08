@@ -8,6 +8,7 @@ import {
 
 describe("session labels", () => {
   it("labels protocol phases", () => {
+    assert.equal(phaseLabel("intake"), "Getting to know you");
     assert.equal(phaseLabel("desensitization"), "Desensitization");
     assert.equal(phaseLabel("body_scan"), "Body scan");
   });
@@ -18,7 +19,13 @@ describe("session labels", () => {
     assert.ok(replies.some((r) => r.value.includes("SUDs is 10")));
   });
 
+  it("offers intake topic quick replies", () => {
+    const replies = checkInQuickReplies("intake");
+    assert.ok(replies.some((r) => /anxiety/i.test(r.value)));
+  });
+
   it("uses phase-specific check-in placeholders", () => {
+    assert.match(checkInPlaceholder("intake"), /work on/i);
     assert.match(checkInPlaceholder("installation"), /VoC/i);
     assert.match(checkInPlaceholder("desensitization"), /SUDs/i);
   });

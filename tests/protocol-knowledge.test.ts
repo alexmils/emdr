@@ -21,7 +21,16 @@ describe("protocol knowledge", () => {
       "desensitization",
       "grounding",
       "installation",
+      "intake",
     ]);
+  });
+
+  it("intake block includes history taking and safety language", () => {
+    const block = knowledgeBlockForPhase("intake");
+    assert.match(block, /HISTORY TAKING|Client History|Phase 1/i);
+    assert.match(block, /suicid|crisis|safe/i);
+    assert.match(block, /licensed clinician/i);
+    assert.doesNotMatch(block, /SUDs 0–10/);
   });
 
   it("builds a non-empty knowledge block with safety language", () => {

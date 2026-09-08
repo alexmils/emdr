@@ -27,6 +27,8 @@ import {
   showsComposer,
   usesAgent,
 } from "@/lib/session-mode";
+import { shouldBeginBlsAfterAd } from "@/lib/ads";
+import { WorkspaceMenuButton } from "./SidebarNavContext";
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -51,6 +53,12 @@ export function SessionWorkspace() {
     sendUserMessage,
     requestCheckIn,
     settings,
+    entitlement,
+    leaseBlsSeconds,
+    openUpgradeModal,
+    createThread,
+    maybeShowAd,
+    noteAdSetCompleted,
   } = useApp();
   const { user: currentUser } = useCurrentUser();
 
@@ -70,6 +78,9 @@ export function SessionWorkspace() {
   const gamepadConnected = useGamepadConnected();
   const focusedFieldRef = useRef(focusedField);
   const gamepadConnectedRef = useRef(gamepadConnected);
+  const freeLeaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const freeLeaseBusyRef = useRef(false);
+  const adGateBusyRef = useRef(false);
 
   runningRef.current = running;
   focusedFieldRef.current = focusedField;
@@ -100,14 +111,60 @@ export function SessionWorkspace() {
       sessionMode,
     });
 
+  const clearFreeLeaseTimer = useCallback(() => {
+    if (freeLeaseTimerRef.current) {
+      clearTimeout(freeLeaseTimerRef.current);
+      freeLeaseTimerRef.current = null;
+    }
+  }, []);
+
+  const stopFreeBls = useCallback(() => {
+    clearFreeLeaseTimer();
+    runningRef.current = false;
+    setRunning(false);
+    setSessionMode("idle");
+  }, [clearFreeLeaseTimer, setSessionMode]);
+
+  const continueFreeLease = useCallback(async () => {
+    if (!runningRef.current || freeLeaseBusyRef.current) return;
+    freeLeaseBusyRef.current = true;
+    try {
+      const granted = await leaseBlsSeconds(30);
+      if (!runningRef.current) return;
+      if (granted <= 0) {
+        stopFreeBls();
+        openUpgradeModal("bls_limit_reached");
+        return;
+      }
+      clearFreeLeaseTimer();
+      freeLeaseTimerRef.current = setTimeout(() => {
+        void continueFreeLease();
+      }, granted * 1000);
+    } finally {
+      freeLeaseBusyRef.current = false;
+    }
+  }, [leaseBlsSeconds, stopFreeBls, openUpgradeModal, clearFreeLeaseTimer]);
+
+  const beginBlsRun = useCallback(() => {
+    if (!thread) return;
+    setRunning(true);
+    runningRef.current = true;
+    setSessionMode("running");
+    if (thread.mode === "free" && entitlement?.isTrialLimited) {
+      void continueFreeLease();
+    }
+  }, [thread, setSessionMode, entitlement, continueFreeLease]);
+
   const toggleRunning = useCallback(() => {
     if (!blsActive || !thread) return;
     // Always allow stopping a running set (safety).
     if (runningRef.current) {
+      clearFreeLeaseTimer();
       setRunning(false);
       setSessionMode("idle");
       return;
     }
+    if (adGateBusyRef.current) return;
     if (
       !canStartBls({
         sessionKind: thread.mode,
@@ -117,9 +174,48 @@ export function SessionWorkspace() {
     ) {
       return;
     }
-    setRunning(true);
-    setSessionMode("running");
-  }, [blsActive, thread, sessionMode, setSessionMode]);
+
+    if (
+      thread.mode === "free" &&
+      entitlement?.isTrialLimited &&
+      entitlement.blsSecondsRemaining <= 0
+    ) {
+      openUpgradeModal("bls_limit_reached");
+      return;
+    }
+
+    if (thread.mode === "free" && entitlement?.isTrialLimited) {
+      adGateBusyRef.current = true;
+      void (async () => {
+        try {
+          const result = await maybeShowAd();
+          if (!blsActive) return;
+          if (shouldBeginBlsAfterAd(result)) {
+            beginBlsRun();
+          }
+        } finally {
+          adGateBusyRef.current = false;
+        }
+      })();
+      return;
+    }
+
+    beginBlsRun();
+  }, [
+    blsActive,
+    thread,
+    sessionMode,
+    setSessionMode,
+    entitlement,
+    openUpgradeModal,
+    clearFreeLeaseTimer,
+    maybeShowAd,
+    beginBlsRun,
+  ]);
+
+  useEffect(() => {
+    return () => clearFreeLeaseTimer();
+  }, [clearFreeLeaseTimer]);
 
   const repeatSet = useCallback(() => {
     if (!thread || !repeatAllowed) return;
@@ -129,15 +225,23 @@ export function SessionWorkspace() {
   }, [thread, repeatAllowed, setSessionMode]);
 
   const handleSetComplete = useCallback(() => {
+    clearFreeLeaseTimer();
     runningRef.current = false;
     setRunning(false);
     if (!guided) {
+      noteAdSetCompleted();
       setSessionMode("idle");
       return;
     }
     setSessionMode("check_in");
     void requestCheckIn();
-  }, [guided, setSessionMode, requestCheckIn]);
+  }, [
+    guided,
+    setSessionMode,
+    requestCheckIn,
+    clearFreeLeaseTimer,
+    noteAdSetCompleted,
+  ]);
 
   const playLine = useCallback(async (text: string) => {
     try {
@@ -312,11 +416,26 @@ export function SessionWorkspace() {
 
   if (!thread) {
     return (
-      <main className="workspace-main flex flex-1 flex-col items-center justify-center gap-2 px-6">
-        <p className="text-large-title">EMDR Guide</p>
-        <p className="text-footnote max-w-sm text-center">
-          Select or create a chat to begin your session
-        </p>
+      <main className="workspace-main flex min-h-0 flex-1 flex-col">
+        <header className="workspace-header">
+          <div className="workspace-header-row">
+            <div className="workspace-header-lead">
+              <WorkspaceMenuButton />
+              <div className="min-w-0">
+                <h1 className="workspace-title">NuraHelp AI</h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => void createThread()}
+          >
+            New chat
+          </button>
+        </div>
       </main>
     );
   }
@@ -326,9 +445,12 @@ export function SessionWorkspace() {
       <main className="workspace-main flex min-h-0 flex-1 flex-col">
         <header className="workspace-header">
           <div className="workspace-header-row">
-            <div className="min-w-0">
-              <h1 className="workspace-title">{thread.title}</h1>
-              <p className="workspace-hint">Choose a session type to begin</p>
+            <div className="workspace-header-lead">
+              <WorkspaceMenuButton />
+              <div className="min-w-0">
+                <h1 className="workspace-title">{thread.title}</h1>
+                <p className="workspace-hint">Choose a session type to begin</p>
+              </div>
             </div>
           </div>
         </header>
@@ -344,12 +466,15 @@ export function SessionWorkspace() {
     >
       <header className="workspace-header">
         <div className="workspace-header-row">
-          <div className="min-w-0">
-            <h1 className="workspace-title">{thread.title}</h1>
-            <SessionDescription
-              threadId={thread.id}
-              description={thread.description}
-            />
+          <div className="workspace-header-lead">
+            <WorkspaceMenuButton />
+            <div className="min-w-0">
+              <h1 className="workspace-title">{thread.title}</h1>
+              <SessionDescription
+                threadId={thread.id}
+                description={thread.description}
+              />
+            </div>
           </div>
           {guided && (
             <SessionStatusBar
@@ -398,7 +523,9 @@ export function SessionWorkspace() {
                 ? "default"
                 : sessionMode === "check_in"
                   ? "check_in"
-                  : "guided_wait"
+                  : thread.phase === "intake"
+                    ? "intake"
+                    : "guided_wait"
               : "default"
           }
         />

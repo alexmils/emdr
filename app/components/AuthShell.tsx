@@ -8,31 +8,36 @@ type AuthShellProps = {
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Hide “Back to home” — useful for in-app flows like onboarding. */
+  hideHomeLink?: boolean;
 };
 
-export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+  footer,
+  hideHomeLink = false,
+}: AuthShellProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--bg-page)] px-4 py-12">
-      <div className="w-full max-w-[400px]">
-        <div className="mb-8 text-center">
-          <p className="text-caption mb-2 font-medium uppercase tracking-wide">
-            EMDR Guide
+    <div className="auth-shell">
+      <div className="auth-shell-inner">
+        <header className="auth-shell-header">
+          <p className="auth-shell-brand">
+            <Link href="/">NuraHelp AI</Link>
           </p>
-          <h1 className="text-large-title">{title}</h1>
-          {subtitle && (
-            <p className="text-subhead mt-2 text-[var(--text-secondary)]">
-              {subtitle}
+          <h1 className="auth-shell-title">{title}</h1>
+          {subtitle ? <p className="auth-shell-subtitle">{subtitle}</p> : null}
+          {!hideHomeLink ? (
+            <p className="auth-shell-home">
+              <Link href="/">← Back to home</Link>
             </p>
-          )}
-        </div>
+          ) : null}
+        </header>
 
-        <div className="apple-card p-6">{children}</div>
+        <div className="auth-shell-card">{children}</div>
 
-        {footer && (
-          <div className="mt-6 text-center text-footnote text-[var(--text-secondary)]">
-            {footer}
-          </div>
-        )}
+        {footer ? <div className="auth-shell-footer">{footer}</div> : null}
       </div>
     </div>
   );

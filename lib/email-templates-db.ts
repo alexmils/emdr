@@ -36,8 +36,8 @@ function sampleData(id: EmailTemplateId) {
   const base = {
     name: "Alex",
     resetUrl: "https://example.com/reset",
-    createPasswordUrl: "https://example.com/create-password",
-    loginUrl: "https://example.com/login",
+    createPasswordUrl: "https://example.com/app/create-password",
+    loginUrl: "https://example.com/app/login",
     expiresIn: "72 hours",
   };
   switch (id) {

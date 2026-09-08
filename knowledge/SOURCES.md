@@ -15,6 +15,7 @@ PDFs are **not** committed. Do not paste large copyrighted excerpts into the cod
 
 | App phase | Protocol focus |
 |-----------|----------------|
+| `intake` | History taking / client history (Phase 1) + safety screen; returning users: short re-evaluation |
 | `grounding` | Preparation / grounding tools |
 | `assessment` | Access & activate (image, NC, PC, VoC, SUDs, body) |
 | `desensitization` | Desensitization / reprocessing sets |

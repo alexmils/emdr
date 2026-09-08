@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the EMDR Guide project are documented here.
+All notable changes to the NuraHelp AI project are documented here.
 New entries are appended at the bottom of each section (newest last under `[Unreleased]`).
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -26,8 +26,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Script `scripts/seed-admin.ts` — create/update platform admin and migrate orphan data
 - Script `scripts/seed-user.ts` — create/update regular `user` with password
 - **Session mode picker**: new chat starts as `pending` with Guided vs Free choice (`SessionStartScreen`); `threads.mode` column; guided keeps AI composer/check-in, free is BLS-only (no chat overlay)
+- **Frontend site vs `/app`**: public landing at `/` (`FrontendShell`), Privacy/Terms stubs; product console under `/app` (session, settings, billing, auth); `lib/app-base.ts` + `lib/public-paths.ts`; `app/robots.ts` disallows `/app` and `/admin`
+- Cloudflare Tunnel **`nurahelp-dev`**: `https://dev.nurahelp.com` → localhost **3471**; Access email one-time PIN with Allow Everyone (credentials in `%USERPROFILE%\.cloudflared\`, not git)
+- **Consumer onboarding + billing**: `/app/onboarding` (welcome → plan → Stripe Checkout 7-day trial → tutorial); monthly/yearly prices; trial limits **3 guided sessions** + **10 min Free/BLS**; upgrade modal; Customer Portal; entitlement gate; grandfather existing password users as `legacy`
+- **Create account**: `/app/create-account` + `POST /api/auth/register`; link from login footer and landing header; new users land on onboarding
+- **Stripe project `nurahelp`**: dedicated test sandbox (`acct_1UCsfAAiWsQlzMVG`, Dashboard name **Nura sandbox**); product NuraHelp AI with monthly €14.99 / yearly €99 prices; Customer Portal; webhook → `https://dev.nurahelp.com/api/webhooks/stripe`; keys + price IDs wired in local `.env` (CLI profile `-p nurahelp`); claimed and verified Checkout branding
+- **Help chat**: right-side drawer (“Need help?”) under `/app`; AI first reply with keyword RAG (`help_knowledge`) + allow/deny topics; admin inbox + email notify at `/admin/help`; settings stored in platform `help` block
+- **Guided intake phase (EMDR Phase 1)**: new `intake` protocol phase before grounding; conversational history-taking + safety screen; persistent `client_profiles` table (RLS); returning users get short re-evaluation opener; interpreter extracts intake fields; BLS disabled until after intake
+- **Free-session ads**: interstitial before BLS start for trial users only (`lib/ads.ts` + `AdInterstitial`); admin frequency controls (per session / every N minutes / every N sets); AdSense + placeholder + GAM seam; paying users never receive ad config from `/api/billing/status`
+- Free-session ads fixes: Upgrade no longer starts BLS; frequency counted only on Continue; AdSense script loads only when ads are active for the trial user; ad freq keyed by user id in localStorage
+- Root **`reset.bat`**: kills anything on port **3471**, then runs `start.bat` (same pattern as Hubcast `restart_hubcast.bat`)
 
 ### Changed
+- Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
+- Product rebrand: **NuraHelp** / **NuraHelp AI** (feature: **EMDR Support**); defaults, meta, emails, WebAuthn `rpName`, UI chrome, README/`package.json`; clinical protocol copy kept as EMDR
 - UI redesign: **ChatGPT / DeepSeek** product style — dark sidebar, flat BLS bar, bottom chat composer; retired Apple HIG (`apple-design-ui` rule disabled, new `product-ui` rule)
 - Database migrated from SQLite (`better-sqlite3`) to PostgreSQL
 - BLS toolbar: slimmer dock layout; **chevron** at end hides entire bar; collapsed pill **bottom-right** (same side as hide); toolbar overlays canvas so main area fills full height
@@ -65,9 +77,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Stripe scaffold — `/api/billing/checkout`, `/api/webhooks/stripe`, `stripe` package
 - **Admin AI & Voice** (`/admin/ai`) — platform-wide LLM providers, default model, and TTS Voice API key / voice ID for all users
 - User Settings: removed AI and ElevenLabs tabs; users only keep auto-voice preference; chat/`/api/voice` use platform `getLlmRuntimeConfig()` (env keys remain fallback)
-- Removed Settings footer disclaimer (“self-help guide…”) from `/settings`
+- Removed Settings footer disclaimer (“self-help guide…”) from `/app/settings`
 - Admin **AI & Voice** UI: provider cards + Configure modal; model/voice dropdowns from provider list APIs; live **Connection OK / Failed** check on API key (`POST /api/admin/ai/models`, `/api/admin/ai/test-connection`)
 - Default provider dropdown disables providers without an API key (or with a failed connection)
+- Auth + session URLs moved under `/app` (`/app/login`, `/app/settings`, `/app/billing`); legacy paths 308-redirect; admin still `/admin` (blocked from `/app`); invite/reset emails and Stripe return URLs updated; `fetchJson` 401 only redirects from console paths
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -87,7 +100,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Guided grounding prompt: acknowledge short safe-place answers; strip stale fallback lines from LLM history
 - Guided chat: full thread UI (AI left / user right) with avatars; profile photo in Settings + sidebar name (no long email)
 - Guided overlay: session open shows centered fade-up prompt text; chat bubbles only after the first user reply
-- Thread edit: create memory set inline (**Add set**) + **Open Settings** → `/settings?tab=memory`
+- Thread edit: create memory set inline (**Add set**) + **Open Settings** → `/app/settings?tab=memory`
 - User delete audit log: write event before delete (FK on `target_user_id`)
 - Demoted/promoted admin redirect loop: JWT role synced from DB on each request
 - Legacy `/api/auth/invite` rolls back user on email failure; removed `ADMIN_INVITE_SECRET` bypass
@@ -109,6 +122,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Ball dot hidden until BLS starts (no overlap with idle hint text)
 - BallCanvas animation loop (refs instead of stale React state for direction)
 - SQLite `app_settings` schema migration issue (replaced by Postgres)
+- Onboarding welcome on mobile: less vertical chrome (top-align, tighter type, shorter copy, no duplicate home/billing links) so the first screen fits without odd empty scroll
+- Settings on mobile: sticky header + horizontal scrollable tabs (no wrap chaos); stacked memory/profile controls; safe-area padding for help FAB
+- Cursor rule `.cursor/rules/mobile-shell-check.mdc` — page/UI work must verify ~390×844 shell; hooked into `verify-before-done`
+- Onboarding bypass: schema no longer re-grandfathers every password user as `legacy` on boot; self-registered unpaid users reset to `access_tier=none` + null `onboarding_completed_at`; `/api/auth/access` + middleware/AppAccessGate enforce DB-backed gate
+- Stripe webhook: release claimed `stripe_webhook_events` on handler failure / unresolved user so Stripe retries can sync; checkout blocks `past_due`/`unpaid`/`incomplete`; onboarding tutorial only after `canUseApp`; invite create-password grants legacy access
+- Cloudflare Access redirect loop: middleware no longer nested-fetches `/api/auth/access` via `dev.nurahelp.com`; sync-session uses loopback; AppAccessGate + APIs still enforce onboarding
+- Main `/app` mobile shell: ChatGPT-style off-canvas sidebar (menu opens drawer; backdrop / X / Escape close; closes on New chat or thread select); main canvas uses full width when closed
+- Empty workspace: removed instructional “tap the menu…” copy; show a **New chat** button instead
+- Billing page: Plan/Status rows use spaced label–value layout (no “Statustrialing”); action buttons stacked with clear gaps
 
 ---
 

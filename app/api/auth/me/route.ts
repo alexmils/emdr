@@ -9,6 +9,10 @@ import {
   refreshSessionCookie,
   resolveSessionUser,
 } from "@/lib/auth/refresh-session";
+import {
+  getEntitlementForUser,
+  publicEntitlement,
+} from "@/lib/entitlements";
 
 export async function GET() {
   const session = await getSession();
@@ -26,7 +30,16 @@ export async function GET() {
     return NextResponse.json({ user: null });
   }
 
-  let response: NextResponse = NextResponse.json({ user: publicUser(user) });
+  const entitlement = await getEntitlementForUser({
+    userId: user.id,
+    role: user.role,
+    onboardingCompletedAt: user.onboardingCompletedAt,
+  });
+
+  let response: NextResponse = NextResponse.json({
+    user: publicUser(user),
+    entitlement: publicEntitlement(entitlement),
+  });
   response = await refreshSessionCookie(response, session, resolved);
   return response;
 }
