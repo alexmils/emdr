@@ -3908,8 +3908,7 @@ select.field option:disabled {
 
 /* —— Onboarding / upgrade —— */
 .onboarding-bullets,
-.onboarding-steps,
-.upgrade-benefits {
+.onboarding-steps {
   margin: 0 0 0.75rem;
   padding-left: 1.1rem;
   color: var(--text-secondary);
@@ -3918,14 +3917,12 @@ select.field option:disabled {
 }
 
 .onboarding-bullets li,
-.onboarding-steps li,
-.upgrade-benefits li {
+.onboarding-steps li {
   margin-bottom: 0.35rem;
 }
 
 .onboarding-bullets li:last-child,
-.onboarding-steps li:last-child,
-.upgrade-benefits li:last-child {
+.onboarding-steps li:last-child {
   margin-bottom: 0;
 }
 
@@ -3939,18 +3936,18 @@ select.field option:disabled {
 .upgrade-plan-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.625rem;
 }
 
 .upgrade-plan-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  padding: 12px 14px;
+  padding: 0.85rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-elevated, #fff);
   text-align: left;
   cursor: pointer;
@@ -3967,37 +3964,151 @@ select.field option:disabled {
 }
 
 .upgrade-plan-card--highlight .upgrade-plan-badge {
-  margin-left: 8px;
-  padding: 2px 6px;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.4rem;
   border-radius: 4px;
   background: var(--accent-subtle);
   color: var(--accent);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 
 .upgrade-plan-label {
-  font-size: 14px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary, #0d0d0d);
+  color: var(--text);
+  min-width: 0;
 }
 
 .upgrade-plan-price {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 650;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .upgrade-plan-period {
-  margin-left: 2px;
-  font-size: 12px;
+  margin-left: 0.15rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+.upgrade-benefits {
+  margin: 1.15rem 0 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-muted) 70%, var(--bg-elevated));
+}
+
+.upgrade-benefits-label {
+  margin: 0 0 0.7rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.upgrade-benefits-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.upgrade-benefits-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.upgrade-benefits-icon {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.12rem;
+  color: var(--accent);
 }
 
 .upgrade-modal {
   max-width: 420px;
   width: calc(100% - 2rem);
+}
+
+.upgrade-modal .admin-page-title {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.upgrade-modal .admin-panel-sub {
+  margin-top: 0.55rem;
+  line-height: 1.45;
+}
+
+.upgrade-modal-actions {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 480px) {
+  .admin-modal-backdrop {
+    align-items: flex-end;
+    padding: 0.75rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .upgrade-modal {
+    width: 100%;
+    max-width: none;
+    max-height: min(88dvh, 720px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.15rem 1rem 1.1rem;
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md)
+      var(--radius-md);
+  }
+
+  .upgrade-plan-list {
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+  }
+
+  .upgrade-plan-card {
+    padding: 0.95rem 1rem;
+  }
+
+  .upgrade-benefits {
+    margin-top: 1.25rem;
+    padding: 1rem 1rem 1.05rem;
+  }
+
+  .upgrade-benefits-list {
+    gap: 0.85rem;
+  }
+
+  .upgrade-modal-actions {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.6rem;
+    margin-top: 1.35rem;
+  }
+
+  .upgrade-modal-actions .btn-primary,
+  .upgrade-modal-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .ad-interstitial-backdrop {

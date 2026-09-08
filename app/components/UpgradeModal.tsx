@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Check } from "lucide-react";
 import {
   BILLING_PLANS,
   orderedBillingPlans,
@@ -166,15 +167,39 @@ export function UpgradeModal({
           })}
         </div>
 
-        <ul className="upgrade-benefits mt-4">
-          <li>Unlimited guided wellness sessions</li>
-          <li>Unlimited bilateral stimulation</li>
-          <li>Cancel anytime from Billing</li>
-        </ul>
+        <div className="upgrade-benefits">
+          <p className="upgrade-benefits-label">Included with upgrade</p>
+          <ul className="upgrade-benefits-list">
+            <li>
+              <Check
+                className="upgrade-benefits-icon"
+                aria-hidden
+                strokeWidth={2.25}
+              />
+              <span>Unlimited guided wellness sessions</span>
+            </li>
+            <li>
+              <Check
+                className="upgrade-benefits-icon"
+                aria-hidden
+                strokeWidth={2.25}
+              />
+              <span>Unlimited bilateral stimulation</span>
+            </li>
+            <li>
+              <Check
+                className="upgrade-benefits-icon"
+                aria-hidden
+                strokeWidth={2.25}
+              />
+              <span>Cancel anytime from Billing</span>
+            </li>
+          </ul>
+        </div>
 
         {error && <p className="admin-invite-msg mt-3">{error}</p>}
 
-        <div className="admin-modal-actions mt-5">
+        <div className="admin-modal-actions upgrade-modal-actions">
           <button
             type="button"
             className="btn-secondary"
