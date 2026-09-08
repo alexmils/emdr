@@ -146,6 +146,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - BLS Adjustments + mobile Control Center restyled to Nura paper/earth (Fraunces title, earth play control, gold focus rings); leftover ChatGPT green (`#10a37f`) dropped from gear, admin chips, upgrade badge, and help bubbles
 - Settings mobile chrome: Back stacks above **Settings** (not side-by-side); more header/tab padding; hide duplicate panel title under tabs
 - Toast notifications for Settings actions (photo upload/remove, save profile, voice/memory saves)
+- Upgrade modal: benefits block with checkmarks + clearer spacing; stacked full-width actions on small phones
 
 ---
 
