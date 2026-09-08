@@ -729,11 +729,10 @@ button {
 }
 
 .bls-bar {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-  padding: 0.5rem 0.75rem;
+  align-items: stretch;
+  padding: 0.65rem 0.75rem 0.5rem;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -741,6 +740,112 @@ button {
     0 8px 28px rgba(0, 0, 0, 0.12),
     0 0 0 1px rgba(0, 0, 0, 0.04);
   pointer-events: auto;
+}
+
+.bls-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.55rem 0.75rem;
+  width: 100%;
+  padding-right: 1.75rem;
+}
+
+.bls-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.bls-group-focused .bls-group-label {
+  color: var(--accent);
+}
+
+.bls-group-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.bls-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-muted);
+}
+
+.bls-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0 0.55rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.bls-seg-btn:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.bls-seg-btn-active {
+  background: var(--bg-elevated);
+  color: var(--text);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.bls-seg-btn-focused {
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+.bls-seg-btn-active.bls-seg-btn-focused {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 0 0 2px var(--accent-subtle);
+}
+
+.bls-collapse-btn {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.bls-collapse-btn:hover {
+  background: var(--bg-muted);
+  color: var(--text);
 }
 
 .workspace-canvas {
@@ -1148,131 +1253,7 @@ button {
   box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
-/* —— BLS bar —— */
-
-.bls-speed-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.bls-speed-preset {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-muted);
-  overflow: hidden;
-  min-width: 2.75rem;
-}
-
-.bls-speed-preset-active {
-  border-color: var(--accent);
-  background: var(--accent-subtle);
-}
-
-.bls-speed-preset-focused {
-  box-shadow: 0 0 0 2px var(--accent-subtle);
-}
-
-.bls-speed-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 1.25rem;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  padding: 0.1rem 0.35rem;
-  transition: background 0.12s ease, color 0.12s ease;
-}
-
-.bls-speed-arrow:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text);
-}
-
-.bls-speed-value {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 1.5rem;
-  border: none;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--text);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-}
-
-.bls-speed-preset-active .bls-speed-value {
-  color: var(--accent);
-}
-
-.bls-bar-sep {
-  width: 1px;
-  height: 1.25rem;
-  background: var(--border);
-  margin: 0 0.15rem;
-}
-
-.bls-bar-spacer {
-  flex: 1;
-}
-
-.bls-gear-btn {
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-muted);
-}
-
-.bls-gear-btn:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
-}
-
-.bls-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-muted);
-  padding: 0.25rem 0.55rem;
-  font-size: 0.75rem;
-  color: var(--text);
-  transition: border-color 0.12s ease, background 0.12s ease;
-}
-
-.bls-chip:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elevated);
-}
-
-.bls-chip-focused {
-  border-color: var(--accent);
-  background: var(--accent-subtle);
-}
-
-.bls-chip-label {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.bls-chip-focused .bls-chip-label {
-  color: var(--accent);
-}
-
-.bls-chip-value {
-  font-weight: 600;
-  color: var(--text);
-}
+/* —— BLS bar expand (collapsed state) —— */
 
 .bls-expand-btn {
   display: inline-flex;
@@ -1299,7 +1280,7 @@ button {
     left: 0;
     right: 0;
     width: 100%;
-    padding: 0 0 max(0.5rem, env(safe-area-inset-bottom));
+    padding: 0 0 max(0.35rem, env(safe-area-inset-bottom));
   }
 
   .bls-dock--collapsed {
@@ -1310,100 +1291,49 @@ button {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.25rem;
-    padding: 0.35rem 0.4rem;
+    padding: 0.55rem 0.65rem 0.4rem;
     border-radius: 0;
     border-left: none;
     border-right: none;
     border-bottom: none;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior: contain;
-    touch-action: pan-x;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
   }
 
-  .bls-bar::-webkit-scrollbar {
-    display: none;
+  /* Two-row Control Center layout — tap targets ≥36px, labeled groups */
+  .bls-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem 0.4rem;
+    justify-items: center;
   }
 
-  .bls-speed-group {
-    flex: 0 0 auto;
-    gap: 0.15rem;
+  .bls-group {
+    width: 100%;
   }
 
-  /* Compact horizontal speed steppers (one toolbar row) */
-  .bls-speed-preset {
-    flex-direction: row;
-    flex-shrink: 0;
+  .bls-seg {
+    width: 100%;
+    justify-content: space-evenly;
+    gap: 0.1rem;
+    padding: 0.18rem;
+  }
+
+  .bls-seg-btn {
+    flex: 1 1 0;
     min-width: 0;
-    height: 1.85rem;
+    min-height: 2.35rem;
+    padding: 0 0.2rem;
+    font-size: 0.75rem;
   }
 
-  .bls-speed-arrow:first-of-type {
-    order: 3; /* increase on the right */
+  .bls-group-label {
+    font-size: 0.6875rem;
   }
 
-  .bls-speed-value {
-    order: 2;
-    min-height: 0;
-    height: 100%;
-    border-top: none;
-    border-bottom: none;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    font-size: 0.625rem;
-    padding: 0 0.22rem;
-  }
-
-  .bls-speed-arrow:last-of-type {
-    order: 1; /* decrease on the left */
-  }
-
-  .bls-speed-arrow {
-    width: auto;
-    min-height: 0;
-    height: 100%;
-    padding: 0 0.1rem;
-  }
-
-  .bls-speed-arrow svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .bls-bar-sep {
-    flex-shrink: 0;
-    height: 0.9rem;
-    margin: 0;
-  }
-
-  .bls-bar-spacer {
-    display: none;
-  }
-
-  .bls-chip {
-    flex: 0 0 auto;
-    gap: 0;
-    min-height: 1.85rem;
-    padding: 0.2rem 0.35rem;
-    font-size: 0.625rem;
-  }
-
-  .bls-chip-label {
-    display: none;
-  }
-
-  .bls-gear-btn,
-  .bls-bar .btn-icon-sm {
-    flex: 0 0 auto;
-    width: 1.85rem;
-    height: 1.85rem;
-    min-height: 1.85rem;
+  .bls-collapse-btn {
+    top: 0.25rem;
+    right: 0.35rem;
+    width: 2rem;
+    height: 2rem;
   }
 }
 
