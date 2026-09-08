@@ -1,14 +1,9 @@
 import { ensureSchemaReady, getPool } from "@/lib/db";
-import { planIdFromStripePriceId } from "@/lib/billing-constants";
-
-export function isStripeConfigured(): boolean {
-  return Boolean(
-    process.env.STRIPE_SECRET_KEY?.trim() &&
-      process.env.STRIPE_WEBHOOK_SECRET?.trim() &&
-      (process.env.STRIPE_PRICE_ID_MONTHLY?.trim() ||
-        process.env.STRIPE_PRICE_ID?.trim())
-  );
-}
+import {
+  planIdFromStripePriceId,
+  type StripePriceIds,
+} from "@/lib/billing-constants";
+import { getStripeConfig, stripePriceIdsFromConfig } from "@/lib/stripe";
 
 export type SyncSubscriptionInput = {
   userId: string;
@@ -141,26 +136,29 @@ export async function findUserIdByStripeCustomer(
   return rows[0]?.user_id ?? null;
 }
 
-export function mapStripeSubscription(sub: {
-  id: string;
-  status: string;
-  customer: string | { id: string };
-  items: {
-    data: {
-      price?: {
-        id?: string;
-        unit_amount?: number | null;
-        currency?: string;
-      } | null;
-    }[];
-  };
-  current_period_end?: number | null;
-  trial_end?: number | null;
-  metadata?: { user_id?: string; user_email?: string; plan?: string };
-}) {
+export function mapStripeSubscription(
+  sub: {
+    id: string;
+    status: string;
+    customer: string | { id: string };
+    items: {
+      data: {
+        price?: {
+          id?: string;
+          unit_amount?: number | null;
+          currency?: string;
+        } | null;
+      }[];
+    };
+    current_period_end?: number | null;
+    trial_end?: number | null;
+    metadata?: { user_id?: string; user_email?: string; plan?: string };
+  },
+  priceIds: StripePriceIds = {}
+) {
   const price = sub.items.data[0]?.price;
   const priceId = price?.id ?? null;
-  const planFromPrice = planIdFromStripePriceId(priceId);
+  const planFromPrice = planIdFromStripePriceId(priceId, priceIds);
   const status = sub.status;
   const plan =
     status === "active" || status === "trialing"
@@ -185,6 +183,13 @@ export function mapStripeSubscription(sub: {
     stripeSubscriptionId: sub.id,
     stripePriceId: priceId,
   };
+}
+
+export async function mapStripeSubscriptionWithConfig(
+  sub: Parameters<typeof mapStripeSubscription>[0]
+) {
+  const cfg = await getStripeConfig();
+  return mapStripeSubscription(sub, stripePriceIdsFromConfig(cfg));
 }
 
 export type AdminBillingRow = {

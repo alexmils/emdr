@@ -4,10 +4,16 @@ import {
   getEntitlementForUser,
   publicEntitlement,
 } from "@/lib/entitlements";
-import { BILLING_PLANS } from "@/lib/billing-constants";
-import { isStripeConfigured } from "@/lib/stripe-admin";
-import { getStripe } from "@/lib/stripe";
-import { syncSubscriptionFromStripe, mapStripeSubscription } from "@/lib/stripe-admin";
+import {
+  getStripe,
+  getStripeConfig,
+  isStripeConfigured,
+  resolveBillingPlans,
+} from "@/lib/stripe";
+import {
+  syncSubscriptionFromStripe,
+  mapStripeSubscriptionWithConfig,
+} from "@/lib/stripe-admin";
 import { markOnboardingCompleted } from "@/lib/users";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { publicAdsConfig } from "@/lib/ads";
@@ -21,7 +27,7 @@ export async function GET(request: Request) {
 
   // Verify Checkout success server-side when returning from Stripe.
   if (sessionId) {
-    const stripe = getStripe();
+    const stripe = await getStripe();
     if (stripe) {
       try {
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
@@ -36,7 +42,7 @@ export async function GET(request: Request) {
             typeof session.subscription === "string"
               ? await stripe.subscriptions.retrieve(session.subscription)
               : session.subscription;
-          const mapped = mapStripeSubscription(subObj);
+          const mapped = await mapStripeSubscriptionWithConfig(subObj);
           await syncSubscriptionFromStripe({
             userId: auth.user.id,
             ...mapped,
@@ -60,11 +66,12 @@ export async function GET(request: Request) {
   });
   const platform = await getPlatformSettings();
   const pub = publicEntitlement(entitlement);
+  const stripeCfg = await getStripeConfig();
 
   return NextResponse.json({
     ...pub,
     ads: publicAdsConfig(platform.ads, pub.isTrialLimited),
-    stripeConfigured: isStripeConfigured(),
-    plans: BILLING_PLANS,
+    stripeConfigured: await isStripeConfigured(),
+    plans: resolveBillingPlans(stripeCfg),
   });
 }

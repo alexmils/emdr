@@ -1,16 +1,40 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Source_Sans_3 } from "next/font/google";
+import {
+  BRAND_DESCRIPTION,
+  BRAND_LEGAL,
+  BRAND_SPOKEN,
+  BRAND_TITLE,
+  brandMetadataBase,
+} from "@/lib/brand";
 import "./globals.css";
 
-const inter = Inter({
+const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-fraunces",
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-source-sans",
 });
 
 export const metadata: Metadata = {
-  title: "NuraHelp AI",
-  description: "EMDR Support with bilateral stimulation",
+  metadataBase: brandMetadataBase(),
+  title: {
+    default: BRAND_TITLE,
+    template: `%s — ${BRAND_SPOKEN}`,
+  },
+  description: BRAND_DESCRIPTION,
+  openGraph: {
+    title: BRAND_TITLE,
+    description: BRAND_DESCRIPTION,
+    siteName: BRAND_LEGAL,
+    type: "website",
+    images: [{ url: "/brand/lockup.svg" }],
+  },
 };
 
 export default function RootLayout({
@@ -19,10 +43,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased selection:bg-[rgba(0,122,255,0.2)]">
-        {children}
-      </body>
+    <html lang="en" className={`${sourceSans.variable} ${fraunces.variable}`}>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }

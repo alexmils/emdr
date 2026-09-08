@@ -1,3 +1,4 @@
+import { rewriteRetiredBrandCopy } from "@/lib/brand";
 import { ensureSchemaReady, getPool } from "@/lib/db";
 import {
   DEFAULT_HELP_SETTINGS,
@@ -99,13 +100,13 @@ export async function ensureHelpSchema(): Promise<void> {
   if (Number(rows[0]?.count ?? 0) === 0) {
     const seeds: { title: string; body: string; tags: string[] }[] = [
       {
-        title: "What NuraHelp is",
-        body: "NuraHelp AI is a self-help wellness tool with guided sessions and bilateral stimulation (BLS). It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
+        title: "What Nura is",
+        body: "Nura (NuraHelp) is a self-help wellness tool with guided sessions and bilateral stimulation (BLS). It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
         tags: ["product", "safety"],
       },
       {
         title: "Billing and trial",
-        body: "New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of free BLS. After the trial, the chosen monthly or yearly plan renews. Manage or cancel from Billing → Manage billing (Stripe Customer Portal).",
+        body: "New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of free BLS. After the trial, the chosen weekly, monthly, or yearly plan renews. Manage or cancel from Billing → Manage billing (Stripe Customer Portal).",
         tags: ["billing", "trial"],
       },
       {
@@ -128,7 +129,26 @@ export async function ensureHelpSchema(): Promise<void> {
     }
   }
 
+  await remapRetiredHelpKnowledge(db);
+
   helpSchemaDone = true;
+}
+
+async function remapRetiredHelpKnowledge(
+  db: ReturnType<typeof getPool>
+): Promise<void> {
+  const { rows } = await db.query<{ id: string; title: string; body: string }>(
+    `SELECT id, title, body FROM help_knowledge`
+  );
+  for (const row of rows) {
+    const title = rewriteRetiredBrandCopy(row.title);
+    const body = rewriteRetiredBrandCopy(row.body);
+    if (title === row.title && body === row.body) continue;
+    await db.query(
+      `UPDATE help_knowledge SET title = $1, body = $2, updated_at = NOW() WHERE id = $3`,
+      [title, body, row.id]
+    );
+  }
 }
 
 export async function getHelpSettings(): Promise<HelpSettings> {

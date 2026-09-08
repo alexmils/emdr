@@ -8,7 +8,7 @@ export async function POST() {
   const auth = await requireAuth();
   if (!isAuthContext(auth)) return auth;
 
-  const stripe = getStripe();
+  const stripe = await getStripe();
   if (!stripe) {
     return NextResponse.json(
       { error: "Stripe is not configured" },

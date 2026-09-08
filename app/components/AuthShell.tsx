@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { BrandLockup } from "@/app/components/BrandLockup";
 
 type AuthShellProps = {
   title: string;
@@ -24,7 +26,7 @@ export function AuthShell({
       <div className="auth-shell-inner">
         <header className="auth-shell-header">
           <p className="auth-shell-brand">
-            <Link href="/">NuraHelp AI</Link>
+            <BrandLockup href="/" showHelp />
           </p>
           <h1 className="auth-shell-title">{title}</h1>
           {subtitle ? <p className="auth-shell-subtitle">{subtitle}</p> : null}
@@ -64,21 +66,42 @@ export function AuthField({
   placeholder,
   required = true,
 }: AuthFieldProps) {
+  const [visible, setVisible] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword && visible ? "text" : type;
+
   return (
     <div className="mb-4">
       <label htmlFor={id} className="text-footnote mb-1.5 block font-medium">
         {label}
       </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        required={required}
-        className="field"
-      />
+      <div className={isPassword ? "auth-field-password" : undefined}>
+        <input
+          id={id}
+          type={inputType}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          required={required}
+          className={`field${isPassword ? " auth-field-password-input" : ""}`}
+        />
+        {isPassword ? (
+          <button
+            type="button"
+            className="auth-field-eye"
+            onClick={() => setVisible((v) => !v)}
+            aria-label={visible ? "Hide password" : "Show password"}
+            aria-pressed={visible}
+          >
+            {visible ? (
+              <EyeOff size={18} strokeWidth={2} aria-hidden />
+            ) : (
+              <Eye size={18} strokeWidth={2} aria-hidden />
+            )}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

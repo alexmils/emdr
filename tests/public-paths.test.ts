@@ -13,6 +13,10 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/"), true);
     assert.equal(isFrontendPublicPath("/privacy"), true);
     assert.equal(isFrontendPublicPath("/terms"), true);
+    assert.equal(isFrontendPublicPath("/emdr"), true);
+    assert.equal(isFrontendPublicPath("/therapy"), true);
+    assert.equal(isFrontendPublicPath("/resources"), true);
+    assert.equal(isFrontendPublicPath("/therapists"), true);
   });
 
   it("does not treat /app as frontend", () => {
@@ -57,6 +61,10 @@ describe("shouldRedirectToLoginOn401", () => {
     assert.equal(shouldRedirectToLoginOn401("/app/settings"), true);
     assert.equal(shouldRedirectToLoginOn401("/"), false);
     assert.equal(shouldRedirectToLoginOn401("/privacy"), false);
+    assert.equal(shouldRedirectToLoginOn401("/emdr"), false);
+    assert.equal(shouldRedirectToLoginOn401("/therapy"), false);
+    assert.equal(shouldRedirectToLoginOn401("/resources"), false);
+    assert.equal(shouldRedirectToLoginOn401("/therapists"), false);
     assert.equal(shouldRedirectToLoginOn401("/app/login"), false);
     assert.equal(shouldRedirectToLoginOn401("/apple"), false);
   });

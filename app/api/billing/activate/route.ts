@@ -3,7 +3,7 @@ import { requireAuth, isAuthContext } from "@/lib/api-auth";
 import { getStripe } from "@/lib/stripe";
 import {
   getSubscriptionByUserId,
-  mapStripeSubscription,
+  mapStripeSubscriptionWithConfig,
   syncSubscriptionFromStripe,
 } from "@/lib/stripe-admin";
 import {
@@ -19,7 +19,7 @@ export async function POST() {
   const auth = await requireAuth();
   if (!isAuthContext(auth)) return auth;
 
-  const stripe = getStripe();
+  const stripe = await getStripe();
   if (!stripe) {
     return NextResponse.json(
       { error: "Stripe is not configured" },
@@ -59,7 +59,7 @@ export async function POST() {
     const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
       trial_end: "now",
     });
-    const mapped = mapStripeSubscription(updated);
+    const mapped = await mapStripeSubscriptionWithConfig(updated);
     await syncSubscriptionFromStripe({
       userId: auth.user.id,
       ...mapped,

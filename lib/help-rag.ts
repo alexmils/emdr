@@ -59,7 +59,7 @@ export function buildHelpSystemPrompt(
   ragContext: string
 ): string {
   return [
-    "You are the NuraHelp product support assistant in a small help chat.",
+    "You are the Nura product support assistant in a small help chat.",
     "Answer briefly, in plain English, sentence case.",
     "Only discuss the product: account, billing, trial, sessions, BLS controls, privacy basics, and troubleshooting.",
     "If the user asks for therapy, diagnosis, medical advice, or crisis help: refuse politely, redirect to professionals / emergency services, and stay short.",

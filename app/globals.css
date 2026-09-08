@@ -1,32 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
 :root {
-  /* Product UI — ChatGPT / DeepSeek inspired */
-  --sidebar-bg: #171717;
-  --sidebar-border: #2a2a2a;
-  --sidebar-text: #ececec;
-  --sidebar-muted: #8e8ea0;
-  --sidebar-hover: #2a2a2a;
-  --sidebar-active: #343541;
+  /* Nura brand — paper / gold / earth (see docs/brand.md) */
+  --sidebar-bg: #1c1814;
+  --sidebar-border: #2e2720;
+  --sidebar-text: #f8f2d2;
+  --sidebar-muted: #b9a07a;
+  --sidebar-hover: #2a241e;
+  --sidebar-active: #342c24;
 
-  --bg-page: #ffffff;
-  --bg-elevated: #ffffff;
-  --bg-muted: #f7f7f8;
-  --bg-canvas: #fafafa;
-  --text: #0d0d0d;
-  --text-secondary: #6e6e80;
-  --text-muted: #8e8ea0;
-  --accent: #10a37f;
-  --accent-hover: #0d8f6e;
-  --accent-subtle: rgba(16, 163, 127, 0.12);
+  --bg-page: #f8f2d2;
+  --bg-elevated: #fbf6de;
+  --bg-muted: #efe6c4;
+  --bg-canvas: #f4ecd0;
+  --text: #2a2118;
+  --text-secondary: #785135;
+  --text-muted: #8a6a4a;
+  --accent: #785135;
+  --accent-hover: #5f3f28;
+  --accent-subtle: rgba(120, 81, 53, 0.14);
+  --gold: #d3bc84;
+  --ink: #2a2118;
   --destructive: #ef4444;
-  --border: #e5e5e5;
-  --border-strong: #d1d5db;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --border: #e4d7b4;
+  --border-strong: #8c6344;
+  --shadow-sm: 0 1px 2px rgba(42, 33, 24, 0.06);
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -56,6 +59,11 @@ body {
   background: var(--bg-page);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--gold) 55%, transparent);
+  color: var(--ink);
 }
 
 button {
@@ -97,6 +105,63 @@ button {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--sidebar-text);
+}
+
+/* —— Brand lockup —— */
+
+.brand-lockup-link {
+  display: inline-flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 2.1rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.brand-lockup-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.brand-lockup-word {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.brand-lockup-help {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  opacity: 0.72;
+}
+
+.brand-lockup-paper {
+  color: var(--accent);
+}
+
+.brand-lockup-inverse {
+  color: var(--sidebar-text);
+}
+
+.brand-lockup-inverse .brand-lockup-help {
+  color: var(--gold);
+  opacity: 1;
 }
 
 .text-sidebar-section {
@@ -805,15 +870,15 @@ button {
 
 .bls-seg-btn:hover {
   color: var(--text);
-  background: rgba(0, 0, 0, 0.04);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
 .bls-seg-btn-active {
   background: var(--bg-elevated);
   color: var(--text);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+    0 1px 2px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 28%, var(--border));
 }
 
 .bls-seg-btn-focused {
@@ -870,7 +935,7 @@ button {
   border: none;
   border-radius: var(--radius-md);
   background: var(--accent);
-  color: #fff;
+  color: #f8f2d2;
   font-size: 0.875rem;
   font-weight: 500;
   padding: 0.45rem 1rem;
@@ -1195,7 +1260,7 @@ button {
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--bg-page);
   cursor: pointer;
   transition:
     background 0.12s ease,
@@ -1250,7 +1315,7 @@ button {
 
 .chat-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-subtle);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
 }
 
 /* —— BLS bar expand (collapsed state) —— */
@@ -1364,7 +1429,7 @@ button {
 
 .field:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-subtle);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
 }
 
 .field-pill {
@@ -1404,7 +1469,7 @@ button {
   align-items: flex-end;
   justify-content: center;
   padding: 0;
-  background: rgba(0, 0, 0, 0.32);
+  background: color-mix(in srgb, var(--ink) 42%, transparent);
 }
 
 .gear-sheet {
@@ -1416,7 +1481,7 @@ button {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 -8px 40px color-mix(in srgb, var(--ink) 18%, transparent);
   overflow: hidden;
 }
 
@@ -1437,11 +1502,12 @@ button {
 
 .gear-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
   text-align: center;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .gear-reset-link {
@@ -1564,8 +1630,8 @@ button {
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(16, 163, 127, 0.35);
+  color: var(--bg-page);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 38%, transparent);
   transition: background 0.12s ease, transform 0.12s ease;
 }
 
@@ -1636,7 +1702,23 @@ button {
 
 .gear-choice:hover {
   color: var(--text);
-  background: rgba(0, 0, 0, 0.03);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.gear-choice:focus-visible,
+.gear-preview-play:focus-visible,
+.gear-reset-link:focus-visible,
+.gear-section-head:focus-visible,
+.gear-preset-index:focus-visible,
+.gear-color-input:focus-visible,
+.gear-done:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
+}
+
+.gear-range:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
 }
 
 .gear-choice-active {
@@ -1720,6 +1802,12 @@ button {
 
 .gear-section-open .gear-section-head {
   background: var(--bg-muted);
+}
+
+.gear-section-open .gear-section-icon {
+  background: var(--accent-subtle);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--accent);
 }
 
 .gear-section-icon {
@@ -1840,8 +1928,8 @@ button {
   height: 16px;
   border-radius: 50%;
   background: var(--accent);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--bg-page);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 22%, transparent);
   cursor: pointer;
 }
 
@@ -1850,8 +1938,8 @@ button {
   height: 16px;
   border-radius: 50%;
   background: var(--accent);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--bg-page);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 22%, transparent);
   cursor: pointer;
 }
 
@@ -2529,9 +2617,9 @@ button {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: var(--sidebar-bg, #171717);
-  color: #ececec;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 1px solid var(--sidebar-border);
 }
 
 .admin-sidebar-head {
@@ -2648,8 +2736,8 @@ button {
 }
 
 .admin-health-ok {
-  background: rgba(16, 163, 127, 0.1);
-  border-color: rgba(16, 163, 127, 0.35);
+  background: var(--accent-subtle);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   color: var(--accent);
 }
 
@@ -2715,6 +2803,14 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .admin-field-label {
@@ -2888,17 +2984,18 @@ select.field option:disabled {
 /* —— Frontend site (public /) —— */
 
 .frontend-home {
-  --fe-bg: #0c1110;
-  --fe-fg: #f4f7f5;
-  --fe-muted: #9aaba3;
-  --fe-line: rgba(255, 255, 255, 0.08);
-  --fe-accent: #3dd6a5;
-  --fe-accent-fg: #06281c;
+  --fe-bg: #f8f2d2;
+  --fe-fg: #2a2118;
+  --fe-muted: #785135;
+  --fe-line: rgba(42, 33, 24, 0.12);
+  --fe-accent: #785135;
+  --fe-accent-fg: #f8f2d2;
+  --fe-gold: #d3bc84;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(61, 214, 165, 0.18), transparent),
+    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(211, 188, 132, 0.45), transparent),
     var(--fe-bg);
   color: var(--fe-fg);
 }
@@ -2907,15 +3004,20 @@ select.field option:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--fe-line);
 }
 
+@media (max-width: 719px) {
+  .frontend-header .brand-lockup-help {
+    display: none;
+  }
+}
+
 .frontend-brand {
-  font-size: 1.05rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--fe-fg);
+  display: inline-flex;
+  color: var(--fe-accent);
   text-decoration: none;
 }
 
@@ -2946,15 +3048,16 @@ select.field option:disabled {
   margin: 0 0 0.75rem;
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fe-accent);
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--fe-muted);
 }
 
 .frontend-hero-title {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.15rem);
+  font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.03em;
 }
@@ -3008,7 +3111,14 @@ select.field option:disabled {
 }
 
 .frontend-btn-ghost:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: color-mix(in srgb, var(--fe-accent) 45%, var(--fe-line));
+  background: color-mix(in srgb, var(--fe-gold) 28%, transparent);
+}
+
+.frontend-home a:focus-visible,
+.frontend-home button:focus-visible {
+  outline: 2px solid var(--fe-accent);
+  outline-offset: 2px;
 }
 
 .frontend-footer {
@@ -3029,6 +3139,7 @@ select.field option:disabled {
 
 .frontend-footer-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -3043,8 +3154,9 @@ select.field option:disabled {
 
 .frontend-legal h1 {
   margin: 0 0 1rem;
+  font-family: var(--font-display);
   font-size: 1.75rem;
-  font-weight: 650;
+  font-weight: 500;
   letter-spacing: -0.02em;
 }
 
@@ -3052,7 +3164,85 @@ select.field option:disabled {
   margin: 0 0 1rem;
   max-width: 40rem;
   line-height: 1.6;
+  color: var(--fe-fg);
+}
+
+.frontend-offers {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 2.75rem;
+}
+
+.frontend-offer {
+  display: block;
+  padding: 1.1rem 1.15rem 1.15rem;
+  border: 1px solid var(--fe-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, #fff 55%, var(--fe-bg));
+  text-decoration: none;
+  color: inherit;
+}
+
+.frontend-offer:hover {
+  border-color: color-mix(in srgb, var(--fe-accent) 40%, var(--fe-line));
+}
+
+.frontend-offer-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
   color: var(--fe-muted);
+}
+
+.frontend-offer h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.frontend-offer p {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--fe-muted);
+}
+
+.frontend-disclaimer {
+  margin: 2.25rem 0 0;
+  max-width: 36rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--fe-muted);
+}
+
+.frontend-nav-links {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  margin-right: 0.5rem;
+}
+
+.frontend-nav-links a {
+  color: var(--fe-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.frontend-nav-links a:hover {
+  color: var(--fe-fg);
+}
+
+@media (min-width: 720px) {
+  .frontend-offers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .frontend-nav-links {
+    display: flex;
+  }
 }
 
 /* —— Auth / onboarding shell (mobile-first) —— */
@@ -3077,20 +3267,16 @@ select.field option:disabled {
 }
 
 .auth-shell-brand {
-  margin: 0 0 0.35rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.auth-shell-brand a:hover {
-  color: var(--text-primary, #0d0d0d);
+  margin: 0 0 0.75rem;
+  display: flex;
+  justify-content: center;
 }
 
 .auth-shell-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.375rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
   letter-spacing: -0.02em;
   color: var(--text-primary, #0d0d0d);
@@ -3122,6 +3308,42 @@ select.field option:disabled {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem;
+}
+
+.auth-field-password {
+  position: relative;
+}
+
+.auth-field-password-input {
+  padding-right: 2.75rem;
+}
+
+.auth-field-eye {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  transform: translateY(-50%);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.auth-field-eye:hover {
+  color: var(--text);
+  background: var(--fill-tertiary, rgba(0, 0, 0, 0.04));
+}
+
+.auth-field-eye:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+  color: var(--accent);
 }
 
 .auth-shell-footer {
@@ -3219,7 +3441,7 @@ select.field option:disabled {
   margin-left: 8px;
   padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(16, 163, 127, 0.12);
+  background: var(--accent-subtle);
   color: var(--accent);
   font-size: 11px;
   font-weight: 600;
@@ -3485,7 +3707,7 @@ select.field option:disabled {
 .help-bubble-user {
   align-self: flex-end;
   background: var(--accent);
-  color: #fff;
+  color: var(--bg-page);
   border-bottom-right-radius: 4px;
 }
 
@@ -3498,8 +3720,8 @@ select.field option:disabled {
 
 .help-bubble-admin {
   align-self: flex-start;
-  background: #ecfdf5;
-  border: 1px solid rgba(16, 163, 127, 0.35);
+  background: var(--accent-subtle);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   border-bottom-left-radius: 4px;
 }
 

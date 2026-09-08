@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import { requireAuth, isAuthContext } from "@/lib/api-auth";
 import { getPublicAppUrl } from "@/lib/platform-settings";
 import {
-  BILLING_PLANS,
   isBillingPlanId,
-  stripePriceIdForPlan,
   TRIAL_DAYS,
   type BillingPlanId,
 } from "@/lib/billing-constants";
-import { getStripe } from "@/lib/stripe";
+import {
+  getStripe,
+  getStripeConfig,
+  priceIdForPlan,
+  resolveBillingPlans,
+} from "@/lib/stripe";
 import { getSubscriptionByUserId } from "@/lib/stripe-admin";
 import { getEntitlementForUser } from "@/lib/entitlements";
 import {
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const stripe = getStripe();
+  const stripe = await getStripe();
   if (!stripe) {
     return NextResponse.json(
       { error: "Stripe checkout is not configured" },
@@ -53,13 +56,15 @@ export async function POST(request: Request) {
     /* default yearly */
   }
 
-  const priceId = stripePriceIdForPlan(plan);
+  const priceId = await priceIdForPlan(plan);
   if (!priceId) {
     return NextResponse.json(
       { error: `Stripe price for ${plan} is not configured` },
       { status: 503 }
     );
   }
+
+  const plans = resolveBillingPlans(await getStripeConfig());
 
   const existing = await getSubscriptionByUserId(auth.user.id);
   if (
@@ -87,7 +92,6 @@ export async function POST(request: Request) {
     onboardingCompletedAt: auth.user.onboardingCompletedAt,
   });
 
-  // Returning / delinquent accounts checkout without a second trial.
   const includeTrial = shouldIncludeCheckoutTrial({
     isTrialLimited: entitlement.isTrialLimited,
     accessTier: entitlement.accessTier,
@@ -107,7 +111,6 @@ export async function POST(request: Request) {
         metadata: { user_id: auth.user.id },
       });
       customerId = customer.id;
-      // Persist customer early so webhook / portal can find them.
       const { syncSubscriptionFromStripe } = await import("@/lib/stripe-admin");
       await syncSubscriptionFromStripe({
         userId: auth.user.id,
@@ -159,7 +162,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       url: session.url,
       plan,
-      planMeta: BILLING_PLANS[plan],
+      planMeta: plans[plan],
       trialDays: includeTrial ? TRIAL_DAYS : 0,
     });
   } catch (err) {

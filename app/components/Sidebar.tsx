@@ -7,6 +7,7 @@ import { ChevronDown, Plus, X } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { ThreadEditMenu } from "./ThreadEditMenu";
 import { Avatar } from "./Avatar";
+import { BrandLockup } from "./BrandLockup";
 import { displayNameFor, useCurrentUser } from "./useCurrentUser";
 import { useSidebarNav } from "./SidebarNavContext";
 
@@ -46,7 +47,7 @@ export function Sidebar() {
   return (
     <aside className="app-sidebar flex h-full w-[260px] shrink-0 flex-col">
       <div className="app-sidebar-top">
-        <p className="text-sidebar-title">NuraHelp AI</p>
+        <BrandLockup href={null} tone="inverse" />
         <button
           type="button"
           className="app-sidebar-close"

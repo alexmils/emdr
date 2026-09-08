@@ -25,8 +25,8 @@ export type EmailTemplateData = {
   };
 };
 
-const brandColor = "#10a37f";
-const mutedColor = "#6b7280";
+const brandColor = "#785135";
+const mutedColor = "#8A6A4A";
 
 function layout(siteName: string, title: string, body: string): string {
   return `<!DOCTYPE html>
@@ -36,20 +36,20 @@ function layout(siteName: string, title: string, body: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#f7f7f8;font-family:Inter,'Segoe UI',system-ui,sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f7f7f8;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#F8F2D2;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F8F2D2;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background:#FBF6DE;border-radius:8px;border:1px solid #E4D7B4;overflow:hidden;">
           <tr>
             <td style="padding:32px 28px 8px;">
               <p style="margin:0 0 8px;font-size:13px;font-weight:500;color:${mutedColor};">${siteName}</p>
-              <h1 style="margin:0 0 20px;font-size:22px;font-weight:600;color:#111827;letter-spacing:-0.018em;">${title}</h1>
+              <h1 style="margin:0 0 20px;font-size:22px;font-weight:500;color:#2A2118;letter-spacing:-0.018em;font-family:Georgia,serif;">${title}</h1>
               ${body}
             </td>
           </tr>
           <tr>
-            <td style="padding:16px 28px 28px;border-top:1px solid #e5e7eb;">
+            <td style="padding:16px 28px 28px;border-top:1px solid #E4D7B4;">
               <p style="margin:0;font-size:12px;line-height:1.5;color:${mutedColor};">
                 If you didn't request this email, you can safely ignore it.
               </p>
@@ -72,7 +72,7 @@ function ctaButton(href: string, label: string): string {
 export function renderEmailTemplate<T extends EmailTemplateId>(
   id: T,
   data: EmailTemplateData[T],
-  siteName = "NuraHelp AI"
+  siteName = "Nura"
 ): { subject: string; html: string; text: string } {
   switch (id) {
     case "password_reset": {
@@ -82,8 +82,8 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
       const html = layout(
         siteName,
         "Reset your password",
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">We received a request to reset your password. Use the button below to choose a new one.</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Hi ${d.name},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">We received a request to reset your password. Use the button below to choose a new one.</p>
          ${ctaButton(d.resetUrl, "Reset password")}
          <p style="margin:0;font-size:13px;line-height:1.5;color:${mutedColor};">This link expires in ${d.expiresIn}.</p>`
       );
@@ -96,8 +96,8 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
       const html = layout(
         siteName,
         "Create your password",
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">You've been invited to ${siteName}. Set your password to get started.</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Hi ${d.name},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">You've been invited to ${siteName}. Set your password to get started.</p>
          ${ctaButton(d.createPasswordUrl, "Create password")}
          <p style="margin:0;font-size:13px;line-height:1.5;color:${mutedColor};">This link expires in ${d.expiresIn}.</p>`
       );
@@ -110,8 +110,8 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
       const html = layout(
         siteName,
         "Password updated",
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Your password was successfully changed. If you didn't make this change, contact support immediately.</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Hi ${d.name},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Your password was successfully changed. If you didn't make this change, contact support immediately.</p>
          ${ctaButton(d.loginUrl, "Sign in")}`
       );
       return { subject, html, text };
@@ -123,8 +123,8 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
       const html = layout(
         siteName,
         "Welcome",
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#111827;">Your account is ready. Sign in to start EMDR Support sessions.</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Hi ${d.name},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#2A2118;">Your account is ready. Sign in to start EMDR Support sessions.</p>
          ${ctaButton(d.loginUrl, "Sign in")}`
       );
       return { subject, html, text };

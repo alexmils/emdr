@@ -1,0 +1,50 @@
+---
+description: Nura / NuraHelp brand — name, tokens, type, voice. Always apply.
+alwaysApply: true
+---
+
+# Nura brand
+
+Full spec: [`docs/brand.md`](docs/brand.md). Constants: [`lib/brand.ts`](lib/brand.ts). Logo: [`BrandLockup`](app/components/BrandLockup.tsx).
+
+## Name
+
+**Say Nura. Write NuraHelp. URL is nurahelp.com.**
+
+| Layer | Name | Where |
+|---|---|---|
+| Spoken / chrome | Nura | Sidebar, headers, email from-name, Stripe Checkout, WebAuthn `rpName` |
+| Legal / lockup | NuraHelp | Logo aria, Terms, copyright, footer |
+| Product feature | EMDR Support | Not the company name |
+
+```ts
+// ❌ BAD
+"NuraHelp AI"
+"Nura Help"
+
+// ✅ GOOD
+import { BRAND_SPOKEN, BRAND_LEGAL } from "@/lib/brand";
+chromeBrandName(raw)          // maps leftover "NuraHelp AI" → Nura
+rewriteRetiredBrandCopy(text) // stored help/knowledge copy
+```
+
+Never lead with “AI” in titles, hero, or the wordmark. Do not invent a new logo — use `BrandLockup` (`href` defaults to `null`; wrap in `Link` or pass `href`). Admin lockup → `/admin`.
+
+## Position
+
+Calm therapy support — EMDR now, resources and real clinicians later. Not an AI therapist, EHR, or emergency care. Marketing disclaimer: self-help, not a licensed therapist.
+
+Hero: **Support for therapy. Starting with EMDR.**
+
+## Visual
+
+- Paper `#F8F2D2` · Earth `#785135` (buttons, wordmark) · Ink `#2A2118` (body) · Gold `#D3BC84` **focus/hover only, never body or default field borders** · Sidebar `#1C1814`
+- Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
+- Type: Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
+- Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
+
+## Copy
+
+English, sentence case, short. No hype (“revolutionary”, “blockchain”, “neural networks”).
+
+Public routes (must stay in `lib/public-paths.ts` + `app/robots.ts` + `app/sitemap.ts`): `/` `/emdr` `/therapy` `/resources` `/therapists` `/privacy` `/terms`. Hub is `/therapy`; guides are `/resources`.

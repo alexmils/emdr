@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BrandLockup } from "@/app/components/BrandLockup";
 
 const NAV = [
   { href: "/admin", label: "Overview", exact: true },
@@ -77,8 +78,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-head">
-          <p className="admin-sidebar-kicker">NuraHelp admin</p>
-          <p className="admin-sidebar-title">Control panel</p>
+          <BrandLockup href="/admin" tone="inverse" />
+          <p className="admin-sidebar-kicker">Admin</p>
         </div>
         <nav className="admin-sidebar-nav">
           {NAV.filter(

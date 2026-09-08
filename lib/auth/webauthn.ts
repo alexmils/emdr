@@ -9,6 +9,7 @@ import {
 import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { chromeBrandName } from "@/lib/brand";
 
 type AuthenticatorTransport =
   | "ble"
@@ -28,7 +29,7 @@ export function getWebAuthnConfig() {
   const rpID = process.env.WEBAUTHN_RP_ID ?? url.hostname;
   const origin = process.env.WEBAUTHN_ORIGIN ?? url.origin;
   return {
-    rpName: process.env.EMAIL_FROM_NAME ?? "NuraHelp AI",
+    rpName: chromeBrandName(process.env.EMAIL_FROM_NAME),
     rpID,
     origin,
   };

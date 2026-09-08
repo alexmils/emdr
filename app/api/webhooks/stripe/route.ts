@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, getStripeConfig, stripePriceIdsFromConfig } from "@/lib/stripe";
 import {
   findUserIdByStripeCustomer,
   mapStripeSubscription,
@@ -11,11 +11,13 @@ import { getUserByEmail, getUserById, markOnboardingCompleted } from "@/lib/user
 
 /** Stripe webhook — sync subscription state when configured. */
 export async function POST(request: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
-  const stripe = getStripe();
+  const cfg = await getStripeConfig();
+  const secret = cfg.webhookSecret.trim();
+  const stripe = await getStripe();
   if (!secret || !stripe) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
   }
+  const priceIds = stripePriceIdsFromConfig(cfg);
 
   let claimedEventId: string | null = null;
 
@@ -75,7 +77,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true, skipped: true });
       }
       const sub = await stripe.subscriptions.retrieve(session.subscription);
-      const mapped = mapStripeSubscription(sub);
+      const mapped = mapStripeSubscription(sub, priceIds);
       await syncSubscriptionFromStripe({
         userId,
         ...mapped,
@@ -126,7 +128,7 @@ export async function POST(request: Request) {
           eventCreatedAt: event.created,
         });
       } else {
-        const mapped = mapStripeSubscription(sub);
+        const mapped = mapStripeSubscription(sub, priceIds);
         await syncSubscriptionFromStripe({
           userId,
           ...mapped,
@@ -157,7 +159,7 @@ export async function POST(request: Request) {
           claimedEventId = null;
           return NextResponse.json({ received: true, skipped: true });
         }
-        const mapped = mapStripeSubscription(sub);
+        const mapped = mapStripeSubscription(sub, priceIds);
         await syncSubscriptionFromStripe({
           userId,
           ...mapped,

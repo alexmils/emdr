@@ -1,6 +1,6 @@
-# NuraHelp AI
+# NuraHelp
 
-Next.js web app for **EMDR Support** with bilateral stimulation (BLS), AI session guide, and memory sets. Brand: NuraHelp · Product: NuraHelp AI · Site: [nurahelp.com](https://nurahelp.com).
+Next.js web app for **EMDR Support** with bilateral stimulation (BLS), a guided session, and memory sets. Brand: **Nura** (spoken) · Legal: **NuraHelp** · Site: [nurahelp.com](https://nurahelp.com). See `docs/brand.md`.
 
 ## Features
 
@@ -33,7 +33,7 @@ To use an existing Postgres instance instead of Docker, set `DATABASE_URL` in `.
 
 ### Dev tunnel (`dev.nurahelp.com`)
 
-Exposes local **3471** behind Cloudflare Access (email one-time PIN; anyone can request a code). Credentials live in `%USERPROFILE%\.cloudflared\` (not in git).
+Exposes local **3471** behind Cloudflare Access (email one-time PIN; anyone can request a code). Credentials live in `%USERPROFILE%\.cloudflared\` (not git).
 
 ```powershell
 # With Next already on :3471
@@ -46,22 +46,14 @@ Set in `.env` while using the tunnel: `APP_URL=https://dev.nurahelp.com`, `TRUST
 
 Ordinary users complete `/app/onboarding` after invite password setup:
 
-1. Welcome → choose monthly/yearly plan
+1. Welcome → choose weekly/monthly/yearly plan
 2. Stripe Checkout (card required) with a **7-day trial**
 3. Trial limits: **3 guided sessions** and **10 minutes** total Free/BLS
 4. Exhausted limits open an **Upgrade** modal (no extra usage spent)
 
-Env vars (see `.env.example`):
+Configure Stripe in **Admin → Billing** (secret key, webhook secret, Price IDs, display prices). Defaults: weekly **€4.99**, monthly **€14.99**, yearly **€99**.
 
-| Variable | Purpose |
-|----------|---------|
-| `STRIPE_SECRET_KEY` | Prefer a restricted key (`rk_…`) |
-| `STRIPE_WEBHOOK_SECRET` | Signing secret for `/api/webhooks/stripe` |
-| `STRIPE_PRICE_ID_MONTHLY` | Monthly Price ID |
-| `STRIPE_PRICE_ID_YEARLY` | Yearly Price ID |
-| `STRIPE_PRICE_ID` | Legacy monthly fallback |
-
-Webhook events to enable: `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed`.
+Webhook URL: `/api/webhooks/stripe` — events: `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed`.
 
 Customer Portal is available from `/app/billing` → **Manage billing**.
 

@@ -15,7 +15,9 @@ describe("help settings", () => {
     assert.equal(s.enabled, true);
     assert.equal(s.aiFirstReply, true);
     assert.equal(s.notifyAdminsByEmail, true);
-    assert.ok(s.welcomeMessage.includes("NuraHelp"));
+    assert.ok(s.welcomeMessage.includes("Nura assistant"));
+    assert.equal(s.welcomeMessage.includes("NuraHelp AI"), false);
+    assert.equal(s.welcomeMessage.includes("NuraHelp assistant"), false);
   });
 
   it("preserves custom allow/deny lists", () => {
@@ -28,6 +30,18 @@ describe("help settings", () => {
     assert.equal(s.enabled, false);
     assert.equal(s.allowedTopics, "Billing only");
     assert.equal(s.deniedTopics, "Therapy");
+  });
+
+  it("rewrites stored NuraHelp AI help copy", () => {
+    const s = normalizeHelpSettings({
+      ...DEFAULT_HELP_SETTINGS,
+      welcomeMessage:
+        "Hi — I’m the NuraHelp assistant. Ask about billing.",
+      deniedTopics: "Anything unrelated to the NuraHelp product",
+    });
+    assert.equal(s.welcomeMessage.includes("NuraHelp"), false);
+    assert.match(s.welcomeMessage, /Nura assistant/);
+    assert.match(s.deniedTopics, /Nura product/);
   });
 });
 

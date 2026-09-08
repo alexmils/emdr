@@ -140,7 +140,9 @@ describe("buildEntitlementSnapshot", () => {
 describe("billing plan helpers", () => {
   it("validates plan ids and exposes yearly highlight", () => {
     assert.equal(isBillingPlanId("yearly"), true);
-    assert.equal(isBillingPlanId("weekly"), false);
+    assert.equal(isBillingPlanId("weekly"), true);
+    assert.equal(isBillingPlanId("monthly"), true);
     assert.equal(BILLING_PLANS.yearly.highlight, true);
+    assert.equal(BILLING_PLANS.weekly.displayPrice, "€4.99");
   });
 });

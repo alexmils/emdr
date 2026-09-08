@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { APP_BASE, LOGIN_PATH, appPath } from "@/lib/app-base";
+import { BRAND_LEGAL } from "@/lib/brand";
+import { BrandLockup } from "@/app/components/BrandLockup";
 
 type MeUser = {
   email: string;
@@ -13,21 +15,21 @@ type MeUser = {
 
 export function FrontendShell({
   children,
-  siteName = "NuraHelp AI",
 }: {
   children: ReactNode;
+  /** @deprecated chrome uses the brand lockup; kept for call-site compatibility */
   siteName?: string;
 }) {
   return (
     <div className="frontend-home">
-      <FrontendHeader siteName={siteName} />
+      <FrontendHeader />
       <main className="frontend-main">{children}</main>
-      <FrontendFooter siteName={siteName} />
+      <FrontendFooter />
     </div>
   );
 }
 
-export function FrontendHeader({ siteName }: { siteName: string }) {
+export function FrontendHeader() {
   const [user, setUser] = useState<MeUser | null | undefined>(undefined);
 
   useEffect(() => {
@@ -43,10 +45,15 @@ export function FrontendHeader({ siteName }: { siteName: string }) {
 
   return (
     <header className="frontend-header">
-      <Link href="/" className="frontend-brand">
-        {siteName}
+      <Link href="/" className="frontend-brand" aria-label="NuraHelp home">
+        <BrandLockup showHelp />
       </Link>
       <nav className="frontend-nav">
+        <div className="frontend-nav-links">
+          <Link href="/emdr">EMDR</Link>
+          <Link href="/resources">Resources</Link>
+          <Link href="/therapists">Therapists</Link>
+        </div>
         {user === undefined ? (
           <span className="frontend-nav-muted">…</span>
         ) : user ? (
@@ -68,13 +75,17 @@ export function FrontendHeader({ siteName }: { siteName: string }) {
   );
 }
 
-export function FrontendFooter({ siteName }: { siteName: string }) {
+export function FrontendFooter() {
   return (
     <footer className="frontend-footer">
       <p className="frontend-footer-copy">
-        © {new Date().getFullYear()} {siteName}
+        © {new Date().getFullYear()} {BRAND_LEGAL}
       </p>
       <nav className="frontend-footer-nav">
+        <Link href="/emdr">EMDR</Link>
+        <Link href="/therapy">Therapy</Link>
+        <Link href="/resources">Resources</Link>
+        <Link href="/therapists">Therapists</Link>
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>
       </nav>
