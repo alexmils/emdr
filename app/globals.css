@@ -1329,6 +1329,16 @@ button {
     font-size: 0.6875rem;
   }
 
+  /* Without Vibrations: keep Adjustments on the right like the reference */
+  .bls-panel > .bls-group:nth-child(5):last-child {
+    grid-column: 3;
+  }
+
+  .bls-group .bls-seg:has(.bls-seg-btn:only-child) {
+    width: auto;
+    min-width: 2.75rem;
+  }
+
   .bls-collapse-btn {
     top: 0.25rem;
     right: 0.35rem;
