@@ -135,6 +135,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Session `/app` on mobile: Help FAB hidden; BLS dock edge-to-edge full width (no cut-off options); shell uses `dvh` to avoid page vertical scroll
 - Cursor rule `.cursor/rules/git-commit-push.mdc` — commit/push when asked; remind if many local changes or push is stale
 - **BLS mobile toolbar**: Control Center–style panel (like reference apps) — labeled groups (Speed / Repeats / Stereo sound / Animation / Vibrations / Adjustments), large segmented tap targets, icon options; replaces cramped single-row steppers; fine speed still via gear + gamepad/keyboard
+- **BLS Adjustments sheet**: live ball preview + play/pause, quick chips, accordion Details (Speed / Repeats & duration / Sound / Animation / Look / rumble); light product style (not a copy of third-party dark iOS sheets); single Reset + Done
 
 ---
 
