@@ -2290,10 +2290,10 @@ button {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.35rem;
+    gap: 0.55rem;
     margin: 0;
-    padding: 1rem 1.1rem 0.85rem;
-    padding-top: max(1rem, env(safe-area-inset-top));
+    padding: 1.1rem 1.1rem 0.95rem;
+    padding-top: max(1.1rem, env(safe-area-inset-top));
   }
 
   .settings-back {
