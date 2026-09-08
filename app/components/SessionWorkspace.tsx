@@ -29,6 +29,7 @@ import {
 } from "@/lib/session-mode";
 import { shouldBeginBlsAfterAd } from "@/lib/ads";
 import { WorkspaceMenuButton } from "./SidebarNavContext";
+import { LearnTeaser } from "./LearnTeaser";
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -427,14 +428,25 @@ export function SessionWorkspace() {
             </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => void createThread()}
-          >
-            New chat
-          </button>
+        <div className="workspace-home-empty flex flex-1 flex-col items-center justify-center gap-6 px-6 py-8">
+          <div className="workspace-home-empty-top flex flex-col items-center gap-3 text-center">
+            <h2 className="text-[1.125rem] font-semibold tracking-[-0.02em] text-[var(--text)]">
+              Start a session
+            </h2>
+            <p className="max-w-sm text-[13px] leading-relaxed text-[var(--text-secondary)]">
+              Open a new chat to choose guided or free bilateral stimulation.
+            </p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => void createThread()}
+            >
+              New chat
+            </button>
+          </div>
+          <div className="workspace-home-empty-learn w-full max-w-lg">
+            <LearnTeaser />
+          </div>
         </div>
       </main>
     );

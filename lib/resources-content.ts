@@ -1,0 +1,122 @@
+export type ResourceKind = "article" | "video" | "safety";
+
+export interface ResourceItem {
+  slug: string;
+  kind: ResourceKind;
+  title: string;
+  summary: string;
+  readMinutes?: number;
+  /** Optional embed or external URL — omitted until content is ready */
+  videoUrl?: string;
+  body?: string;
+  featured?: boolean;
+}
+
+export const RESOURCES: ResourceItem[] = [
+  {
+    slug: "what-is-emdr",
+    kind: "article",
+    title: "What is EMDR?",
+    summary:
+      "A short overview of bilateral stimulation and how guided sessions are structured in NuraHelp.",
+    readMinutes: 3,
+    featured: true,
+    body: `EMDR (Eye Movement Desensitization and Reprocessing) is a structured approach often used with traumatic or distressing memories. In practice, many people use **bilateral stimulation** — rhythmically tracking something left and right — while holding a target memory or sensation in mind.
+
+NuraHelp offers two ways to work:
+
+- **Guided session** — an AI guide walks through intake, grounding, assessment, and processing phases, with check-ins after each set.
+- **Free session** — you control the ball, speed, and timing yourself.
+
+This app is a **self-help tool**, not a replacement for licensed clinical care. If you are in crisis or feel unsafe, pause and use the safety resources in the library or contact local emergency services.`,
+  },
+  {
+    slug: "grounding-before-a-set",
+    kind: "article",
+    title: "Grounding before a set",
+    summary:
+      "Simple ways to settle your nervous system before starting bilateral stimulation.",
+    readMinutes: 2,
+    featured: true,
+    body: `Before a processing set, it helps to know you can return to the present. Try one of these for 30–60 seconds:
+
+1. **Feet and seat** — notice pressure on the floor and chair.
+2. **Five senses** — name one thing you see, hear, and feel.
+3. **Safe place** — recall a calm image or location; stay with it until your breath slows.
+
+In a **guided** session, the guide will not start BLS until after intake and grounding. In **free** mode, pause anytime — you are in control of when the ball runs.`,
+  },
+  {
+    slug: "when-to-pause",
+    kind: "article",
+    title: "When to pause or stop",
+    summary:
+      "Signs that you should take a break, ground, or reach out for support.",
+    readMinutes: 2,
+    featured: true,
+    body: `Stop or pause bilateral stimulation if you notice:
+
+- A sudden spike in distress you cannot tolerate
+- Dissociation, numbness, or feeling “not here”
+- Physical symptoms that worry you (chest pain, trouble breathing)
+- Thoughts of harming yourself or others
+
+**What to do:** stop the set, orient to the room, use grounding, and consider ending the session. Guided mode will invite a check-in — answer honestly.
+
+NuraHelp is not an emergency service. If you might hurt yourself or someone else, contact **988** (US) or your local crisis line immediately.`,
+  },
+  {
+    slug: "guided-vs-free",
+    kind: "article",
+    title: "Guided vs free sessions",
+    summary:
+      "Which mode to pick when you open a new chat.",
+    readMinutes: 2,
+    featured: false,
+    body: `**Guided** is best when you want structure: phase prompts, SUDs/VoC tracking, and check-ins after each set. The AI follows an EMDR-informed protocol (intake → grounding → assessment → processing phases).
+
+**Free** is best when you already know what you are doing and only need the ball — no chat overlay, full control of BLS settings.
+
+You choose once per session; the mode stays locked for that thread. Start a **New chat** to pick again.`,
+  },
+  {
+    slug: "getting-started-video",
+    kind: "video",
+    title: "Getting started with NuraHelp",
+    summary:
+      "Walkthrough of starting a session, the ball controls, and adjustments.",
+    readMinutes: 2,
+    featured: false,
+  },
+  {
+    slug: "safety-and-crisis",
+    kind: "safety",
+    title: "Safety & crisis resources",
+    summary:
+      "When to seek immediate help and where to find support.",
+    readMinutes: 1,
+    featured: false,
+    body: `**If you are in immediate danger** — call emergency services (e.g. **911** in the US) or go to the nearest emergency room.
+
+**US — 988 Suicide & Crisis Lifeline:** call or text **988**, chat at 988lifeline.org
+
+**International:** findahelpline.com
+
+NuraHelp AI does not monitor sessions in real time and cannot respond to emergencies. Use this app only when you are in a safe environment and able to pause if needed.`,
+  },
+];
+
+export function getResourceBySlug(slug: string): ResourceItem | undefined {
+  return RESOURCES.find((r) => r.slug === slug);
+}
+
+export function getFeaturedResources(limit = 3): ResourceItem[] {
+  return RESOURCES.filter((r) => r.featured && r.kind === "article").slice(
+    0,
+    limit
+  );
+}
+
+export function getResourcesByKind(kind: ResourceKind): ResourceItem[] {
+  return RESOURCES.filter((r) => r.kind === kind);
+}

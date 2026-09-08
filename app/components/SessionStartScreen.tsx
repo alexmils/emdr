@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SessionKind } from "@/lib/types";
 import { useApp } from "./AppProvider";
+import { LearnTeaser } from "./LearnTeaser";
 
 type Choice = Exclude<SessionKind, "pending">;
 
@@ -159,6 +160,7 @@ export function SessionStartScreen() {
         <p className="session-start-hint">
           Press 1 or 2 · arrows to move · Enter to confirm
         </p>
+        <LearnTeaser />
       </div>
     </div>
   );

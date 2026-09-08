@@ -1,10 +1,9 @@
 "use client";
 
 import { useApp } from "./AppProvider";
-import { Sidebar } from "./Sidebar";
+import { AppConsoleFrame } from "./AppConsoleFrame";
 import { SessionWorkspace } from "./SessionWorkspace";
 import {
-  SidebarBackdrop,
   SidebarNavProvider,
   useSidebarNav,
 } from "./SidebarNavContext";
@@ -15,13 +14,9 @@ function AppShellFrame() {
   const immersive = sessionMode === "running";
 
   return (
-    <div
-      className={`app-shell flex h-dvh max-h-dvh overflow-hidden ${immersive ? "session-immersive" : ""} ${open ? "sidebar-drawer-open" : ""}`}
-    >
-      <SidebarBackdrop />
-      <Sidebar />
+    <AppConsoleFrame immersive={immersive} drawerOpen={open}>
       <SessionWorkspace />
-    </div>
+    </AppConsoleFrame>
   );
 }
 
