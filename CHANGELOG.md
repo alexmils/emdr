@@ -143,6 +143,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **BLS mobile toolbar**: Control Center–style panel (like reference apps) — labeled groups (Speed / Repeats / Stereo sound / Animation / Vibrations / Adjustments), large segmented tap targets, icon options; replaces cramped single-row steppers; fine speed still via gear + gamepad/keyboard
 - **BLS Adjustments sheet**: live ball preview + play/pause, quick chips, accordion Details (Speed / Repeats & duration / Sound / Animation / Look / rumble); light product style (not a copy of third-party dark iOS sheets); single Reset + Done
 - BLS Adjustments + mobile Control Center restyled to Nura paper/earth (Fraunces title, earth play control, gold focus rings); leftover ChatGPT green (`#10a37f`) dropped from gear, admin chips, upgrade badge, and help bubbles
+- Settings mobile chrome: Back stacks above **Settings** (not side-by-side); more header/tab padding; hide duplicate panel title under tabs
+- Toast notifications for Settings actions (photo upload/remove, save profile, voice/memory saves)
 
 ---
 
