@@ -318,6 +318,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Guided Voice Mode: pistachio **ribbon wave** between transcript and status bar — mic-reactive while listening, soft ambient sway while thinking/speaking (`VoiceWave`, `useMicLevel`, `lib/mic-level.ts`)
 - Guided Voice Mode visual: dual S-curve ribbons (logo vernacular, not EQ bars) + ease-in-out enter (chat lifts, dock fades up from below)
 - Voice wave fix: stronger idle amplitude, taller SVG, unique gradient ids — no more flat “broken” line
+- Voice Mode wave: circle removed — free pistachio sine ribbons only (Canvas)
+- Voice Mode motion: stronger wave travel; enter/exit fades (dock, wave, bar, chat lift/drop, composer re-enter) — no hard cut on End voice
+- Voice Mode wave: left/right edge dissolve (mask gradient transparent → visible) so ribbons fade out at the sides
+- Voice Mode wave: 3 ribbons; listening vs speaking/thinking differ by drift speed, harmonics, mic punch, and opacity
+- Guided chat avatar: **A · white on sage** (was G mint); agent bubbles cooler gray-mint, user bubbles stronger sage tint
 
 ---
 

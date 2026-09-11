@@ -6,7 +6,7 @@
 }
 
 :root {
-  /* Nura â€” Pistachio palette (see docs/brand.md) */
+  /* Nura �?? Pistachio palette (see docs/brand.md) */
   --sidebar-bg: #3d4129;
   --sidebar-border: #4e5236;
   --sidebar-text: #eaf8ea;
@@ -49,7 +49,7 @@
   --radius-sheet: 12px;
   --ease-interactive: var(--ease);
 
-  /* Product UI type scale — readable chrome across /app */
+  /* Product UI type scale ? readable chrome across /app */
   --ui-display: 1.75rem;
   --ui-title: 1.5rem;
   --ui-headline: 1.25rem;
@@ -90,7 +90,7 @@ button {
   font-family: inherit;
 }
 
-/* —— Typography —— */
+/* ?? Typography ?? */
 
 .text-large-title {
   font-size: var(--ui-title);
@@ -126,7 +126,7 @@ button {
   color: var(--sidebar-text);
 }
 
-/* —— Brand lockup (wave wordmark) —— */
+/* ?? Brand lockup (wave wordmark) ?? */
 
 .brand-lockup-link {
   display: inline-flex;
@@ -173,7 +173,7 @@ button {
   font-size: var(--ui-muted);
 }
 
-/* â€”â€” Sidebar â€”â€” */
+/* �??�?? Sidebar �??�?? */
 
 .app-sidebar {
   background: var(--sidebar-bg);
@@ -189,7 +189,7 @@ button {
     border-color 0.24s var(--ease);
 }
 
-/* Desktop: same open/close as mobile â€” collapse rail when drawer flag is off */
+/* Desktop: same open/close as mobile �?? collapse rail when drawer flag is off */
 @media (min-width: 768px) {
   .app-shell:not(.sidebar-drawer-open) .app-sidebar {
     width: 0;
@@ -334,7 +334,7 @@ button {
   background: var(--sidebar-hover);
 }
 
-/* In-flow between Upgrade and the account row — no overlap */
+/* In-flow between Upgrade and the account row ? no overlap */
 .sidebar-account-menu {
   position: relative;
   z-index: 1;
@@ -390,7 +390,7 @@ button {
   color: var(--text);
 }
 
-/* â€”â€” Workspace â€”â€” */
+/* �??�?? Workspace �??�?? */
 
 .app-shell.session-immersive .app-sidebar {
   width: 0;
@@ -418,7 +418,7 @@ button {
   display: none !important;
 }
 
-/* Help FAB sits outside .app-shell â€” hide while a set is running. */
+/* Help FAB sits outside .app-shell �?? hide while a set is running. */
 body:has(.app-shell.session-immersive) .help-fab {
   display: none !important;
 }
@@ -779,7 +779,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Sidebar primary nav â€”â€” */
+/* �??�?? Sidebar primary nav �??�?? */
 
 .sidebar-primary-nav {
   display: flex;
@@ -810,7 +810,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--sidebar-active);
 }
 
-/* —— Learn teaser (home) —— */
+/* ?? Learn teaser (home) ?? */
 
 .learn-teaser {
   width: 100%;
@@ -973,7 +973,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Resources library â€”â€” */
+/* �??�?? Resources library �??�?? */
 
 .resources-main {
   background: var(--bg-canvas);
@@ -1521,7 +1521,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
-/* Intake welcome — quiet chips, one glowing composer */
+/* Intake welcome ? quiet chips, one glowing composer */
 .agent-overlay--intake.agent-overlay--prompt {
   width: min(96%, 48rem);
 }
@@ -1823,7 +1823,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--bg-canvas);
 }
 
-/* â€”â€” Buttons â€”â€” */
+/* �??�?? Buttons �??�?? */
 
 .btn-primary {
   display: inline-flex;
@@ -1928,7 +1928,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--accent-hover);
 }
 
-/* â€”â€” Agent overlay (prompt â†’ then chat thread + pill composer) â€”â€” */
+/* �??�?? Agent overlay (prompt �?? then chat thread + pill composer) �??�?? */
 
 .agent-overlay {
   position: absolute;
@@ -2040,15 +2040,17 @@ body:has(.app-shell.session-immersive) .help-fab {
   text-align: left;
 }
 
+/* Agent: cool gray-mint ? not Paper, so sage avatar stays the brand signal */
 .agent-chat-bubble--agent {
-  background: var(--bg-muted, #f4f4f5);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 82%, #c8d2c4 18%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, #c8d2c4);
   border-bottom-left-radius: 0.35rem;
 }
 
+/* User: stronger sage tint ? readable agent vs user at a glance */
 .agent-chat-bubble--user {
-  background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
   border-bottom-right-radius: 0.35rem;
 }
 
@@ -2140,6 +2142,11 @@ body:has(.app-shell.session-immersive) .help-fab {
 .agent-composer-wrap {
   margin-top: 1.35rem;
 }
+
+.agent-composer-wrap--enter {
+  animation: agentComposerEnter 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
 
 .agent-composer-wrap .agent-composer {
   margin-top: 0;
@@ -2240,7 +2247,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   flex-shrink: 0;
   border: none;
   border-radius: 999px;
-  /* High contrast like ChatGPT blue CTA — Nura ink + gold */
+  /* High contrast like ChatGPT blue CTA ? Nura ink + gold */
   background: var(--ink, #2a3020);
   color: var(--gold, #c6d67e);
   cursor: pointer;
@@ -2276,37 +2283,53 @@ body:has(.app-shell.session-immersive) .help-fab {
   gap: 0.55rem;
   margin-top: 1.15rem;
   width: 100%;
+}
+
+.agent-voice-dock--enter {
   animation: agentVoiceDockIn 0.58s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.agent-voice-dock--exit {
+  animation: agentVoiceDockOut 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
+  pointer-events: none;
 }
 
 .agent-voice-wave {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 4.75rem;
-  padding: 0.25rem 0.25rem 0.15rem;
+  min-height: 4.25rem;
+  padding: 0.1rem 0.25rem;
   pointer-events: none;
   overflow: visible;
+}
+
+.agent-voice-dock--enter .agent-voice-wave {
   animation: agentVoiceWaveIn 0.62s cubic-bezier(0.4, 0, 0.2, 1) 0.06s both;
 }
 
-.agent-voice-wave-svg {
+.agent-voice-wave--exit {
+  animation: agentVoiceWaveOut 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.agent-voice-wave-canvas {
   display: block;
-  width: min(100%, 26rem);
-  height: 4.75rem;
-  overflow: visible;
-}
-
-.agent-voice-wave-stroke {
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--accent, #84b067) 40%, transparent)
+  width: min(100%, 20rem);
+  height: 4.25rem;
+  /* Soft dissolve at left/right so ribbons fade out instead of hard-stopping */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 16%,
+    #000 84%,
+    transparent 100%
   );
-}
-
-.agent-voice-wave-stroke--soft {
-  opacity: 0.75;
-  filter: drop-shadow(
-    0 0 4px color-mix(in srgb, var(--gold, #c6d67e) 35%, transparent)
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 16%,
+    #000 84%,
+    transparent 100%
   );
 }
 
@@ -2314,25 +2337,50 @@ body:has(.app-shell.session-immersive) .help-fab {
   opacity: 0.45;
 }
 
+/* Listening reads brighter; agent turn softens so motion alone tells the story */
+.agent-voice-wave--listening {
+  opacity: 1;
+}
+
 .agent-voice-wave--thinking,
 .agent-voice-wave--speaking {
-  opacity: 0.95;
+  opacity: 0.78;
+}
+
+.agent-voice-wave--off {
+  opacity: 0.55;
 }
 
 @keyframes agentVoiceWaveIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes agentVoiceWaveOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
   }
 }
 
 .agent-overlay--voice .agent-chat-messages,
 .agent-overlay--voice .agent-overlay-body {
   animation: agentVoiceContentLift 0.58s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.agent-overlay--voice-exit .agent-chat-messages,
+.agent-overlay--voice-exit .agent-overlay-body {
+  animation: agentVoiceContentDrop 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes agentVoiceContentLift {
@@ -2343,6 +2391,17 @@ body:has(.app-shell.session-immersive) .help-fab {
   to {
     opacity: 1;
     transform: translateY(-10px);
+  }
+}
+
+@keyframes agentVoiceContentDrop {
+  from {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -2357,25 +2416,18 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .agent-voice-dock,
-  .agent-voice-wave,
-  .agent-overlay--voice .agent-chat-messages,
-  .agent-overlay--voice .agent-overlay-body {
-    animation: agentVoiceFadeOnly 0.35s ease both;
+@keyframes agentVoiceDockOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
   }
-
-  @keyframes agentVoiceFadeOnly {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  to {
+    opacity: 0;
+    transform: translateY(18px);
   }
 }
 
-.agent-voice-bar {
+.agent-voice-dock--enter .agent-voice-bar {
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -2590,7 +2642,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
 }
 
-/* â€”â€” BLS bar expand (collapsed state) â€”â€” */
+/* �??�?? BLS bar expand (collapsed state) �??�?? */
 
 .bls-expand-btn {
   display: inline-flex;
@@ -2640,7 +2692,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     border-bottom: none;
   }
 
-  /* Two-row Control Center layout â€” tap targets â‰¥36px, labeled groups */
+  /* Two-row Control Center layout �?? tap targets �?�36px, labeled groups */
   .bls-panel {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2689,7 +2741,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Form fields â€”â€” */
+/* �??�?? Form fields �??�?? */
 
 .field {
   width: 100%;
@@ -2713,7 +2765,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: var(--radius-lg);
 }
 
-/* â€”â€” Cards / settings â€”â€” */
+/* �??�?? Cards / settings �??�?? */
 
 .apple-card,
 .settings-group {
@@ -2736,7 +2788,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* â€”â€” BLS Adjustments sheet â€”â€” */
+/* �??�?? BLS Adjustments sheet �??�?? */
 
 .gear-overlay {
   position: fixed;
@@ -3323,7 +3375,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: var(--shadow-sm);
 }
 
-/* â€”â€” Toggle â€”â€” */
+/* �??�?? Toggle �??�?? */
 
 .apple-toggle {
   position: relative;
@@ -3383,13 +3435,13 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
-/* —— Settings page —— */
+/* ?? Settings page ?? */
 
 .settings-shell {
   display: flex;
   min-height: 100dvh;
   background: var(--bg-muted);
-  /* Comfortable reading scale — Settings was too small on desktop */
+  /* Comfortable reading scale ? Settings was too small on desktop */
   --settings-title: 1.75rem;
   --settings-section: 1.125rem;
   --settings-body: 1.0625rem;
@@ -3530,7 +3582,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  /* Comfortable offset from top — not jammed in the corner */
+  /* Comfortable offset from top ? not jammed in the corner */
   padding: clamp(2rem, 5.5vh, 3.25rem) clamp(1.25rem, 4vw, 2.5rem) 3rem;
 }
 
@@ -3618,7 +3670,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--text);
 }
 
-/* —— /app/billing — centered card + upgrade flip —— */
+/* ?? /app/billing ? centered card + upgrade flip ?? */
 
 .billing-page {
   position: relative;
@@ -3672,7 +3724,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .billing-card {
   width: 100%;
-  /* Flat rotateY only — preserve-3d can leave a thick edge / ghost silhouette */
+  /* Flat rotateY only ? preserve-3d can leave a thick edge / ghost silhouette */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -3783,7 +3835,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     background: var(--bg-elevated);
   }
 
-  /* Stack Back above title â€” avoid cramped single-row chrome */
+  /* Stack Back above title �?? avoid cramped single-row chrome */
   .settings-sidebar-top {
     display: flex;
     flex-direction: column;
@@ -3844,7 +3896,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     max-width: none;
   }
 
-  /* Tab already names the section — drop duplicate heading on phone */
+  /* Tab already names the section ? drop duplicate heading on phone */
   .settings-panel-title {
     position: absolute;
     width: 1px;
@@ -3871,7 +3923,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Toasts â€”â€” */
+/* �??�?? Toasts �??�?? */
 
 .toast-viewport {
   position: fixed;
@@ -3936,7 +3988,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Admin dashboard â€”â€” */
+/* �??�?? Admin dashboard �??�?? */
 
 .admin-page {
   width: 100%;
@@ -4351,7 +4403,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--text-muted);
 }
 
-/* —— Admin finances (screenshot ledger layout) —— */
+/* ?? Admin finances (screenshot ledger layout) ?? */
 
 .admin-fin-header {
   padding: 1.25rem 1.5rem 0.35rem;
@@ -4925,7 +4977,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* —— Admin analytics (screenshot ledger layout) —— */
+/* ?? Admin analytics (screenshot ledger layout) ?? */
 
 .admin-an-header {
   padding: 1.25rem 1.5rem 0.35rem;
@@ -5183,7 +5235,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* —— Admin users directory —— */
+/* ?? Admin users directory ?? */
 
 .admin-users-header {
   padding: 1.25rem 1.5rem 0.5rem;
@@ -6476,7 +6528,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   line-height: 1.35;
 }
 
-/* Legacy Stripe aliases → shared setting toggle */
+/* Legacy Stripe aliases ? shared setting toggle */
 .admin-stripe-mode {
   display: flex;
   flex-direction: column;
@@ -7314,7 +7366,7 @@ select.field option:disabled {
   margin-top: 1.1rem;
 }
 
-/* â€”â€” Frontend site (public /) â€”â€” */
+/* �??�?? Frontend site (public /) �??�?? */
 
 .frontend-home-landing {
   position: relative;
@@ -7328,7 +7380,7 @@ select.field option:disabled {
   --fe-accent: #84b067;
   --fe-accent-fg: #f7fdf7;
   --fe-gold: #c6d67e;
-  /* Same voice as /app — contrasts rounded wave wordmark (see nura-brand.mdc) */
+  /* Same voice as /app ? contrasts rounded wave wordmark (see nura-brand.mdc) */
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
   --font-alt: var(--font-fe-alt), ui-monospace, monospace;
@@ -7357,7 +7409,7 @@ select.field option:disabled {
   font-variation-settings: "SOFT" 45, "WONK" 0.4;
 }
 
-/* Section titles need room to breathe — beat the h2 element rule above */
+/* Section titles need room to breathe ? beat the h2 element rule above */
 .frontend-home h2.fe-section-title {
   font-weight: 500;
   line-height: 1.28;
@@ -7432,7 +7484,7 @@ select.field option:disabled {
 }
 
 .frontend-btn-primary:hover {
-  /* hover pulse + pistachio — frontend-buttons.css */
+  /* hover pulse + pistachio ? frontend-buttons.css */
 }
 
 .frontend-btn-ghost {
@@ -7450,7 +7502,7 @@ select.field option:disabled {
 }
 
 .frontend-btn-ghost:hover {
-  /* hover pulse + pistachio — frontend-buttons.css */
+  /* hover pulse + pistachio ? frontend-buttons.css */
 }
 
 .frontend-home a:focus-visible,
@@ -7579,7 +7631,7 @@ select.field option:disabled {
   }
 }
 
-/* —— Auth shell: split form + session mockup —— */
+/* ?? Auth shell: split form + session mockup ?? */
 .auth-shell {
   --auth-form-max: 26rem;
   display: flex;
@@ -7839,7 +7891,7 @@ select.field option:disabled {
   text-align: left;
 }
 
-/* Right pane: ball mockup — desktop only */
+/* Right pane: ball mockup ? desktop only */
 .auth-shell-pane--visual {
   display: none;
 }
@@ -7856,7 +7908,7 @@ select.field option:disabled {
   background: #f6f4e8;
 }
 
-/* Soft pistachio / pale-gold wash — no lines or rings */
+/* Soft pistachio / pale-gold wash ? no lines or rings */
 .auth-visual-atmosphere {
   position: absolute;
   inset: 0;
@@ -8070,7 +8122,7 @@ select.field option:disabled {
   }
 }
 
-/* â€”â€” Onboarding / upgrade â€”â€” */
+/* �??�?? Onboarding / upgrade �??�?? */
 .onboarding-bullets,
 .onboarding-steps {
   margin: 0 0 0.75rem;
@@ -8494,7 +8546,7 @@ select.field option:disabled {
   opacity: 0.72;
 }
 
-/* —— Help chat widget (compact bottom-right panel) —— */
+/* ?? Help chat widget (compact bottom-right panel) ?? */
 .help-fab {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right));
@@ -8829,7 +8881,7 @@ a.help-drawer-signin.btn-primary {
   }
 }
 
-/* —— Admin SEO —— */
+/* ?? Admin SEO ?? */
 .admin-seo-section {
   display: flex;
   flex-direction: column;

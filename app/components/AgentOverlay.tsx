@@ -17,7 +17,7 @@ import { Avatar } from "./Avatar";
 import type { VoicePhase } from "./useGuidedVoiceMode";
 import { VoiceWave } from "./VoiceWave";
 
-const GUIDE_AVATAR = "/brand/nura-circle-variants/G-black-on-mint-128.png";
+const GUIDE_AVATAR = "/brand/nura-circle-variants/A-white-on-sage-128.png";
 
 interface AgentOverlayProps {
   messages: Message[];
@@ -77,6 +77,10 @@ export function AgentOverlay({
   const [rollKey, setRollKey] = useState(0);
   const [dictating, setDictating] = useState(false);
   const [dictationError, setDictationError] = useState<string | null>(null);
+  /** Keep voice chrome mounted while exit fade runs. */
+  const [voiceExiting, setVoiceExiting] = useState(false);
+  const [composerEnterKey, setComposerEnterKey] = useState(0);
+  const wasVoiceActive = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const dictationRef = useRef<BrowserSpeechSession | null>(null);
@@ -93,6 +97,23 @@ export function AgentOverlay({
   const conversationStarted = messages.some((m) => m.role === "user");
   const showDictationMic = isBrowserSpeechSupported();
   const showVoiceMode = Boolean(voiceAvailable && onEnterVoice);
+  const voiceChrome = voiceActive || voiceExiting;
+
+  useEffect(() => {
+    if (voiceActive) {
+      wasVoiceActive.current = true;
+      setVoiceExiting(false);
+      return;
+    }
+    if (!wasVoiceActive.current) return;
+    wasVoiceActive.current = false;
+    setVoiceExiting(true);
+    const id = window.setTimeout(() => {
+      setVoiceExiting(false);
+      setComposerEnterKey((k) => k + 1);
+    }, 480);
+    return () => window.clearTimeout(id);
+  }, [voiceActive]);
 
   const stopDictation = () => {
     dictationRef.current?.abort();
@@ -162,26 +183,37 @@ export function AgentOverlay({
 
   if (hidden) return null;
 
-  const voiceDock = voiceActive ? (
-    <div className="agent-voice-dock">
-      <VoiceWave active={voiceActive} phase={voicePhase} />
+  const voiceDock = voiceChrome ? (
+    <div
+      className={`agent-voice-dock${voiceExiting ? " agent-voice-dock--exit" : " agent-voice-dock--enter"}`}
+    >
+      <VoiceWave
+        active={voiceChrome}
+        phase={voiceExiting ? "off" : voicePhase}
+        fadingOut={voiceExiting}
+      />
       <div className="agent-voice-bar" role="status" aria-live="polite">
         <div
-          className={`agent-voice-orb agent-voice-orb--${voicePhase}`}
+          className={`agent-voice-orb agent-voice-orb--${voiceExiting ? "off" : voicePhase}`}
           aria-hidden
         />
         <div className="agent-voice-meta">
-          <p className="agent-voice-status">{voiceStatusLabel(voicePhase)}</p>
-          {voiceInterim ? (
+          <p className="agent-voice-status">
+            {voiceExiting ? "Ending…" : voiceStatusLabel(voicePhase)}
+          </p>
+          {!voiceExiting && voiceInterim ? (
             <p className="agent-voice-interim">{voiceInterim}</p>
           ) : null}
-          {voiceError ? <p className="agent-voice-error">{voiceError}</p> : null}
+          {!voiceExiting && voiceError ? (
+            <p className="agent-voice-error">{voiceError}</p>
+          ) : null}
         </div>
         <button
           type="button"
           className="agent-voice-end"
           onClick={onExitVoice}
           aria-label="End voice"
+          disabled={voiceExiting}
         >
           <X size={16} strokeWidth={2.25} />
           <span>End voice</span>
@@ -190,11 +222,12 @@ export function AgentOverlay({
     </div>
   ) : null;
 
-  const composer = voiceActive ? (
+  const composer = voiceChrome ? (
     voiceDock
   ) : (
     <div
-      className={`agent-composer-wrap ${!conversationStarted ? "agent-fade-up agent-fade-up--late" : ""}`}
+      key={composerEnterKey}
+      className={`agent-composer-wrap agent-composer-wrap--enter ${!conversationStarted ? "agent-fade-up agent-fade-up--late" : ""}`}
     >
       <form
         className={`agent-composer${showDictationMic ? " agent-composer--with-mic" : ""}`}
@@ -262,7 +295,7 @@ export function AgentOverlay({
   );
 
   const quickReplyRow =
-    !voiceActive && quickReplies.length > 0 ? (
+    !voiceChrome && quickReplies.length > 0 ? (
       <div
         className={`agent-quick-replies ${!conversationStarted ? "agent-fade-up agent-fade-up--late" : ""}`}
         role="group"
@@ -293,7 +326,7 @@ export function AgentOverlay({
       <p className="agent-checkin-banner">
         Set complete — share what you notice, or repeat if you missed it.
       </p>
-      {onRepeatSet && !voiceActive && (
+      {onRepeatSet && !voiceChrome && (
         <button
           type="button"
           className="agent-repeat-set"
@@ -308,7 +341,7 @@ export function AgentOverlay({
   if (!conversationStarted) {
     return (
       <div
-        className={`agent-overlay agent-overlay--prompt ${checkIn ? "agent-overlay--check-in" : ""} ${intake ? "agent-overlay--intake" : ""} ${voiceActive ? "agent-overlay--voice" : ""}`}
+        className={`agent-overlay agent-overlay--prompt ${checkIn ? "agent-overlay--check-in" : ""} ${intake ? "agent-overlay--intake" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
       >
         <div className="agent-overlay-inner">
           {checkInBanner}
@@ -316,7 +349,7 @@ export function AgentOverlay({
             {lastAgent && (
               <div key={rollKey} className="agent-overlay-line agent-fade-up">
                 <p className="agent-overlay-text">{lastAgent.content}</p>
-                {!voiceActive && (
+                {!voiceChrome && (
                   <button
                     type="button"
                     onClick={() => onPlayLine(lastAgent.content)}
@@ -338,7 +371,7 @@ export function AgentOverlay({
 
   return (
     <div
-      className={`agent-overlay agent-overlay--thread ${checkIn ? "agent-overlay--check-in" : ""} ${voiceActive ? "agent-overlay--voice" : ""}`}
+      className={`agent-overlay agent-overlay--thread ${checkIn ? "agent-overlay--check-in" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
     >
       <div className="agent-overlay-inner">
         {checkInBanner}
@@ -363,7 +396,7 @@ export function AgentOverlay({
                   className={`agent-chat-bubble ${isUser ? "agent-chat-bubble--user" : "agent-chat-bubble--agent"}`}
                 >
                   <p className="agent-chat-text">{m.content}</p>
-                  {!isUser && !voiceActive && (
+                  {!isUser && !voiceChrome && (
                     <button
                       type="button"
                       onClick={() => onPlayLine(m.content)}

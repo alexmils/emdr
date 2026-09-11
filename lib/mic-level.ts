@@ -28,48 +28,117 @@ export function smoothLevel(
   return prev + (next - prev) * t;
 }
 
-/**
- * Peak displacement in viewBox units — always readable, mic boosts further.
- * Idle listening still breathes; never a flat line.
- */
+/** Peak displacement for free wave ribbons (Canvas height ~80). */
 export function waveAmplitude(
   level: number,
   mode: "listening" | "ambient" | "quiet"
 ): number {
   const voice = Math.min(1, Math.max(0, level));
   if (mode === "quiet") return 10;
-  if (mode === "ambient") return 16 + voice * 8;
-  // Base wobble ~18 even in silence; speech can reach ~36
-  return 18 + Math.max(voice, 0.12) * 22;
+  // Agent voice / thinking: calm low breath — distinct from listening
+  if (mode === "ambient") return 12 + voice * 5;
+  // Listening: quiet idle, clear punch when the mic hears speech
+  return 9 + voice * 26;
+}
+
+function sampleWaveY(
+  nx: number,
+  mid: number,
+  t: number,
+  amplitude: number,
+  lag: number
+): number {
+  // Keep tips alive (floor 0.4) so the ribbon reads across the full disk
+  const envelope = 0.4 + 0.6 * Math.sin(nx * Math.PI);
+  return (
+    mid +
+    envelope *
+      (Math.sin(nx * Math.PI * 1.5 + t * 2.0 + lag) * amplitude +
+        Math.sin(nx * Math.PI * 2.8 + t * 2.6 + lag * 1.1) * amplitude * 0.18)
+  );
+}
+
+function pointsToCubicPath(pts: { x: number; y: number }[]): string {
+  if (pts.length === 0) return "";
+  let d = `M${pts[0]!.x.toFixed(2)} ${pts[0]!.y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)]!;
+    const p1 = pts[i]!;
+    const p2 = pts[i + 1]!;
+    const p3 = pts[Math.min(pts.length - 1, i + 2)]!;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(2)} ${cp1y.toFixed(2)} ${cp2x.toFixed(2)} ${cp2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  return d;
 }
 
 /**
- * Soft S-curve ribbon (Nura wave vernacular).
- * Uses enough vertical travel to read clearly at ~4rem tall.
+ * Smooth cubic stroke across the orb (full width, no jagged L segments).
  */
 export function buildVoiceWavePath(
   width: number,
   height: number,
   t: number,
   amplitude: number,
-  lag = 0
+  lag = 0,
+  samples = 32
 ): string {
   const mid = height / 2;
-  const step = 4;
-  const parts: string[] = [];
-  for (let x = 0; x <= width; x += step) {
-    const nx = x / width;
-    // Envelope: stronger in the middle (logo-like), soft tips
-    const envelope = Math.sin(nx * Math.PI);
-    const y =
-      mid +
-      envelope *
-        (Math.sin(nx * Math.PI * 2.4 + t * 2.4 + lag) * amplitude +
-          Math.sin(nx * Math.PI * 4.8 + t * 3.1 + lag * 1.3) *
-            amplitude *
-            0.35 +
-          Math.sin(t * 1.7 + lag) * amplitude * 0.08);
-    parts.push(`${x === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`);
+  const n = Math.max(10, samples);
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i <= n; i++) {
+    const nx = i / n;
+    pts.push({
+      x: nx * width,
+      y: sampleWaveY(nx, mid, t, amplitude, lag),
+    });
   }
-  return parts.join(" ");
+  return pointsToCubicPath(pts);
+}
+
+/**
+ * Filled soft ribbon (upper + lower edge) — reads as a continuous band, not a broken line.
+ */
+export function buildVoiceRibbonBand(
+  width: number,
+  height: number,
+  t: number,
+  amplitude: number,
+  thickness: number,
+  lag = 0,
+  samples = 32
+): string {
+  const mid = height / 2;
+  const n = Math.max(10, samples);
+  const top: { x: number; y: number }[] = [];
+  const bot: { x: number; y: number }[] = [];
+  for (let i = 0; i <= n; i++) {
+    const nx = i / n;
+    const y = sampleWaveY(nx, mid, t, amplitude, lag);
+    const x = nx * width;
+    top.push({ x, y: y - thickness / 2 });
+    bot.push({ x, y: y + thickness / 2 });
+  }
+  const forward = pointsToCubicPath(top);
+  // reverse bottom with cubics
+  bot.reverse();
+  let d = forward;
+  // line to first bottom point then cubic along bottom
+  d += ` L${bot[0]!.x.toFixed(2)} ${bot[0]!.y.toFixed(2)}`;
+  for (let i = 0; i < bot.length - 1; i++) {
+    const p0 = bot[Math.max(0, i - 1)]!;
+    const p1 = bot[i]!;
+    const p2 = bot[i + 1]!;
+    const p3 = bot[Math.min(bot.length - 1, i + 2)]!;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(2)} ${cp1y.toFixed(2)} ${cp2x.toFixed(2)} ${cp2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  d += " Z";
+  return d;
 }
