@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   devIndicators: false,
+  // Docker/Coolify builds are memory-tight; lint + typecheck run in CI / locally.
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
   async redirects() {
     return [
       {

@@ -3,7 +3,8 @@ FROM node:22-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
-RUN npm ci
+# Coolify may inject NODE_ENV=production during build; keep devDeps for next build/typescript.
+RUN npm ci --include=dev
 
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -11,6 +12,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=3072
 RUN npm run build
 
 FROM node:22-alpine AS runner
