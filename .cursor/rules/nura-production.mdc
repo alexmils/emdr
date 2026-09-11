@@ -1,0 +1,38 @@
+---
+description: NuraHelp production / Coolify hosting map — server, deploy, DNS, ports (read before deploy or prod debug)
+alwaysApply: true
+---
+
+# EMDR — production hosting (Coolify)
+
+Full runbook: **[`docs/production.md`](docs/production.md)**. Read it before deploy, DNS, Docker, Coolify, or prod outages.
+
+## Essentials (do not invent alternatives)
+
+| Item | Value |
+|------|--------|
+| Site | https://nurahelp.com |
+| Coolify | https://server.nurahelp.com |
+| SSH | `root@217.76.58.141` |
+| GitHub | `alexmils/nura` · branch `main` |
+| Image | `ghcr.io/alexmils/nura:latest` |
+| Coolify app uuid | `epufvmx1j8jold5gdpfak85m` |
+| Coolify Postgres uuid | `kiywnhlez6gi7d9hkzfksffp` |
+| Coolify project | NuraHelp `e1j7mdyvaodfofmkslvkebsq` |
+| App port | **3471** bound as `127.0.0.1:3471:3471` |
+
+## How traffic works
+
+Cloudflare (proxied) → CloudPanel **nginx** on the VPS → `127.0.0.1:3471` → Coolify container. Coolify does **not** own public 80/443 for `nurahelp.com` (same pattern as Receptly on this host).
+
+## How deploy works
+
+Push to `main` → [`.github/workflows/build-deploy.yml`](.github/workflows/build-deploy.yml) builds/pushes GHCR → `POST /api/v1/deploy` on Coolify (`dockerimage` pull only). **Do not** build Next on the VPS (OOM history).
+
+GitHub secrets: `COOLIFY_TOKEN`, `COOLIFY_APP_UUID`, `COOLIFY_API_URL=https://server.nurahelp.com`.
+
+## Hard rules
+
+1. Dockerfile **`WORKDIR` must be `/nura`**, never `/app` (breaks `/` + CSS with `app/app` console routes).
+2. **No secrets** in git, Mem0, or this rule (tokens, DB passwords, `AUTH_SECRET`).
+3. After hosting changes: update `docs/production.md` + CHANGELOG + Mem0 (`user_id: emdr`).

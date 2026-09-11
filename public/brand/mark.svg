@@ -1,23 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48" fill="none" role="img" aria-hidden="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 70" >
   <defs>
-    <linearGradient id="nuraMarkGrad" x1="4" y1="24" x2="116" y2="24" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#76C39A"/>
-      <stop offset="45%" stop-color="#A4D6A0"/>
-      <stop offset="100%" stop-color="#C6B57E"/>
-    </linearGradient>
-    <linearGradient id="nuraMarkSoft" x1="8" y1="24" x2="110" y2="24" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#C5E9C8"/>
-      <stop offset="100%" stop-color="#D8CFA0"/>
+    <linearGradient id="g" x1="10" y1="35" x2="190" y2="35" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9ED9B0"/>
+      <stop offset="40%" stop-color="#84B067"/>
+      <stop offset="100%" stop-color="#5F8A4A"/>
     </linearGradient>
   </defs>
-  <!-- Soft ribbon -->
-  <path
-    fill="url(#nuraMarkSoft)"
-    d="M6 36 C18 26 30 12 46 8 C58 5 68 10 78 20 C88 30 98 32 110 22 C100 32 90 40 78 42 C66 44 56 38 46 28 C36 18 24 16 6 36 Z"
-  />
-  <!-- Main S-curve wave mark -->
-  <path
-    fill="url(#nuraMarkGrad)"
-    d="M2 38 C14 26 28 10 46 6 C60 3 70 10 80 22 C90 34 102 36 116 24 C116 24 116 24 116 30 C104 40 92 44 80 44 C68 44 58 38 48 28 C38 18 26 14 2 38 Z"
-  />
+  <!-- Continuous tapered S: sharp left tip → thick mid → sharp right tip -->
+  <path fill="url(#g)" d="
+    M 12 48
+    C 28 34, 48 16, 78 12
+    C 102 8, 118 18, 132 32
+    C 144 44, 158 50, 186 40
+    C 178 52, 162 58, 146 56
+    C 128 54, 114 44, 100 32
+    C 86 20, 68 14, 46 20
+    C 32 24, 22 34, 12 48
+    Z"/>
 </svg>

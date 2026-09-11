@@ -68,12 +68,19 @@ Do not use Inter on any surface. Avoid rounded soft grotesks (Nunito, Manrope, r
 ## Logo
 
 - **Wordmark**: wave ribbon flowing into lowercase **nura** (green→gold gradient). UI chrome shows the wave wordmark only — no “help” suffix next to the logo (legal name remains NuraHelp in copy/aria).
-- **Mark**: wave ribbon only (cropped from the lockup).
-- On light surfaces: **color** (or **black** mono). On dark chrome (sidebar, admin, hero overlay, footer): **white**.
-- Favicon: wave on mint rounded square (`app/icon.svg`, `app/icon.png`, `public/brand/favicon.png`).
+- **Mark**: single tapered S-ribbon (pointed both ends). Files: `mark.png` / `mark-black.png` / `mark-white.png` (+ `mark.svg`).
+- Favicon / apple-touch: **white wave on sage** `#84B067` (high contrast at small sizes — not mint+muddy gradient). Files: `favicon.png`, `favicon-32.png`, `apple-touch-icon.png`, `app/icon.svg`, `app/icon.png`, `app/apple-icon.png`.
+- Square lockups (500 / 2500):
+  - Black/white transparent: `nura-wave-logo-black|white-{500,2500}.png`
+  - Black on white / white on black: `nura-wave-logo-black-on-white-*`, `nura-wave-logo-white-on-black-*`
+  - Color transparent: `nura-wave-logo-color-{500,2500}.png`
+  - Color on white / black: `nura-wave-logo-color-on-white-*`, `nura-wave-logo-color-on-black-*`
+- Wordmark only (no wave) — solid letterforms (`nura-text.svg` / filled masters):
+  - Transparent: `nura-text.png`, `nura-text-black.png`, `nura-text-white.png` (+ `-500` / `-2500` squares)
+  - On backgrounds: `nura-text-color-on-white|black-*`, `nura-text-black-on-white-*`, `nura-text-white-on-black-*`
 - Never: brain, lotus, chat bubble, cross, heart, or the retired two-dots arc.
 
-Files: `public/brand/nura-wave-logo.png` (+ `-black` / `-white`), `mark.png`, `lockup.png` / `lockup.svg`, `mark.svg`. Component: `app/components/BrandLockup.tsx` (`tone="color" | "black" | "white"`).
+Files: `public/brand/nura-wave-logo.png` (+ `-black` / `-white` / color squares), `nura-text*.png`, `mark.png`, `lockup.png` / `lockup.svg`, `mark.svg`. Component: `app/components/BrandLockup.tsx` (`tone="color" | "black" | "white"`).
 
 ## Voice
 

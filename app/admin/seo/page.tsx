@@ -42,6 +42,371 @@ function statusClass(status: ConnectionStatus): string {
   return "admin-seo-status-off";
 }
 
+type ConnId =
+  | "gsc"
+  | "ignore_ips"
+  | "clarity"
+  | "ga4"
+  | "gtm"
+  | "bing"
+  | "meta"
+  | "linkedin";
+
+type ConnFormState = {
+  ga4MeasurementId: string;
+  gtmId: string;
+  clarityId: string;
+  gscProperty: string;
+  ga4PropertyId: string;
+  ignoreIps: string;
+  gscVerification: string;
+  bingVerification: string;
+  googleServiceAccountJson: string;
+};
+
+function emptySecretFields(): Pick<
+  ConnFormState,
+  "gscVerification" | "bingVerification" | "googleServiceAccountJson"
+> {
+  return {
+    gscVerification: "",
+    bingVerification: "",
+    googleServiceAccountJson: "",
+  };
+}
+
+function connActionLabel(
+  status: ConnectionStatus,
+  canEdit: boolean
+): string | null {
+  if (!canEdit) return null;
+  if (status === "via_tag_manager") return "How to";
+  if (status === "connected") return "Edit";
+  return "Connect";
+}
+
+function ConnectionConnectModal({
+  connId,
+  seo,
+  busy,
+  initial,
+  onClose,
+  onSave,
+  onOpenGtm,
+}: {
+  connId: ConnId;
+  seo: SeoAdminView;
+  busy: boolean;
+  initial: ConnFormState;
+  onClose: () => void;
+  onSave: (patch: SeoConfigPatch) => Promise<boolean>;
+  onOpenGtm: () => void;
+}) {
+  const [draft, setDraft] = useState(initial);
+  const titles: Record<ConnId, string> = {
+    gsc: "Google Search Console",
+    ignore_ips: "Ignored IPs",
+    clarity: "Microsoft Clarity",
+    ga4: "Google Analytics",
+    gtm: "Google Tag Manager",
+    bing: "Bing Webmaster Tools",
+    meta: "Meta Pixel",
+    linkedin: "LinkedIn Insight",
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const infoOnly = connId === "meta" || connId === "linkedin";
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (infoOnly) return;
+    let patch: SeoConfigPatch = {};
+    if (connId === "gsc") {
+      patch = {
+        gscProperty: draft.gscProperty,
+        gscVerification: draft.gscVerification,
+      };
+    } else if (connId === "ignore_ips") {
+      patch = { ignoreIps: draft.ignoreIps };
+    } else if (connId === "clarity") {
+      patch = { clarityId: draft.clarityId };
+    } else if (connId === "ga4") {
+      patch = {
+        ga4MeasurementId: draft.ga4MeasurementId,
+        ga4PropertyId: draft.ga4PropertyId,
+        googleServiceAccountJson: draft.googleServiceAccountJson,
+      };
+    } else if (connId === "gtm") {
+      patch = { gtmId: draft.gtmId };
+    } else if (connId === "bing") {
+      patch = { bingVerification: draft.bingVerification };
+    }
+    const ok = await onSave(patch);
+    if (ok) onClose();
+  }
+
+  return (
+    <div
+      className="admin-modal-backdrop"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className={`admin-modal${connId === "ga4" ? " admin-modal-wide" : ""}`}
+        role="dialog"
+        aria-labelledby="admin-seo-conn-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="admin-seo-conn-modal-title" className="admin-panel-title">
+          {titles[connId]}
+        </h2>
+
+        {infoOnly ? (
+          <>
+            <p className="admin-panel-sub">
+              {connId === "meta"
+                ? "Add the Meta Pixel inside Google Tag Manager. Nura does not load a separate Meta script."
+                : "Add the LinkedIn tag inside Google Tag Manager. Nura does not load a separate LinkedIn script."}
+            </p>
+            <div className="admin-modal-actions">
+              <button type="button" className="admin-btn-edit" onClick={onClose}>
+                Close
+              </button>
+              <button
+                type="button"
+                className="admin-btn-edit"
+                onClick={onOpenGtm}
+              >
+                Open Tag Manager
+              </button>
+            </div>
+          </>
+        ) : (
+          <form className="admin-form-stack mt-4" onSubmit={(e) => void submit(e)}>
+            {connId === "gsc" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Paste the property and verification code from Search Console.
+                </p>
+                <label className="admin-field-label">
+                  Property
+                  <input
+                    className="field"
+                    placeholder={`sc-domain:${BRAND_DOMAIN}`}
+                    value={draft.gscProperty}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, gscProperty: e.target.value }))
+                    }
+                  />
+                </label>
+                <label className="admin-field-label">
+                  Verification code
+                  {seo.hasGscVerification
+                    ? " (leave blank to keep; type off to clear)"
+                    : ""}
+                  <input
+                    className="field"
+                    type="password"
+                    autoComplete="off"
+                    value={draft.gscVerification}
+                    disabled={busy}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        gscVerification: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {connId === "ignore_ips" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Visits from these addresses skip Analytics, Clarity, and Tag
+                  Manager.
+                </p>
+                <label className="admin-field-label">
+                  IP addresses
+                  <input
+                    className="field"
+                    placeholder="1.2.3.4, 5.6.7.8"
+                    value={draft.ignoreIps}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, ignoreIps: e.target.value }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {connId === "clarity" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Loads on public pages after analytics cookies are allowed.
+                </p>
+                <label className="admin-field-label">
+                  Project ID
+                  <input
+                    className="field"
+                    value={draft.clarityId}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, clarityId: e.target.value }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {connId === "ga4" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Measurement ID for the public site. Property ID and service
+                  account power the Analytics tab.
+                </p>
+                <label className="admin-field-label">
+                  Measurement ID
+                  <input
+                    className="field"
+                    placeholder="G-XXXXXXXX"
+                    value={draft.ga4MeasurementId}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        ga4MeasurementId: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <label className="admin-field-label">
+                  Property ID (Analytics API)
+                  <input
+                    className="field"
+                    placeholder="123456789"
+                    value={draft.ga4PropertyId}
+                    disabled={busy}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        ga4PropertyId: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <label className="admin-field-label">
+                  Service account JSON
+                  {seo.hasGoogleServiceAccount
+                    ? " (leave blank to keep; type off to clear)"
+                    : ""}
+                  {seo.serviceAccountEmail ? (
+                    <span className="admin-seo-mono muted">
+                      {" "}
+                      · {seo.serviceAccountEmail}
+                    </span>
+                  ) : null}
+                  <textarea
+                    className="field admin-textarea"
+                    rows={5}
+                    placeholder='{"type":"service_account",...}'
+                    value={draft.googleServiceAccountJson}
+                    disabled={busy}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        googleServiceAccountJson: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {connId === "gtm" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Use Tag Manager for Meta and LinkedIn later — not for GA or
+                  Clarity.
+                </p>
+                <label className="admin-field-label">
+                  Container ID
+                  <input
+                    className="field"
+                    placeholder="GTM-XXXXXXX"
+                    value={draft.gtmId}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, gtmId: e.target.value }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {connId === "bing" ? (
+              <>
+                <p className="admin-panel-sub">
+                  Paste the verification code from Bing Webmaster Tools.
+                </p>
+                <label className="admin-field-label">
+                  Verification code
+                  {seo.hasBingVerification
+                    ? " (leave blank to keep; type off to clear)"
+                    : ""}
+                  <input
+                    className="field"
+                    type="password"
+                    autoComplete="off"
+                    value={draft.bingVerification}
+                    disabled={busy}
+                    autoFocus
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        bingVerification: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              </>
+            ) : null}
+
+            <div className="admin-modal-actions">
+              <button
+                type="button"
+                className="admin-btn-edit"
+                onClick={onClose}
+                disabled={busy}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="admin-btn-edit" disabled={busy}>
+                {busy ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function hostLabel(url: string): string {
   try {
     return new URL(url).host;
@@ -350,17 +715,16 @@ function AdminSeoPageInner() {
     ogImageUrl: "",
   });
 
-  const [connDraft, setConnDraft] = useState({
+  const [connDraft, setConnDraft] = useState<ConnFormState>({
     ga4MeasurementId: "",
     gtmId: "",
     clarityId: "",
     gscProperty: "",
     ga4PropertyId: "",
     ignoreIps: "",
-    gscVerification: "",
-    bingVerification: "",
-    googleServiceAccountJson: "",
+    ...emptySecretFields(),
   });
+  const [connModal, setConnModal] = useState<ConnId | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetchJson<{
@@ -380,9 +744,7 @@ function AdminSeoPageInner() {
       gscProperty: res.seo.gscProperty,
       ga4PropertyId: res.seo.ga4PropertyId,
       ignoreIps: res.seo.ignoreIps,
-      gscVerification: "",
-      bingVerification: "",
-      googleServiceAccountJson: "",
+      ...emptySecretFields(),
     });
   }, []);
 
@@ -629,219 +991,95 @@ function AdminSeoPageInner() {
               service account stay hidden after save.
             </p>
             <div className="admin-seo-conn-grid">
-              {status.connections.map((c) => (
-                <article key={c.id} className="admin-panel">
-                  <div className="admin-seo-conn-head">
-                    <h3>{c.name}</h3>
-                    <span className={statusClass(c.status)}>
-                      {statusLabel(c.status)}
-                    </span>
-                  </div>
-                  {c.detail ? (
-                    <p className="admin-seo-mono">{c.detail}</p>
-                  ) : null}
-                  {c.publicIdMasked ? (
-                    <p className="admin-seo-mono muted">{c.publicIdMasked}</p>
-                  ) : null}
-                  <p className="admin-panel-sub">{c.hint}</p>
-                </article>
-              ))}
+              {status.connections.map((c) => {
+                const id = c.id as ConnId;
+                const action = connActionLabel(c.status, canEdit);
+                return (
+                  <article key={c.id} className="admin-panel">
+                    <div className="admin-seo-conn-head">
+                      <h3>{c.name}</h3>
+                      <div className="admin-seo-conn-actions">
+                        {action ? (
+                          <button
+                            type="button"
+                            className="admin-seo-connect-btn"
+                            disabled={busy}
+                            onClick={() => {
+                              setConnDraft({
+                                ga4MeasurementId: seo.ga4MeasurementId,
+                                gtmId: seo.gtmId,
+                                clarityId: seo.clarityId,
+                                gscProperty: seo.gscProperty,
+                                ga4PropertyId: seo.ga4PropertyId,
+                                ignoreIps: seo.ignoreIps,
+                                ...emptySecretFields(),
+                              });
+                              setConnModal(id);
+                            }}
+                          >
+                            {action}
+                          </button>
+                        ) : null}
+                        <span className={statusClass(c.status)}>
+                          {statusLabel(c.status)}
+                        </span>
+                      </div>
+                    </div>
+                    {c.detail ? (
+                      <p className="admin-seo-mono">{c.detail}</p>
+                    ) : null}
+                    {c.publicIdMasked ? (
+                      <p className="admin-seo-mono muted">{c.publicIdMasked}</p>
+                    ) : null}
+                    <p className="admin-panel-sub">{c.hint}</p>
+                  </article>
+                );
+              })}
             </div>
-
-            {canEdit ? (
-              <form
-                className="admin-form-stack admin-panel"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void savePatch(
-                    {
-                      ga4MeasurementId: connDraft.ga4MeasurementId,
-                      gtmId: connDraft.gtmId,
-                      clarityId: connDraft.clarityId,
-                      gscProperty: connDraft.gscProperty,
-                      ga4PropertyId: connDraft.ga4PropertyId,
-                      ignoreIps: connDraft.ignoreIps,
-                      gscVerification: connDraft.gscVerification,
-                      bingVerification: connDraft.bingVerification,
-                      googleServiceAccountJson:
-                        connDraft.googleServiceAccountJson,
-                    },
-                    "Connections saved."
-                  ).then((ok) => {
-                    if (!ok) return;
+            {!canEdit ? (
+              <p className="admin-panel-sub">
+                Support can view connections. Platform admin can connect them.
+              </p>
+            ) : null}
+            {connModal && seo ? (
+              <ConnectionConnectModal
+                key={connModal}
+                connId={connModal}
+                seo={seo}
+                busy={busy}
+                initial={connDraft}
+                onClose={() => setConnModal(null)}
+                onOpenGtm={() => setConnModal("gtm")}
+                onSave={async (patch) => {
+                  const ok = await savePatch(patch, "Connection saved.");
+                  if (ok) {
                     setConnDraft((d) => ({
                       ...d,
-                      gscVerification: "",
-                      bingVerification: "",
-                      googleServiceAccountJson: "",
+                      ...emptySecretFields(),
+                      ...(typeof patch.ga4MeasurementId === "string"
+                        ? { ga4MeasurementId: patch.ga4MeasurementId }
+                        : {}),
+                      ...(typeof patch.ga4PropertyId === "string"
+                        ? { ga4PropertyId: patch.ga4PropertyId }
+                        : {}),
+                      ...(typeof patch.gtmId === "string"
+                        ? { gtmId: patch.gtmId }
+                        : {}),
+                      ...(typeof patch.clarityId === "string"
+                        ? { clarityId: patch.clarityId }
+                        : {}),
+                      ...(typeof patch.gscProperty === "string"
+                        ? { gscProperty: patch.gscProperty }
+                        : {}),
+                      ...(typeof patch.ignoreIps === "string"
+                        ? { ignoreIps: patch.ignoreIps }
+                        : {}),
                     }));
-                  });
+                  }
+                  return ok;
                 }}
-              >
-                <h3 className="admin-panel-title">Edit connections</h3>
-                <label className="admin-field-label">
-                  Google Analytics measurement ID
-                  <input
-                    className="field"
-                    placeholder="G-XXXXXXXX"
-                    value={connDraft.ga4MeasurementId}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        ga4MeasurementId: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  GA4 property ID (Analytics API)
-                  <input
-                    className="field"
-                    placeholder="123456789"
-                    value={connDraft.ga4PropertyId}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        ga4PropertyId: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Google Tag Manager ID
-                  <input
-                    className="field"
-                    placeholder="GTM-XXXXXXX"
-                    value={connDraft.gtmId}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({ ...d, gtmId: e.target.value }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Microsoft Clarity ID
-                  <input
-                    className="field"
-                    value={connDraft.clarityId}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        clarityId: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Search Console property
-                  <input
-                    className="field"
-                    placeholder={`sc-domain:${BRAND_DOMAIN}`}
-                    value={connDraft.gscProperty}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        gscProperty: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Search Console verification
-                  {seo.hasGscVerification
-                    ? " (leave blank to keep; type off to clear)"
-                    : ""}
-                  <input
-                    className="field"
-                    type="password"
-                    autoComplete="off"
-                    value={connDraft.gscVerification}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        gscVerification: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Bing verification
-                  {seo.hasBingVerification
-                    ? " (leave blank to keep; type off to clear)"
-                    : ""}
-                  <input
-                    className="field"
-                    type="password"
-                    autoComplete="off"
-                    value={connDraft.bingVerification}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        bingVerification: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Ignored IPs (comma or space separated)
-                  <input
-                    className="field"
-                    value={connDraft.ignoreIps}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        ignoreIps: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Google service account JSON
-                  {seo.hasGoogleServiceAccount
-                    ? " (leave blank to keep; type off to clear)"
-                    : ""}
-                  {seo.serviceAccountEmail ? (
-                    <span className="admin-seo-mono muted">
-                      {" "}
-                      · {seo.serviceAccountEmail}
-                    </span>
-                  ) : null}
-                  <textarea
-                    className="field admin-textarea"
-                    rows={5}
-                    placeholder='{"type":"service_account",...}'
-                    value={connDraft.googleServiceAccountJson}
-                    disabled={busy}
-                    onChange={(e) =>
-                      setConnDraft((d) => ({
-                        ...d,
-                        googleServiceAccountJson: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <div className="admin-form-actions">
-                  <button
-                    type="submit"
-                    className="admin-btn-edit"
-                    disabled={busy}
-                  >
-                    {busy ? "Saving…" : "Save connections"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <p className="admin-panel-sub">
-                Support can view connections. Platform admin can edit them.
-              </p>
-            )}
+              />
+            ) : null}
           </div>
         ) : null}
 

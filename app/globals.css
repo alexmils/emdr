@@ -7951,6 +7951,38 @@ a.help-drawer-signin.btn-primary {
   color: var(--text);
 }
 
+.admin-seo-conn-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.admin-seo-connect-btn {
+  cursor: pointer;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--earth, #84b067);
+  background: transparent;
+  border: 1px solid var(--earth, #84b067);
+  border-radius: 0.35rem;
+}
+
+.admin-seo-connect-btn:hover:not(:disabled) {
+  background: rgba(132, 176, 103, 0.12);
+}
+
+.admin-seo-connect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-modal-wide {
+  max-width: 36rem;
+}
+
 .admin-seo-status-ok {
   font-size: 0.75rem;
   color: var(--earth, #84b067);
