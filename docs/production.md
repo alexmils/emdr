@@ -116,11 +116,15 @@ git push origin main
 Manual redeploy: Actions → **Build and Deploy** → Run workflow, or Coolify UI → Redeploy, or:
 
 ```bash
-curl -X POST "$COOLIFY_API_URL/api/v1/deploy" \
+# uuid/force must be query params (JSON body is ignored by this Coolify version)
+curl -X POST -G "$COOLIFY_API_URL/api/v1/deploy" \
+  --data-urlencode "uuid=epufvmx1j8jold5gdpfak85m" \
+  --data-urlencode "force=true" \
   -H "Authorization: Bearer $COOLIFY_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"uuid":"epufvmx1j8jold5gdpfak85m","force":true}'
+  -H "Accept: application/json"
 ```
+
+If Actions fails with **401 Unauthenticated**, the Coolify `personal_access_tokens` row is missing/expired: create a new token in Coolify → Keys & Tokens (or via Sanctum on the VPS) and update GitHub secret `COOLIFY_TOKEN`. Do not commit the token.
 
 ### Retired
 

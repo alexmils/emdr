@@ -273,6 +273,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Cursor rule `git-commit-push`: when user says commit (unless “commit only”), always **commit + push** in the same turn
 - Admin SEO Connections: **Connect** / **Edit** on each card opens a modal to enter that tool’s IDs (replaces the long bottom form)
 - Admin SEO Connections: **Test** / post-Save ping (`POST /api/admin/seo/test-connection`) — GA4 returns property display name + service account; GSC probes Search Console; GTM/Clarity hit public tag URLs; Bing + ignored IPs validate format; shows Connection OK / Failed with profile details
+- Coolify deploy: GitHub Actions uses query-param `POST /api/v1/deploy?uuid=&force=` (JSON body was ignored); clearer 401 guidance when `COOLIFY_TOKEN` is missing/expired
 - Production Docker: `WORKDIR` `/app` → `/nura` so standalone traces do not collide with App Router `app/` + console `/app` (fixes unstyled pages and `/` rendering as login/AppAccessGate; vercel/next.js#68690)
 - Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 - **Production runbook**: `docs/production.md` + always-on Cursor rule `.cursor/rules/nura-production.mdc` (Coolify UUIDs, VPS, nginx/Cloudflare path, GHCR deploy, WORKDIR `/nura`)

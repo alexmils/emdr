@@ -61,8 +61,23 @@ jobs:
             echo "Missing Coolify secrets (COOLIFY_TOKEN, COOLIFY_APP_UUID, COOLIFY_API_URL)"
             exit 1
           fi
-          curl --fail-with-body --request POST "${COOLIFY_API_URL%/}/api/v1/deploy" \
+          # Coolify expects uuid/force as query params (JSON body returns "You must provide uuid or tag").
+          http_code="$(curl --silent --show-error --output /tmp/coolify-deploy.json --write-out '%{http_code}' \
+            --request POST \
+            --get \
+            --data-urlencode "uuid=${COOLIFY_APP_UUID}" \
+            --data-urlencode "force=true" \
             --header "Authorization: Bearer ${COOLIFY_TOKEN}" \
-            --header "Content-Type: application/json" \
             --header "Accept: application/json" \
-            --data "{\"uuid\":\"${COOLIFY_APP_UUID}\",\"force\":true}"
+            "${COOLIFY_API_URL%/}/api/v1/deploy" || true)"
+          echo "Coolify deploy HTTP ${http_code}"
+          cat /tmp/coolify-deploy.json || true
+          echo
+          if [ "${http_code}" = "401" ] || [ "${http_code}" = "403" ]; then
+            echo "::error::Coolify auth failed (${http_code}). Rotate COOLIFY_TOKEN (Keys & Tokens) and update the GitHub secret."
+            exit 22
+          fi
+          if [ "${http_code}" -lt 200 ] || [ "${http_code}" -ge 300 ]; then
+            echo "::error::Coolify deploy failed with HTTP ${http_code}"
+            exit 22
+          fi
