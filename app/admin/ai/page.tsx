@@ -6,6 +6,7 @@ import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
 import type { PlatformSettings, PlatformVoiceConfig } from "@/lib/platform-settings";
 import type { AiProvider, ConnectorConfig } from "@/lib/types";
 import { fetchJson } from "@/lib/fetch-json";
+import { canonicalizeDeepseekModelId } from "@/lib/provider-catalog";
 
 const TABS = ["ai", "voice"] as const;
 type Tab = (typeof TABS)[number];
@@ -32,6 +33,13 @@ function keyIsSet(value: string): boolean {
   return value.trim().length > 0;
 }
 
+function displayModelId(provider: CatalogProvider, model: string): string {
+  const t = model.trim();
+  if (!t) return "";
+  if (provider === "deepseek") return canonicalizeDeepseekModelId(t);
+  return t;
+}
+
 function isProviderActive(
   provider: AiProvider,
   settings: PlatformSettings,
@@ -41,21 +49,81 @@ function isProviderActive(
   return connections[provider]?.status !== "failed";
 }
 
-function ConnectionBadge({ conn }: { conn: ConnState }) {
+function ConnectionBadge({
+  conn,
+  chip = false,
+}: {
+  conn: ConnState;
+  chip?: boolean;
+}) {
   if (conn.status === "checking") {
-    return <p className="admin-conn-idle">Checking connection…</p>;
+    return (
+      <p className={chip ? "admin-status-chip admin-status-chip-idle" : "admin-conn-idle"}>
+        Checking…
+      </p>
+    );
   }
   if (conn.status === "ok") {
-    return <p className="admin-conn-ok">Connection OK</p>;
+    return (
+      <p className={chip ? "admin-status-chip admin-status-chip-ok" : "admin-conn-ok"}>
+        Connected
+      </p>
+    );
   }
   if (conn.status === "failed") {
     return (
-      <p className="admin-conn-fail">
-        Failed{conn.error ? ` — ${conn.error}` : ""}
+      <p
+        className={chip ? "admin-status-chip admin-status-chip-fail" : "admin-conn-fail"}
+        title={conn.error || undefined}
+      >
+        {chip ? "Failed" : `Failed${conn.error ? ` — ${conn.error}` : ""}`}
       </p>
     );
   }
   return null;
+}
+
+function ProviderHealth({
+  provider,
+  hasKey,
+  model,
+  conn,
+  isDefault,
+  extra,
+}: {
+  provider: CatalogProvider;
+  hasKey: boolean;
+  model?: string;
+  conn: ConnState;
+  isDefault?: boolean;
+  extra?: string;
+}) {
+  const modelLabel = model ? displayModelId(provider, model) : "";
+  return (
+    <div className="admin-provider-health">
+      <div className="admin-provider-chips">
+        {isDefault ? (
+          <span className="admin-status-chip admin-status-chip-default">Default</span>
+        ) : null}
+        <span
+          className={
+            hasKey
+              ? "admin-status-chip admin-status-chip-ok"
+              : "admin-status-chip admin-status-chip-off"
+          }
+        >
+          {hasKey ? "Key active" : "No key"}
+        </span>
+        <ConnectionBadge conn={conn} chip />
+      </div>
+      {modelLabel ? (
+        <p className="admin-provider-model">
+          Model <span className="admin-provider-model-id">{modelLabel}</span>
+        </p>
+      ) : null}
+      {extra ? <p className="admin-provider-model">{extra}</p> : null}
+    </div>
+  );
 }
 
 function AdminAiPageInner() {
@@ -76,6 +144,39 @@ function AdminAiPageInner() {
     setSettings(res.settings);
   }, []);
 
+  const probeConnection = useCallback(async (provider: CatalogProvider) => {
+    setConnections((prev) => ({ ...prev, [provider]: { status: "checking" } }));
+    try {
+      const res = await fetchJson<{ ok?: boolean; error?: string }>(
+        "/api/admin/ai/test-connection",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provider }),
+        }
+      );
+      if (res.ok) {
+        setConnections((prev) => ({ ...prev, [provider]: { status: "ok" } }));
+      } else {
+        setConnections((prev) => ({
+          ...prev,
+          [provider]: {
+            status: "failed",
+            error: typeof res.error === "string" ? res.error : "Invalid key",
+          },
+        }));
+      }
+    } catch (err) {
+      setConnections((prev) => ({
+        ...prev,
+        [provider]: {
+          status: "failed",
+          error: err instanceof Error ? err.message : "Connection failed",
+        },
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     void (async () => {
       try {
@@ -85,6 +186,18 @@ function AdminAiPageInner() {
       }
     })();
   }, [load]);
+
+  useEffect(() => {
+    if (!settings) return;
+    for (const p of PROVIDERS) {
+      if (keyIsSet(settings.ai.connectors[p].apiKey)) {
+        void probeConnection(p);
+      }
+    }
+    if (keyIsSet(settings.ai.voice.apiKey)) {
+      void probeConnection("voice");
+    }
+  }, [settings, probeConnection]);
 
   const persist = async (next: PlatformSettings) => {
     setBusy(true);
@@ -177,12 +290,7 @@ function AdminAiPageInner() {
                 return (
                   <article key={p} className="admin-provider-card">
                     <div className="admin-provider-card-head">
-                      <div>
-                        <h3 className="admin-panel-title">{PROVIDER_LABEL[p]}</h3>
-                        {settings.ai.defaultProvider === p && (
-                          <p className="admin-provider-default">Default</p>
-                        )}
-                      </div>
+                      <h3 className="admin-panel-title">{PROVIDER_LABEL[p]}</h3>
                       <button
                         type="button"
                         className="btn-secondary"
@@ -191,11 +299,13 @@ function AdminAiPageInner() {
                         Configure
                       </button>
                     </div>
-                    <p className="admin-provider-status">
-                      {keyIsSet(cfg.apiKey) ? "Key set" : "Key not set"}
-                      {cfg.model ? ` · ${cfg.model}` : ""}
-                    </p>
-                    <ConnectionBadge conn={conn} />
+                    <ProviderHealth
+                      provider={p}
+                      hasKey={keyIsSet(cfg.apiKey)}
+                      model={cfg.model}
+                      conn={conn}
+                      isDefault={settings.ai.defaultProvider === p}
+                    />
                   </article>
                 );
               })}
@@ -221,17 +331,16 @@ function AdminAiPageInner() {
                   Configure
                 </button>
               </div>
-              <p className="admin-provider-status">
-                {keyIsSet(settings.ai.voice.apiKey) ? "Key set" : "Key not set"}
-                {settings.ai.voice.model ? ` · ${settings.ai.voice.model}` : ""}
-              </p>
-              {settings.ai.voice.voiceId && (
-                <p className="admin-provider-status">
-                  Voice {settings.ai.voice.voiceId}
-                </p>
-              )}
-              <ConnectionBadge
+              <ProviderHealth
+                provider="voice"
+                hasKey={keyIsSet(settings.ai.voice.apiKey)}
+                model={settings.ai.voice.model}
                 conn={connections.voice ?? { status: "idle" }}
+                extra={
+                  settings.ai.voice.voiceId
+                    ? `Voice ${settings.ai.voice.voiceId}`
+                    : undefined
+                }
               />
             </article>
           </div>
