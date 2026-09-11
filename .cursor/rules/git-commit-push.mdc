@@ -1,5 +1,5 @@
 ---
-description: Commit/push when asked; remind if local changes pile up without a recent push
+description: When user says commit/push/ship — commit and push in the same turn (no second ask)
 alwaysApply: true
 ---
 
@@ -7,18 +7,21 @@ alwaysApply: true
 
 ## When the user asks to commit / push
 
-If the user says **commit**, **push**, **commit push**, **ship**, or similar:
+If the user says **commit**, **push**, **commit push**, **ship**, or similar (any language, e.g. “uradi commit”, “pushaj”):
 
 1. Follow the normal git safety protocol (status, diff, log; no force-push to main; no secrets).
-2. **Commit** relevant product/code/docs/rules changes in the same turn.
-3. **Push** to the tracked remote (`git push -u origin HEAD` if needed) in the same turn unless they said commit-only.
-4. Do not wait for a second confirmation after an explicit commit/push request.
+2. **Commit** all relevant product/code/docs/rules changes from the current work in the same turn (include a rule/docs tweak made in that turn).
+3. **Push** to the tracked remote (`git push -u origin HEAD` if needed) in the **same turn**, unless they explicitly said **commit only** / **bez push**.
+4. Do **not** wait for a second confirmation after an explicit commit/push request.
+5. After a coding session that changed files, if they say commit (even without “push”), treat it as **commit + push** — that is the default for this project.
 
-## Proactive reminder (no auto-push)
+## After finishing work
 
-Do **not** commit or push unprompted.
+Do **not** auto-commit without being asked.
 
-At the end of a coding turn (or when starting a new task), if **either** is true, briefly remind the user once:
+When the user says commit/push after changes: ship immediately (commit + push) as above.
+
+At the end of a coding turn (or when starting a new task), if **either** is true and they have not just asked to commit, briefly remind once:
 
 1. **Many unpushed changes** — roughly **8+** modified/untracked product files, or a large diff vs `origin/main`, and nothing pushed yet for that work; or
 2. **Stale push** — local commits ahead of `origin`, or substantial dirty tree, and the latest `origin/main` tip is older than about **1 day** (or this chat has shipped several features without a push).

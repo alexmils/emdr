@@ -1,11 +1,11 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
+import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Terms",
-  description: `Terms of service for ${BRAND_LEGAL}`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("terms");
+}
 
 export default function TermsPage() {
   return (

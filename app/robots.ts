@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
+import { getPublicAppUrl } from "@/lib/platform-settings";
+import { siteOrigin } from "@/lib/site-seo";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const origin = siteOrigin(await getPublicAppUrl());
   return {
     rules: {
       userAgent: "*",
@@ -14,5 +17,6 @@ export default function robots(): MetadataRoute.Robots {
       ],
       disallow: ["/app", "/admin", "/api"],
     },
+    sitemap: `${origin}/sitemap.xml`,
   };
 }

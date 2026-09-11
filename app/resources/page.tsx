@@ -1,12 +1,11 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
+import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "Resources",
-  description:
-    "Guides for EMDR, bilateral stimulation, and therapy support on Nura.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("resources");
+}
 
 export default function ResourcesPage() {
   return (

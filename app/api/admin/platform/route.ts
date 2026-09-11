@@ -40,6 +40,12 @@ export async function GET() {
           gmailClientSecret: "",
           gmailRefreshToken: "",
         },
+        seo: {
+          ...settings.seo,
+          gscVerification: "",
+          bingVerification: "",
+          googleServiceAccountJson: "",
+        },
       },
     });
   } catch (err) {
@@ -103,6 +109,7 @@ export async function PUT(request: Request) {
       },
       stripe: current.stripe,
       email: current.email,
+      seo: current.seo,
     });
 
     await writeAuditEvent({
@@ -138,6 +145,12 @@ export async function PUT(request: Request) {
           gmailClientId: "",
           gmailClientSecret: "",
           gmailRefreshToken: "",
+        },
+        seo: {
+          ...next.seo,
+          gscVerification: "",
+          bingVerification: "",
+          googleServiceAccountJson: "",
         },
       },
     });

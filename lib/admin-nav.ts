@@ -17,7 +17,8 @@ export type AdminNavIcon =
   | "activity"
   | "email"
   | "ai"
-  | "platform";
+  | "platform"
+  | "seo";
 
 export type AdminNavItem = {
   href: string;
@@ -136,6 +137,31 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
             tab: "editor",
             adminOnly: true,
           },
+        ],
+      },
+      {
+        href: "/admin/seo",
+        label: "SEO",
+        icon: "seo",
+        children: [
+          { href: "/admin/seo", label: "Overview", tab: "overview" },
+          { href: "/admin/seo?tab=pages", label: "Pages", tab: "pages" },
+          {
+            href: "/admin/seo?tab=analytics",
+            label: "Analytics",
+            tab: "analytics",
+          },
+          {
+            href: "/admin/seo?tab=connections",
+            label: "Connections",
+            tab: "connections",
+          },
+          {
+            href: "/admin/seo?tab=indexing",
+            label: "Indexing",
+            tab: "indexing",
+          },
+          { href: "/admin/seo?tab=cookies", label: "Cookies", tab: "cookies" },
         ],
       },
     ],
@@ -282,6 +308,7 @@ export const ADMIN_DEFAULT_TAB_BY_PATH: Record<string, string> = {
   "/admin/email": "delivery",
   "/admin/ai": "ai",
   "/admin/platform": "general",
+  "/admin/seo": "overview",
 };
 
 export type AdminSearchKind = "section" | "page" | "tab" | "action";

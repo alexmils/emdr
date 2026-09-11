@@ -1,12 +1,12 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { getPlatformSettings } from "@/lib/platform-settings";
+import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Privacy",
-  description: `Privacy policy for ${BRAND_LEGAL}`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("privacy");
+}
 
 export default async function PrivacyPage() {
   const settings = await getPlatformSettings();
@@ -23,6 +23,11 @@ export default async function PrivacyPage() {
         <p>
           Contact: {settings.supportEmail || "your support email"} for data
           requests.
+        </p>
+        <p>
+          On the public marketing site, analytics and marketing cookies load
+          only after you choose them. Sign-in and the logged-in app do not load
+          Clarity, Google Analytics, or Tag Manager.
         </p>
       </article>
     </FrontendShell>

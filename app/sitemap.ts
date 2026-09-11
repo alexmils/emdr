@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { brandMetadataBase } from "@/lib/brand";
+import { getPublicAppUrl } from "@/lib/platform-settings";
+import { siteOrigin } from "@/lib/site-seo";
 
 const PUBLIC_PATHS = [
   "/",
@@ -10,10 +11,10 @@ const PUBLIC_PATHS = [
   "/terms",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = brandMetadataBase().origin;
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const origin = siteOrigin(await getPublicAppUrl());
   return PUBLIC_PATHS.map((path) => ({
-    url: `${base}${path}`,
+    url: path === "/" ? `${origin}/` : `${origin}${path}`,
     changeFrequency: path === "/" ? "weekly" : "monthly",
     priority: path === "/" ? 1 : 0.7,
   }));

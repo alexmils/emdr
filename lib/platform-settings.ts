@@ -29,6 +29,11 @@ import {
   normalizeEmailConfig,
   type PlatformEmailConfig,
 } from "@/lib/email-config";
+import {
+  DEFAULT_PLATFORM_SEO,
+  normalizeSeoConfig,
+  type PlatformSeoConfig,
+} from "@/lib/seo-config";
 
 export type { HelpSettings };
 export { DEFAULT_HELP_SETTINGS, normalizeHelpSettings };
@@ -46,6 +51,11 @@ export {
   DEFAULT_PLATFORM_EMAIL,
   normalizeEmailConfig,
 } from "@/lib/email-config";
+export type { PlatformSeoConfig } from "@/lib/seo-config";
+export {
+  DEFAULT_PLATFORM_SEO,
+  normalizeSeoConfig,
+} from "@/lib/seo-config";
 
 export type PlatformFeatureFlags = {
   voice: boolean;
@@ -85,6 +95,8 @@ export type PlatformSettings = {
   stripe: PlatformStripeConfig;
   /** Delivery credentials (Brevo / Gmail) — Admin → Email. */
   email: PlatformEmailConfig;
+  /** Public-site SEO + marketing tags — Admin → SEO. */
+  seo: PlatformSeoConfig;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -122,6 +134,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
     live: { ...DEFAULT_PLATFORM_STRIPE.live },
   },
   email: { ...DEFAULT_PLATFORM_EMAIL },
+  seo: { ...DEFAULT_PLATFORM_SEO, pages: {} },
 };
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
@@ -223,6 +236,7 @@ function normalizeSettings(raw: unknown): PlatformSettings {
         live: { ...DEFAULT_PLATFORM_STRIPE.live },
       },
       email: { ...DEFAULT_PLATFORM_EMAIL },
+      seo: { ...DEFAULT_PLATFORM_SEO, pages: {} },
     };
   }
   const r = raw as Partial<PlatformSettings> & {
@@ -256,6 +270,7 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     ),
     stripe: normalizeStripeConfig((r as Partial<PlatformSettings>).stripe),
     email: normalizeEmailConfig((r as Partial<PlatformSettings>).email),
+    seo: normalizeSeoConfig((r as Partial<PlatformSettings>).seo),
   };
 }
 

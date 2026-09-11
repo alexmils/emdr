@@ -266,6 +266,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Marketing header nav: bolder links (`font-weight: 600`) and wider gaps (`clamp(1.1–2rem)`) so Home · How it works · Prices · Blog · FAQ are less cramped
 - Marketing display type: Fraunces soft/wonky axes enabled; `.fe-section-title` weight 500, looser line-height — clearer vs retired Caslon
 - Brand lockup: removed “help” suffix everywhere (`BrandLockup` / header / onboarding) — wave **nura** wordmark only
+- Admin SEO review fixes: Connections save clears secret drafts only on success; sitemap/robots use `getPublicAppUrl` (same origin as canonicals); page titles always `absolute`; secrets clearable via `off`/`-`/`none`/`clear`; PUT validates GA4/GTM/Clarity/SA JSON + https OG URLs; consent path-gating tests
+- Cursor rule `git-commit-push`: when user says commit (unless “commit only”), always **commit + push** in the same turn
 
 ---
 

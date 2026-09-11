@@ -1,13 +1,13 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
-import { BRAND_DESCRIPTION, BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
+import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
+import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: BRAND_DESCRIPTION,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("about");
+}
 
 export default function AboutPage() {
   return (

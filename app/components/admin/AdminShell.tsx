@@ -12,6 +12,7 @@ import {
   Wallet,
   LifeBuoy,
   Mail,
+  Search,
   Settings2,
   Sparkles,
   Users,
@@ -57,6 +58,7 @@ const NAV_ICONS: Record<AdminNavIcon, LucideIcon> = {
   email: Mail,
   ai: Sparkles,
   platform: Settings2,
+  seo: Search,
 };
 
 const USER_UPDATED = "emdr-user-updated";

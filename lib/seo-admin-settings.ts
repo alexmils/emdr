@@ -1,0 +1,251 @@
+import {
+  DEFAULT_PLATFORM_SEO,
+  normalizeSeoConfig,
+  parseServiceAccountEmail,
+  isValidClarityId,
+  isValidGa4Id,
+  isValidGtmId,
+  isAllowedOgImageUrl,
+  type PlatformSeoConfig,
+  type SeoPageId,
+  type SeoPageOverride,
+  SEO_PAGE_IDS,
+} from "@/lib/seo-config";
+
+export type SeoAdminView = {
+  pages: Partial<Record<SeoPageId, SeoPageOverride>>;
+  ga4MeasurementId: string;
+  gtmId: string;
+  clarityId: string;
+  gscProperty: string;
+  ga4PropertyId: string;
+  ignoreIps: string;
+  /** Write-only — always empty on GET. */
+  gscVerification: string;
+  bingVerification: string;
+  googleServiceAccountJson: string;
+  hasGscVerification: boolean;
+  hasBingVerification: boolean;
+  hasGoogleServiceAccount: boolean;
+  serviceAccountEmail: string | null;
+};
+
+export type SeoConfigPatch = {
+  pages?: Partial<Record<SeoPageId, SeoPageOverride | null>>;
+  ga4MeasurementId?: string;
+  gtmId?: string;
+  clarityId?: string;
+  gscProperty?: string;
+  ga4PropertyId?: string;
+  ignoreIps?: string;
+  gscVerification?: string;
+  bingVerification?: string;
+  googleServiceAccountJson?: string;
+};
+
+/** Redact verification tokens and service account JSON. */
+export function toSeoAdminView(
+  seo: PlatformSeoConfig,
+  _canEdit: boolean
+): SeoAdminView {
+  return {
+    pages: { ...seo.pages },
+    ga4MeasurementId: seo.ga4MeasurementId,
+    gtmId: seo.gtmId,
+    clarityId: seo.clarityId,
+    gscProperty: seo.gscProperty,
+    ga4PropertyId: seo.ga4PropertyId,
+    ignoreIps: seo.ignoreIps,
+    gscVerification: "",
+    bingVerification: "",
+    googleServiceAccountJson: "",
+    hasGscVerification: Boolean(seo.gscVerification.trim()),
+    hasBingVerification: Boolean(seo.bingVerification.trim()),
+    hasGoogleServiceAccount: Boolean(seo.googleServiceAccountJson.trim()),
+    serviceAccountEmail: parseServiceAccountEmail(seo.googleServiceAccountJson),
+  };
+}
+
+function mergePageOverride(
+  current: SeoPageOverride | undefined,
+  patch: SeoPageOverride | null | undefined
+): SeoPageOverride | undefined {
+  if (patch === null) return undefined;
+  if (patch === undefined) return current;
+  const next: SeoPageOverride = { ...current };
+  if (typeof patch.title === "string") {
+    const t = patch.title.trim();
+    if (t) next.title = t;
+    else delete next.title;
+  }
+  if (typeof patch.description === "string") {
+    const t = patch.description.trim();
+    if (t) next.description = t;
+    else delete next.description;
+  }
+  if (typeof patch.ogTitle === "string") {
+    const t = patch.ogTitle.trim();
+    if (t) next.ogTitle = t;
+    else delete next.ogTitle;
+  }
+  if (typeof patch.ogImageUrl === "string") {
+    const t = patch.ogImageUrl.trim();
+    if (t && isAllowedOgImageUrl(t)) next.ogImageUrl = t;
+    else delete next.ogImageUrl;
+  }
+  return Object.keys(next).length ? next : undefined;
+}
+
+function isSecretClearToken(raw: string): boolean {
+  const t = raw.trim().toLowerCase();
+  return t === "off" || t === "-" || t === "none" || t === "clear";
+}
+
+/**
+ * Merge admin form patch. Empty secret fields mean leave unchanged.
+ * Secret fields set to `off` / `-` / `none` / `clear` wipe the stored value.
+ * Non-secret string fields replace (empty clears).
+ */
+export function mergeSeoConfigPatch(
+  current: PlatformSeoConfig,
+  patch: SeoConfigPatch | undefined
+): PlatformSeoConfig {
+  if (!patch || typeof patch !== "object") return current;
+  const next: PlatformSeoConfig = {
+    ...current,
+    pages: { ...current.pages },
+  };
+
+  if (patch.pages && typeof patch.pages === "object") {
+    for (const id of SEO_PAGE_IDS) {
+      if (!(id in patch.pages)) continue;
+      const merged = mergePageOverride(current.pages[id], patch.pages[id]);
+      if (merged) next.pages[id] = merged;
+      else delete next.pages[id];
+    }
+  }
+
+  if (typeof patch.ga4MeasurementId === "string") {
+    next.ga4MeasurementId = patch.ga4MeasurementId.trim();
+  }
+  if (typeof patch.gtmId === "string") {
+    next.gtmId = patch.gtmId.trim();
+  }
+  if (typeof patch.clarityId === "string") {
+    next.clarityId = patch.clarityId.trim();
+  }
+  if (typeof patch.gscProperty === "string") {
+    next.gscProperty = patch.gscProperty.trim();
+  }
+  if (typeof patch.ga4PropertyId === "string") {
+    next.ga4PropertyId = patch.ga4PropertyId.trim();
+  }
+  if (typeof patch.ignoreIps === "string") {
+    next.ignoreIps = patch.ignoreIps.trim();
+  }
+
+  if (typeof patch.gscVerification === "string") {
+    if (isSecretClearToken(patch.gscVerification)) {
+      next.gscVerification = "";
+    } else if (patch.gscVerification.trim()) {
+      next.gscVerification = patch.gscVerification.trim();
+    }
+  }
+  if (typeof patch.bingVerification === "string") {
+    if (isSecretClearToken(patch.bingVerification)) {
+      next.bingVerification = "";
+    } else if (patch.bingVerification.trim()) {
+      next.bingVerification = patch.bingVerification.trim();
+    }
+  }
+  if (typeof patch.googleServiceAccountJson === "string") {
+    if (isSecretClearToken(patch.googleServiceAccountJson)) {
+      next.googleServiceAccountJson = "";
+    } else if (patch.googleServiceAccountJson.trim()) {
+      next.googleServiceAccountJson = patch.googleServiceAccountJson.trim();
+    }
+  }
+
+  return normalizeSeoConfig(next);
+}
+
+/** Returns human-readable validation errors for a patch (empty = OK). */
+export function validateSeoConfigPatch(
+  patch: SeoConfigPatch | undefined
+): string[] {
+  if (!patch || typeof patch !== "object") return [];
+  const errors: string[] = [];
+  if (
+    typeof patch.ga4MeasurementId === "string" &&
+    patch.ga4MeasurementId.trim() &&
+    !isValidGa4Id(patch.ga4MeasurementId)
+  ) {
+    errors.push("Google Analytics ID must look like G-XXXXXXXX.");
+  }
+  if (
+    typeof patch.gtmId === "string" &&
+    patch.gtmId.trim() &&
+    !isValidGtmId(patch.gtmId)
+  ) {
+    errors.push("Tag Manager ID must look like GTM-XXXXXXX.");
+  }
+  if (
+    typeof patch.clarityId === "string" &&
+    patch.clarityId.trim() &&
+    !isValidClarityId(patch.clarityId)
+  ) {
+    errors.push("Clarity ID must be at least 4 alphanumeric characters.");
+  }
+  if (
+    typeof patch.ga4PropertyId === "string" &&
+    patch.ga4PropertyId.trim()
+  ) {
+    const raw = patch.ga4PropertyId.trim();
+    const digits = raw.toLowerCase().startsWith("properties/")
+      ? raw.split("/", 2)[1]?.trim() || ""
+      : raw;
+    if (raw.toUpperCase().startsWith("G-") || !/^\d+$/.test(digits)) {
+      errors.push("GA4 property ID must be numeric (or properties/123…).");
+    }
+  }
+  if (
+    typeof patch.googleServiceAccountJson === "string" &&
+    patch.googleServiceAccountJson.trim() &&
+    !isSecretClearToken(patch.googleServiceAccountJson)
+  ) {
+    try {
+      const parsed = JSON.parse(patch.googleServiceAccountJson) as {
+        client_email?: unknown;
+        private_key?: unknown;
+      };
+      if (
+        typeof parsed.client_email !== "string" ||
+        typeof parsed.private_key !== "string"
+      ) {
+        errors.push(
+          "Service account JSON needs client_email and private_key."
+        );
+      }
+    } catch {
+      errors.push("Service account JSON is not valid JSON.");
+    }
+  }
+  if (patch.pages && typeof patch.pages === "object") {
+    for (const id of SEO_PAGE_IDS) {
+      const page = patch.pages[id];
+      if (!page || typeof page !== "object") continue;
+      if (
+        typeof page.ogImageUrl === "string" &&
+        page.ogImageUrl.trim() &&
+        !isAllowedOgImageUrl(page.ogImageUrl)
+      ) {
+        errors.push(
+          `Share image for ${id} must be an https URL or a path starting with /.`
+        );
+      }
+    }
+  }
+  return errors;
+}
+
+export { DEFAULT_PLATFORM_SEO, normalizeSeoConfig, isSecretClearToken };

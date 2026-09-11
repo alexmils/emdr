@@ -1,13 +1,12 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { LOGIN_PATH } from "@/lib/app-base";
+import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "EMDR Support",
-  description:
-    "What EMDR is, how bilateral stimulation works, and how a Nura session is structured.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("emdr");
+}
 
 export default function EmdrPage() {
   return (

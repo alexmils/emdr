@@ -10,6 +10,7 @@ import {
 } from "react";
 import { BookOpen, Info, Mail } from "lucide-react";
 import { BrandLockup } from "@/app/components/BrandLockup";
+import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_LEGAL, BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
 import { TRIAL_DAYS } from "@/lib/billing-constants";
@@ -208,6 +209,7 @@ export function FrontendFooter() {
                   {l.label}
                 </Link>
               ))}
+              <CookieSettingsButton className="fe-site-footer-cookie-btn" />
             </nav>
             <p className="fe-site-footer-copy">
               © {new Date().getFullYear()} {BRAND_LEGAL}. {BRAND_TAGLINE}

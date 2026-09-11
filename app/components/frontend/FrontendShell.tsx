@@ -1,16 +1,8 @@
-"use client";
-
 import type { ReactNode } from "react";
-import { HelpChatWidget } from "@/app/components/HelpChatWidget";
-import { FrontendBackToTop } from "@/app/components/frontend/FrontendBackToTop";
-import { FrontendFooter } from "@/app/components/frontend/FrontendFooter";
-import { FrontendHeader } from "@/app/components/frontend/FrontendHeader";
-import { FrontendPreloader } from "@/app/components/frontend/FrontendPreloader";
-import "./frontend-fonts.css";
-import "./frontend-buttons.css";
-import "./frontend-help.css";
+import { FrontendShellClient } from "@/app/components/frontend/FrontendShellClient";
+import { MarketingExtras } from "@/app/components/frontend/MarketingExtras";
 
-export function FrontendShell({
+export async function FrontendShell({
   children,
   wide = false,
 }: {
@@ -21,20 +13,10 @@ export function FrontendShell({
   siteName?: string;
 }) {
   return (
-    <div className={`frontend-home${wide ? " frontend-home-landing" : ""}`}>
-      {wide ? <FrontendPreloader /> : null}
-      <FrontendHeader overlay={wide} />
-      <main
-        className={wide ? "frontend-main frontend-main-wide" : "frontend-main"}
-      >
-        {children}
-      </main>
-      <FrontendFooter />
-      <FrontendBackToTop />
-      {/* Desktop-only FAB via frontend-help.css (hidden ≤768px) */}
-      <HelpChatWidget showFab />
-    </div>
+    <FrontendShellClient wide={wide} marketingExtras={<MarketingExtras />}>
+      {children}
+    </FrontendShellClient>
   );
 }
 
-export { FrontendFooter };
+export { FrontendFooter } from "@/app/components/frontend/FrontendFooter";
