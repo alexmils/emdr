@@ -3,7 +3,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
-import { AppleToggle } from "@/app/components/AppleToggle";
+import { AdminSettingToggle } from "@/app/components/admin/AdminSettingToggle";
 import { formatDateTime, formatMoney } from "@/lib/admin-format";
 import { formatTokenCount, formatUsdMicros } from "@/lib/admin-llm-format";
 import type { AdminBillingRow } from "@/lib/stripe-admin";
@@ -290,45 +290,33 @@ function AdminBillingPageInner() {
               the mode below.
             </p>
 
-            <div
-              className={
+            <AdminSettingToggle
+              id="admin-stripe-demo-mode"
+              title="Demo mode"
+              status={
                 stripe.demoMode
-                  ? "admin-stripe-mode admin-stripe-mode-demo"
-                  : "admin-stripe-mode admin-stripe-mode-live"
+                  ? "On — sandbox keys, test charges only"
+                  : "Off — live keys, real charges"
               }
-            >
-              <div className="admin-stripe-mode-row">
-                <div className="admin-stripe-mode-copy">
-                  <p className="admin-stripe-mode-title">Demo mode</p>
-                  <p className="admin-stripe-mode-status">
-                    {stripe.demoMode
-                      ? "On — sandbox keys, test charges only"
-                      : "Off — live keys, real charges"}
-                  </p>
-                </div>
-                <AppleToggle
-                  id="admin-stripe-demo-mode"
-                  checked={stripe.demoMode}
-                  disabled={!canEdit}
-                  label="Demo mode"
-                  onChange={(nextDemo) => {
-                    if (
-                      !nextDemo &&
-                      !window.confirm(
-                        "Turn off Demo mode? Checkout will use live Stripe keys and real charges can occur."
-                      )
-                    ) {
-                      return;
-                    }
-                    setStripe((s) => ({
-                      ...s,
-                      demoMode: nextDemo,
-                      activeEnv: nextDemo ? "sandbox" : "live",
-                    }));
-                  }}
-                />
-              </div>
-            </div>
+              checked={stripe.demoMode}
+              disabled={!canEdit}
+              tone={stripe.demoMode ? "caution" : "danger"}
+              onChange={(nextDemo) => {
+                if (
+                  !nextDemo &&
+                  !window.confirm(
+                    "Turn off Demo mode? Checkout will use live Stripe keys and real charges can occur."
+                  )
+                ) {
+                  return;
+                }
+                setStripe((s) => ({
+                  ...s,
+                  demoMode: nextDemo,
+                  activeEnv: nextDemo ? "sandbox" : "live",
+                }));
+              }}
+            />
 
             <div
               className="admin-segmented"

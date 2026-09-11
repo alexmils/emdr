@@ -132,6 +132,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Auth review fixes: desktop form pane top padding so absolute logo/Home don’t overlap tall forms; create-account OAuth errors stay on methods + strip `?error=` from URL; focus title on step change; mockup copy not `aria-hidden`; Terms on email step; footer tagline wraps before mid widths; `lib/auth/create-account-ui.ts` + tests
 - Pre-push gate: always `npm test` + `npm run lint` (+ ReadLints) before commit/push; **do not** run full `npm run build` as a local gate (Actions Docker build covers compile) — `.cursor/rules/git-commit-push.mdc` + `verify-before-done.mdc`
 - Admin Billing Stripe: Demo mode is a clear status card (on/off line + toggle); Sandbox/Live tabs say **checkout**; webhook/secret tip moved under the tabs — less stacked prose around the switch
+- Admin setting toggles: shared `AdminSettingToggle` (title + On/Off status + switch) on Platform, Help, Resources, and Billing — same pattern as Stripe Demo mode
+- Admin ElevenLabs Configure: after API key (or env/stored fallback) loads the catalog, Voice and Model are dropdowns from ElevenLabs; optional **Custom voice** / **Custom model** override the list; unknown saved values land in the custom fields instead of being wiped
+- Admin Voice tab: ElevenLabs settings card on top, thin divider, then lazy-loaded voice cards (name, play sample, round select); toast on select; `POST /api/admin/ai/voice-preview`; admin ToastProvider
+- Admin Voice picker review fixes: reload after Configure (`reloadToken`), preview generation token, select lock + quiet save (toast only), voice ID validation + encodeURIComponent, fixed sample text + per-admin preview cooldown, Refresh on empty-key state
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -271,6 +275,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Brand marks: full-length tapered wave (no flat crop into “n”); favicon contrast on mint; square lockups 500/2500 — black & white transparent + on white/black (`public/brand/nura-wave-logo-*-{500,2500}.png`)
 - Brand exports: color wave lockup transparent + on white/black (500/2500); wordmark-only `nura-text` / `-black` / `-white` (filled letterforms, no wave); favicon/apple-touch **white wave on sage** (high contrast); mark as single tapered ribbon
 - Brand quality pass: smoother mark tips; healed wave→n join on lockup; text masters without clipped stroke caps
+- `nura-text*`: rebuilt from lockup letterforms (`n` = flip of `u` + original `ura`) — same font as wave logo, not a redrawn fake
+- Favicon/mark: replaced simplified ribbon with **authentic wave crop** from `nura-wave-logo.png` on near-black
 - Admin SEO review fixes: Connections save clears secret drafts only on success; sitemap/robots use `getPublicAppUrl` (same origin as canonicals); page titles always `absolute`; secrets clearable via `off`/`-`/`none`/`clear`; PUT validates GA4/GTM/Clarity/SA JSON + https OG URLs; consent path-gating tests
 - Cursor rule `git-commit-push`: when user says commit (unless “commit only”), always **commit + push** in the same turn
 - Admin SEO Connections: **Connect** / **Edit** on each card opens a modal to enter that tool’s IDs (replaces the long bottom form)
@@ -282,6 +288,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 - **Production runbook**: `docs/production.md` + always-on Cursor rule `.cursor/rules/nura-production.mdc` (Coolify UUIDs, VPS, nginx/Cloudflare path, GHCR deploy, WORKDIR `/nura`)
 - GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; Clarity/GTM stay consent-gated (`MarketingTags`, Connections hint)
+- Favicon/mark quality: round-cap stroke wave, equal padding both sides, brighter right tip (mint→sage), supersampled PNGs — no flat crop into the letter `n`
+- Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
+- Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
 
 ---
 

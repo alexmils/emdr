@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 70" >
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 200">
   <defs>
-    <linearGradient id="g" x1="10" y1="35" x2="190" y2="35" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#9ED9B0"/>
-      <stop offset="40%" stop-color="#84B067"/>
-      <stop offset="100%" stop-color="#5F8A4A"/>
+    <linearGradient id="g" x1="70" y1="100" x2="450" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C8EFD0"/>
+      <stop offset="55%" stop-color="#B0DCA8"/>
+      <stop offset="100%" stop-color="#9BC878"/>
     </linearGradient>
   </defs>
-  <!-- Continuous tapered S: sharp left tip → thick mid → sharp right tip -->
-  <path fill="url(#g)" d="
-    M 12 48
-    C 28 34, 48 16, 78 12
-    C 102 8, 118 18, 132 32
-    C 144 44, 158 50, 186 40
-    C 178 52, 162 58, 146 56
-    C 128 54, 114 44, 100 32
-    C 86 20, 68 14, 46 20
-    C 32 24, 22 34, 12 48
-    Z"/>
+  <path
+    d="M 90 110 C 150 48, 200 42, 255 88 C 310 134, 365 136, 430 90"
+    fill="none"
+    stroke="url(#g)"
+    stroke-width="26"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>

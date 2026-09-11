@@ -168,15 +168,17 @@ export async function chatCompletion(
 
 export async function synthesizeSpeech(
   settings: LlmRuntimeConfig,
-  text: string
+  text: string,
+  options?: { voiceId?: string }
 ): Promise<ArrayBuffer | null> {
   const cfg = settings.connectors.elevenlabs;
   const key = cfg.apiKey || process.env.ELEVENLABS_API_KEY || "";
   if (!key) return null;
 
-  const voiceId = cfg.voiceId || "EXAVITQu4vr4xnSDxMaL";
+  const voiceId =
+    options?.voiceId?.trim() || cfg.voiceId || "EXAVITQu4vr4xnSDxMaL";
   const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
     {
       method: "POST",
       headers: {

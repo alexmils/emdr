@@ -3,6 +3,10 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
+import {
+  AdminVoicePicker,
+  type AdminVoiceOption,
+} from "@/app/components/admin/AdminVoicePicker";
 import type { PlatformSettings, PlatformVoiceConfig } from "@/lib/platform-settings";
 import type { AiProvider, ConnectorConfig } from "@/lib/types";
 import { fetchJson } from "@/lib/fetch-json";
@@ -133,9 +137,13 @@ function AdminAiPageInner() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<CatalogProvider | null>(null);
+  const [voiceReloadToken, setVoiceReloadToken] = useState(0);
   const [connections, setConnections] = useState<
     Partial<Record<CatalogProvider, ConnState>>
   >({});
+  const settingsRef = useRef(settings);
+  const persistErrorRef = useRef("");
+  settingsRef.current = settings;
 
   const load = useCallback(async () => {
     const res = await fetchJson<{ settings: PlatformSettings }>(
@@ -194,14 +202,16 @@ function AdminAiPageInner() {
         void probeConnection(p);
       }
     }
-    if (keyIsSet(settings.ai.voice.apiKey)) {
-      void probeConnection("voice");
-    }
+    void probeConnection("voice");
   }, [settings, probeConnection]);
 
-  const persist = async (next: PlatformSettings) => {
+  const persist = async (
+    next: PlatformSettings,
+    opts?: { quiet?: boolean }
+  ) => {
     setBusy(true);
     setMsg("");
+    persistErrorRef.current = "";
     try {
       const res = await fetchJson<{ settings: PlatformSettings }>(
         "/api/admin/platform",
@@ -212,10 +222,12 @@ function AdminAiPageInner() {
         }
       );
       setSettings(res.settings);
-      setMsg("Saved.");
+      if (!opts?.quiet) setMsg("Saved.");
       return res.settings;
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Save failed");
+      const message = err instanceof Error ? err.message : "Save failed";
+      persistErrorRef.current = message;
+      setMsg(message);
       return null;
     } finally {
       setBusy(false);
@@ -229,6 +241,27 @@ function AdminAiPageInner() {
       ...settings,
       ai: { ...settings.ai, defaultProvider },
     });
+  };
+
+  const saveVoiceSelection = async (voice: AdminVoiceOption) => {
+    const current = settingsRef.current;
+    if (!current) {
+      throw new Error("Settings not loaded");
+    }
+    const next: PlatformSettings = {
+      ...current,
+      ai: {
+        ...current.ai,
+        voice: {
+          ...current.ai.voice,
+          voiceId: voice.id,
+        },
+      },
+    };
+    const saved = await persist(next, { quiet: true });
+    if (!saved) {
+      throw new Error(persistErrorRef.current || "Could not save voice");
+    }
   };
 
   if (loading || !settings) {
@@ -314,13 +347,13 @@ function AdminAiPageInner() {
         )}
 
         {tab === "voice" && (
-          <div className="admin-provider-grid">
-            <article className="admin-provider-card">
+          <div className="admin-voice-page">
+            <article className="admin-provider-card admin-voice-settings">
               <div className="admin-provider-card-head">
                 <div>
                   <h3 className="admin-panel-title">ElevenLabs</h3>
                   <p className="admin-panel-sub">
-                    Text-to-speech for agent lines. Users only toggle auto-play.
+                    API key and model. Users only toggle auto-play.
                   </p>
                 </div>
                 <button
@@ -336,13 +369,17 @@ function AdminAiPageInner() {
                 hasKey={keyIsSet(settings.ai.voice.apiKey)}
                 model={settings.ai.voice.model}
                 conn={connections.voice ?? { status: "idle" }}
-                extra={
-                  settings.ai.voice.voiceId
-                    ? `Voice ${settings.ai.voice.voiceId}`
-                    : undefined
-                }
               />
             </article>
+
+            <hr className="admin-voice-divider" />
+
+            <AdminVoicePicker
+              selectedVoiceId={settings.ai.voice.voiceId}
+              reloadToken={voiceReloadToken}
+              busy={busy}
+              onSelect={saveVoiceSelection}
+            />
           </div>
         )}
 
@@ -359,20 +396,26 @@ function AdminAiPageInner() {
             setConnections((prev) => ({ ...prev, [provider]: conn }))
           }
           onSave={async (patch) => {
+            const current = settingsRef.current ?? settings;
             const next: PlatformSettings = {
-              ...settings,
+              ...current,
               ai: {
-                ...settings.ai,
+                ...current.ai,
                 ...patch,
                 connectors: {
-                  ...settings.ai.connectors,
+                  ...current.ai.connectors,
                   ...patch.connectors,
                 },
-                voice: patch.voice ?? settings.ai.voice,
+                voice: patch.voice ?? current.ai.voice,
               },
             };
             const saved = await persist(next);
-            if (saved) setModal(null);
+            if (saved) {
+              setModal(null);
+              if (modal === "voice") {
+                setVoiceReloadToken((n) => n + 1);
+              }
+            }
           }}
         />
       )}
@@ -418,9 +461,11 @@ function ConfigureModal({
     : settings.ai.connectors[provider];
   const [apiKey, setApiKey] = useState(initial.apiKey);
   const [model, setModel] = useState(initial.model);
+  const [customModelId, setCustomModelId] = useState("");
   const [voiceId, setVoiceId] = useState(
     isVoice ? settings.ai.voice.voiceId : ""
   );
+  const [customVoiceId, setCustomVoiceId] = useState("");
   const [models, setModels] = useState<string[]>([]);
   const [voices, setVoices] = useState<{ id: string; name: string }[]>([]);
   const [catalogError, setCatalogError] = useState("");
@@ -429,9 +474,13 @@ function ConfigureModal({
   const [conn, setConnState] = useState<ConnState>({ status: "idle" });
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modelRef = useRef(model);
+  const customModelIdRef = useRef(customModelId);
   const voiceIdRef = useRef(voiceId);
+  const customVoiceIdRef = useRef(customVoiceId);
   modelRef.current = model;
+  customModelIdRef.current = customModelId;
   voiceIdRef.current = voiceId;
+  customVoiceIdRef.current = customVoiceId;
 
   const applyConn = useCallback(
     (next: ConnState) => {
@@ -443,10 +492,6 @@ function ConfigureModal({
 
   const testKey = useCallback(
     async (key: string) => {
-      if (!key.trim()) {
-        applyConn({ status: "idle" });
-        return;
-      }
       applyConn({ status: "checking" });
       try {
         const res = await fetchJson<{ ok?: boolean; error?: string }>(
@@ -459,10 +504,13 @@ function ConfigureModal({
         );
         if (res.ok) applyConn({ status: "ok" });
         else {
-          applyConn({
-            status: "failed",
-            error: typeof res.error === "string" ? res.error : "Invalid key",
-          });
+          const errMsg =
+            typeof res.error === "string" ? res.error : "Invalid key";
+          if (!key.trim() && /no api key/i.test(errMsg)) {
+            applyConn({ status: "idle" });
+          } else {
+            applyConn({ status: "failed", error: errMsg });
+          }
         }
       } catch (err) {
         applyConn({
@@ -489,16 +537,37 @@ function ConfigureModal({
           body: JSON.stringify({ provider, apiKey: key }),
         });
         const nextModels = Array.isArray(res.models) ? res.models : [];
+        const nextVoices = Array.isArray(res.voices) ? res.voices : [];
         setModels(nextModels);
-        setVoices(Array.isArray(res.voices) ? res.voices : []);
-        setAllowManual(nextModels.length === 0 && !(isVoice && res.voices?.length));
-        if (nextModels.length && !nextModels.includes(modelRef.current)) {
-          setModel(nextModels[0]);
+        setVoices(nextVoices);
+        setAllowManual(
+          nextModels.length === 0 && !(isVoice && nextVoices.length > 0)
+        );
+        if (nextModels.length > 0) {
+          const effectiveModel =
+            customModelIdRef.current.trim() || modelRef.current;
+          if (effectiveModel && nextModels.includes(effectiveModel)) {
+            setModel(effectiveModel);
+            setCustomModelId("");
+          } else if (effectiveModel && !nextModels.includes(effectiveModel)) {
+            setCustomModelId(effectiveModel);
+            setModel(nextModels[0]);
+          } else if (!modelRef.current) {
+            setModel(nextModels[0]);
+          }
         }
-        if (isVoice && res.voices?.length) {
-          const ids = res.voices.map((v) => v.id);
-          if (voiceIdRef.current && !ids.includes(voiceIdRef.current)) {
-            setVoiceId(res.voices[0].id);
+        if (isVoice && nextVoices.length > 0) {
+          const ids = nextVoices.map((v) => v.id);
+          const effective =
+            customVoiceIdRef.current.trim() || voiceIdRef.current;
+          if (effective && ids.includes(effective)) {
+            setVoiceId(effective);
+            setCustomVoiceId("");
+          } else if (effective && !ids.includes(effective)) {
+            setCustomVoiceId(effective);
+            setVoiceId(nextVoices[0].id);
+          } else if (!voiceIdRef.current) {
+            setVoiceId(nextVoices[0].id);
           }
         }
       } catch (err) {
@@ -525,7 +594,7 @@ function ConfigureModal({
 
   useEffect(() => {
     void testKey(apiKey);
-    if (apiKey.trim()) void loadCatalog(apiKey);
+    void loadCatalog(apiKey);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -538,9 +607,12 @@ function ConfigureModal({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       void testKey(value);
-      if (value.trim()) void loadCatalog(value);
+      void loadCatalog(value);
     }, 600);
   };
+
+  const resolvedVoiceId = customVoiceId.trim() || voiceId;
+  const resolvedModel = customModelId.trim() || model;
 
   const title = isVoice ? "ElevenLabs" : PROVIDER_LABEL[provider];
 
@@ -575,7 +647,7 @@ function ConfigureModal({
               onChange={(e) => onKeyChange(e.target.value)}
               onBlur={() => {
                 void testKey(apiKey);
-                if (apiKey.trim()) void loadCatalog(apiKey);
+                void loadCatalog(apiKey);
               }}
             />
           </label>
@@ -587,7 +659,7 @@ function ConfigureModal({
               disabled={conn.status === "checking"}
               onClick={() => {
                 void testKey(apiKey);
-                if (apiKey.trim()) void loadCatalog(apiKey);
+                void loadCatalog(apiKey);
               }}
             >
               Test
@@ -596,25 +668,45 @@ function ConfigureModal({
 
           {isVoice ? (
             <>
-              <label className="admin-field-label">
-                Voice
-                {voices.length > 0 && !allowManual ? (
-                  <select
-                    className="field"
-                    value={
-                      voices.some((v) => v.id === voiceId)
-                        ? voiceId
-                        : voices[0]?.id ?? ""
-                    }
-                    onChange={(e) => setVoiceId(e.target.value)}
-                  >
-                    {voices.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
+              {voices.length > 0 ? (
+                <>
+                  <label className="admin-field-label">
+                    Voice
+                    <select
+                      className="field"
+                      value={
+                        voices.some((v) => v.id === voiceId)
+                          ? voiceId
+                          : voices[0]?.id ?? ""
+                      }
+                      disabled={Boolean(customVoiceId.trim())}
+                      onChange={(e) => {
+                        setVoiceId(e.target.value);
+                        setCustomVoiceId("");
+                      }}
+                    >
+                      {voices.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="admin-field-label">
+                    Custom voice (optional)
+                    <input
+                      className="field"
+                      value={customVoiceId}
+                      onChange={(e) => setCustomVoiceId(e.target.value)}
+                      placeholder="Overrides the voice above"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </label>
+                </>
+              ) : (
+                <label className="admin-field-label">
+                  Voice
                   <input
                     className="field"
                     value={voiceId}
@@ -622,24 +714,46 @@ function ConfigureModal({
                     placeholder={
                       catalogLoading ? "Loading voices…" : "Voice ID"
                     }
+                    autoComplete="off"
+                    spellCheck={false}
                   />
-                )}
-              </label>
-              <label className="admin-field-label">
-                Model
-                {models.length > 0 && !allowManual ? (
-                  <select
-                    className="field"
-                    value={models.includes(model) ? model : models[0]}
-                    onChange={(e) => setModel(e.target.value)}
-                  >
-                    {models.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
+                </label>
+              )}
+              {models.length > 0 ? (
+                <>
+                  <label className="admin-field-label">
+                    Model
+                    <select
+                      className="field"
+                      value={models.includes(model) ? model : models[0]}
+                      disabled={Boolean(customModelId.trim())}
+                      onChange={(e) => {
+                        setModel(e.target.value);
+                        setCustomModelId("");
+                      }}
+                    >
+                      {models.map((id) => (
+                        <option key={id} value={id}>
+                          {id}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="admin-field-label">
+                    Custom model (optional)
+                    <input
+                      className="field"
+                      value={customModelId}
+                      onChange={(e) => setCustomModelId(e.target.value)}
+                      placeholder="Overrides the model above"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </label>
+                </>
+              ) : (
+                <label className="admin-field-label">
+                  Model
                   <input
                     className="field"
                     value={model}
@@ -647,9 +761,11 @@ function ConfigureModal({
                     placeholder={
                       catalogLoading ? "Loading models…" : "Model"
                     }
+                    autoComplete="off"
+                    spellCheck={false}
                   />
-                )}
-              </label>
+                </label>
+              )}
             </>
           ) : (
             <label className="admin-field-label">
@@ -658,7 +774,10 @@ function ConfigureModal({
                 <select
                   className="field"
                   value={models.includes(model) ? model : models[0]}
-                  onChange={(e) => setModel(e.target.value)}
+                  onChange={(e) => {
+                    setModel(e.target.value);
+                    setCustomModelId("");
+                  }}
                 >
                   {models.map((id) => (
                     <option key={id} value={id}>
@@ -678,22 +797,27 @@ function ConfigureModal({
           )}
 
           {catalogLoading && (
-            <p className="admin-conn-idle">Loading models from provider…</p>
+            <p className="admin-conn-idle">
+              {isVoice
+                ? "Loading voices from ElevenLabs…"
+                : "Loading models from provider…"}
+            </p>
           )}
           {catalogError && (
             <p className="admin-conn-fail">
-              Could not list models — {catalogError}. You can type a model as a
-              last resort.
+              {isVoice
+                ? `Could not list voices — ${catalogError}. Enter a voice ID manually, or fix the API key.`
+                : `Could not list models — ${catalogError}. You can type a model as a last resort.`}
             </p>
           )}
           <button
             type="button"
             className="admin-link w-fit border-0 bg-transparent p-0"
             onClick={() => {
-              if (apiKey.trim()) void loadCatalog(apiKey);
+              void loadCatalog(apiKey);
             }}
           >
-            Refresh models
+            {isVoice ? "Refresh voices" : "Refresh models"}
           </button>
         </div>
 
@@ -710,8 +834,8 @@ function ConfigureModal({
                 const voice: PlatformVoiceConfig = {
                   ...(initial as PlatformVoiceConfig),
                   apiKey,
-                  model,
-                  voiceId,
+                  model: resolvedModel,
+                  voiceId: resolvedVoiceId,
                 };
                 void onSave({ voice });
               } else {
@@ -720,7 +844,7 @@ function ConfigureModal({
                   [provider]: {
                     ...(initial as ConnectorConfig),
                     apiKey,
-                    model,
+                    model: resolvedModel,
                   },
                 };
                 void onSave({ connectors });

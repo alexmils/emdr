@@ -4,7 +4,10 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
-import { AppleToggle } from "@/app/components/AppleToggle";
+import {
+  AdminSettingToggle,
+  AdminSettingToggleStack,
+} from "@/app/components/admin/AdminSettingToggle";
 
 const TABS = ["inbox", "knowledge", "settings"] as const;
 type Tab = (typeof TABS)[number];
@@ -346,13 +349,18 @@ function HelpAdminInner() {
                   setDoc((d) => ({ ...d, tags: e.target.value }))
                 }
               />
-              <label className="flex items-center gap-2 text-[13px]">
-                <AppleToggle
-                  checked={doc.enabled}
-                  onChange={(v) => setDoc((d) => ({ ...d, enabled: v }))}
-                />
-                Enabled
-              </label>
+              <AdminSettingToggle
+                id="help-doc-enabled"
+                title="Enabled"
+                status={
+                  doc.enabled
+                    ? "On — AI can retrieve this document"
+                    : "Off — kept in the list, not retrieved"
+                }
+                checked={doc.enabled}
+                tone={doc.enabled ? "ok" : "neutral"}
+                onChange={(enabled) => setDoc((d) => ({ ...d, enabled }))}
+              />
               <button
                 type="button"
                 className="btn-primary"
@@ -411,34 +419,50 @@ function HelpAdminInner() {
         {tab === "settings" && settings && (
           <div className="admin-panel">
             <div className="settings-group">
-              <div className="settings-row settings-toggle-row">
-                <span className="min-w-0">Help chat enabled</span>
-                <AppleToggle
-                  label="Help chat enabled"
+              <AdminSettingToggleStack>
+                <AdminSettingToggle
+                  id="help-chat-enabled"
+                  title="Help chat"
+                  status={
+                    settings.enabled
+                      ? "On — Need help? appears in the app"
+                      : "Off — widget is hidden"
+                  }
                   checked={settings.enabled}
-                  onChange={(v) => setSettings({ ...settings, enabled: v })}
+                  tone={settings.enabled ? "ok" : "neutral"}
+                  onChange={(enabled) =>
+                    setSettings({ ...settings, enabled })
+                  }
                 />
-              </div>
-              <div className="settings-row settings-toggle-row">
-                <span className="min-w-0">AI first reply</span>
-                <AppleToggle
-                  label="AI first reply"
+                <AdminSettingToggle
+                  id="help-ai-first"
+                  title="AI first reply"
+                  status={
+                    settings.aiFirstReply
+                      ? "On — AI answers from knowledge first"
+                      : "Off — new threads wait for a human"
+                  }
                   checked={settings.aiFirstReply}
-                  onChange={(v) =>
-                    setSettings({ ...settings, aiFirstReply: v })
+                  tone={settings.aiFirstReply ? "ok" : "neutral"}
+                  onChange={(aiFirstReply) =>
+                    setSettings({ ...settings, aiFirstReply })
                   }
                 />
-              </div>
-              <div className="settings-row settings-toggle-row">
-                <span className="min-w-0">Email admins on new message</span>
-                <AppleToggle
-                  label="Email admins on new message"
+                <AdminSettingToggle
+                  id="help-email-admins"
+                  title="Email admins"
+                  status={
+                    settings.notifyAdminsByEmail
+                      ? "On — email on each new help message"
+                      : "Off — inbox only, no email"
+                  }
                   checked={settings.notifyAdminsByEmail}
-                  onChange={(v) =>
-                    setSettings({ ...settings, notifyAdminsByEmail: v })
+                  tone={settings.notifyAdminsByEmail ? "ok" : "neutral"}
+                  onChange={(notifyAdminsByEmail) =>
+                    setSettings({ ...settings, notifyAdminsByEmail })
                   }
                 />
-              </div>
+              </AdminSettingToggleStack>
             </div>
             <label className="mt-4 block text-[13px] font-medium">
               Welcome message

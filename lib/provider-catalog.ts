@@ -4,6 +4,11 @@ export type CatalogProvider = AiProvider | "voice";
 
 export type VoiceOption = { id: string; name: string };
 
+/** ElevenLabs voice_id shape (letters, digits, _ -). */
+export function isValidElevenLabsVoiceId(value: string): boolean {
+  return /^[A-Za-z0-9_-]{10,64}$/.test(value.trim());
+}
+
 export type CatalogFetch = (
   url: string,
   init?: RequestInit

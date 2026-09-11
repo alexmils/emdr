@@ -3,7 +3,10 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
-import { AppleToggle } from "@/app/components/AppleToggle";
+import {
+  AdminSettingToggle,
+  AdminSettingToggleStack,
+} from "@/app/components/admin/AdminSettingToggle";
 import { fileToResourceCoverDataUrl } from "@/lib/avatar-client";
 import {
   RESOURCE_KINDS,
@@ -398,24 +401,34 @@ function AdminResourcesPageInner() {
               </div>
             </div>
 
-            <div className="admin-resources-toggles">
-              <label className="flex items-center gap-2 text-[13px]">
-                <AppleToggle
-                  checked={form.enabled}
-                  disabled={!canWrite || busy}
-                  onChange={(enabled) => setForm((f) => ({ ...f, enabled }))}
-                />
-                Published
-              </label>
-              <label className="flex items-center gap-2 text-[13px]">
-                <AppleToggle
-                  checked={form.featured}
-                  disabled={!canWrite || busy}
-                  onChange={(featured) => setForm((f) => ({ ...f, featured }))}
-                />
-                Featured (Learn teaser)
-              </label>
-            </div>
+            <AdminSettingToggleStack>
+              <AdminSettingToggle
+                id="resource-published"
+                title="Published"
+                status={
+                  form.enabled
+                    ? "On — visible in the Resources library"
+                    : "Off — draft, hidden from users"
+                }
+                checked={form.enabled}
+                disabled={!canWrite || busy}
+                tone={form.enabled ? "ok" : "neutral"}
+                onChange={(enabled) => setForm((f) => ({ ...f, enabled }))}
+              />
+              <AdminSettingToggle
+                id="resource-featured"
+                title="Featured"
+                status={
+                  form.featured
+                    ? "On — eligible for the Learn teaser"
+                    : "Off — not featured"
+                }
+                checked={form.featured}
+                disabled={!canWrite || busy}
+                tone={form.featured ? "ok" : "neutral"}
+                onChange={(featured) => setForm((f) => ({ ...f, featured }))}
+              />
+            </AdminSettingToggleStack>
 
             <div className="admin-resources-meta-row">
               <label className="admin-field-label">

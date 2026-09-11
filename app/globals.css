@@ -5731,7 +5731,77 @@ body:has(.app-shell.session-immersive) .help-fab {
   margin: 0 0 1rem;
 }
 
-/* Stripe Checkout mode — one clear control, status beside the toggle */
+.admin-setting-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0.25rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.55));
+}
+
+.admin-setting-toggle-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0.25rem 0 1rem;
+}
+
+.admin-setting-toggle-stack .admin-setting-toggle {
+  margin: 0;
+}
+
+.admin-setting-toggle-neutral {
+  border-color: var(--border);
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.55));
+}
+
+.admin-setting-toggle-caution {
+  border-color: color-mix(in srgb, #f59e0b 35%, var(--border));
+  background: color-mix(in srgb, #fef3c7 55%, transparent);
+}
+
+.admin-setting-toggle-danger {
+  border-color: color-mix(in srgb, #ef4444 30%, var(--border));
+  background: color-mix(in srgb, #fee2e2 45%, transparent);
+}
+
+.admin-setting-toggle-ok {
+  border-color: color-mix(in srgb, var(--accent, #84b067) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent, #84b067) 12%, transparent);
+}
+
+.admin-setting-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.admin-setting-toggle-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-setting-toggle-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.admin-setting-toggle-status {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Legacy Stripe aliases → shared setting toggle */
 .admin-stripe-mode {
   display: flex;
   flex-direction: column;
@@ -5781,10 +5851,16 @@ body:has(.app-shell.session-immersive) .help-fab {
   line-height: 1.35;
 }
 
-.admin-stripe-edit-hint {
-  margin-top: -0.25rem;
-  margin-bottom: 1rem;
+@media (max-width: 420px) {
+  .admin-setting-toggle-row {
+    align-items: flex-start;
+  }
+
+  .admin-setting-toggle-status {
+    padding-right: 0.25rem;
+  }
 }
+
 
 .admin-segmented {
   display: inline-flex;
@@ -6265,6 +6341,228 @@ body:has(.app-shell.session-immersive) .help-fab {
   margin: 0;
   font-size: 0.8125rem;
   color: var(--text-secondary);
+}
+
+/* Admin Voice picker (ElevenLabs cards) */
+.admin-voice-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 52rem;
+}
+
+.admin-voice-settings {
+  max-width: none;
+}
+
+.admin-voice-divider {
+  margin: 1.25rem 0 1.1rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.admin-voice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.admin-voice-list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-voice-custom-note {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(42, 48, 32, 0.03);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.admin-voice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-voice-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 7.5rem;
+  padding: 0.9rem 0.95rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.admin-voice-card.is-busy {
+  opacity: 0.72;
+}
+
+.admin-voice-card:hover {
+  border-color: rgba(132, 176, 103, 0.55);
+}
+
+.admin-voice-card:focus-within {
+  outline: 2px solid #c6d67e;
+  outline-offset: 2px;
+}
+
+.admin-voice-card.is-selected {
+  border-color: rgba(132, 176, 103, 0.85);
+  background: rgba(164, 237, 165, 0.18);
+  box-shadow: 0 0 0 1px rgba(132, 176, 103, 0.25);
+}
+
+.admin-voice-select {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0;
+  padding-right: 1.6rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  min-width: 0;
+}
+
+.admin-voice-select:disabled {
+  cursor: wait;
+}
+
+.admin-voice-select:focus {
+  outline: none;
+}
+
+.admin-voice-check {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(42, 48, 32, 0.28);
+  background: #fff;
+  box-shadow: inset 0 0 0 0 #84b067;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+  pointer-events: none;
+}
+
+.admin-voice-check.is-on {
+  border-color: #84b067;
+  background: #84b067;
+  box-shadow: inset 0 0 0 3px #edf9ed;
+}
+
+.admin-voice-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.admin-voice-name {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.admin-voice-id {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-voice-play {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  margin-top: auto;
+  border-radius: 999px;
+  border: 1px solid rgba(132, 176, 103, 0.45);
+  background: rgba(164, 237, 165, 0.35);
+  color: #2a3020;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.admin-voice-play:hover:not(:disabled) {
+  background: rgba(164, 237, 165, 0.65);
+  border-color: #84b067;
+}
+
+.admin-voice-play:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.admin-voice-play:focus-visible {
+  outline: 2px solid #c6d67e;
+  outline-offset: 2px;
+}
+
+.admin-voice-lazy,
+.admin-voice-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.admin-spin {
+  animation: admin-spin 0.8s linear infinite;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-voice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-voice-list-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 select.field option:disabled {

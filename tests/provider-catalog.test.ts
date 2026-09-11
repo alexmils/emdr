@@ -3,11 +3,26 @@ import { describe, it } from "node:test";
 import {
   canonicalizeDeepseekModelId,
   isOpenAiChatModelId,
+  isValidElevenLabsVoiceId,
   listLlmModels,
   listVoiceCatalog,
   sanitizeProviderError,
   testProviderConnection,
 } from "../lib/provider-catalog.ts";
+
+describe("isValidElevenLabsVoiceId", () => {
+  it("accepts typical ElevenLabs ids", () => {
+    assert.equal(isValidElevenLabsVoiceId("FGY2WhTYpPnrIDTdsKH5"), true);
+    assert.equal(isValidElevenLabsVoiceId("EXAVITQu4vr4xnSDxMaL"), true);
+  });
+
+  it("rejects short, spaced, or path-like values", () => {
+    assert.equal(isValidElevenLabsVoiceId("short"), false);
+    assert.equal(isValidElevenLabsVoiceId("bad id with spaces!!"), false);
+    assert.equal(isValidElevenLabsVoiceId("../etc/passwd"), false);
+    assert.equal(isValidElevenLabsVoiceId(""), false);
+  });
+});
 
 describe("sanitizeProviderError", () => {
   it("maps 401 to invalid key without echoing secrets", () => {

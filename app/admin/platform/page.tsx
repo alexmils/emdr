@@ -3,6 +3,10 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
+import {
+  AdminSettingToggle,
+  AdminSettingToggleStack,
+} from "@/app/components/admin/AdminSettingToggle";
 import type { PlatformSettings } from "@/lib/platform-settings";
 import { fetchJson } from "@/lib/fetch-json";
 
@@ -130,16 +134,22 @@ function AdminPlatformPageInner() {
           {tab === "access" && (
             <>
               <h2 className="admin-panel-title">Access</h2>
-              <label className="admin-toggle-row">
-                <span>Invites enabled</span>
-                <input
-                  type="checkbox"
+              <AdminSettingToggleStack>
+                <AdminSettingToggle
+                  id="platform-invites"
+                  title="Invites"
+                  status={
+                    settings.invitesEnabled
+                      ? "On — admins can send invite links"
+                      : "Off — invite API rejects new invites"
+                  }
                   checked={settings.invitesEnabled}
-                  onChange={(e) =>
-                    setSettings({ ...settings, invitesEnabled: e.target.checked })
+                  tone={settings.invitesEnabled ? "ok" : "neutral"}
+                  onChange={(invitesEnabled) =>
+                    setSettings({ ...settings, invitesEnabled })
                   }
                 />
-              </label>
+              </AdminSettingToggleStack>
               <label className="admin-field-label">
                 Maintenance message
                 <textarea
@@ -161,64 +171,80 @@ function AdminPlatformPageInner() {
           {tab === "features" && (
             <>
               <h2 className="admin-panel-title">Feature flags</h2>
-              <label className="admin-toggle-row">
-                <span>Voice</span>
-                <input
-                  type="checkbox"
+              <AdminSettingToggleStack>
+                <AdminSettingToggle
+                  id="platform-voice"
+                  title="Voice"
+                  status={
+                    settings.flags.voice
+                      ? "On — agent can speak lines aloud"
+                      : "Off — text only in sessions"
+                  }
                   checked={settings.flags.voice}
-                  onChange={(e) =>
+                  tone={settings.flags.voice ? "ok" : "neutral"}
+                  onChange={(voice) =>
                     setSettings({
                       ...settings,
-                      flags: { ...settings.flags, voice: e.target.checked },
+                      flags: { ...settings.flags, voice },
                     })
                   }
                 />
-              </label>
-              <label className="admin-toggle-row">
-                <span>Memory</span>
-                <input
-                  type="checkbox"
+                <AdminSettingToggle
+                  id="platform-memory"
+                  title="Memory"
+                  status={
+                    settings.flags.memory
+                      ? "On — memory sets available in guided chat"
+                      : "Off — memory tools stay hidden"
+                  }
                   checked={settings.flags.memory}
-                  onChange={(e) =>
+                  tone={settings.flags.memory ? "ok" : "neutral"}
+                  onChange={(memory) =>
                     setSettings({
                       ...settings,
-                      flags: { ...settings.flags, memory: e.target.checked },
+                      flags: { ...settings.flags, memory },
                     })
                   }
                 />
-              </label>
-              <label className="admin-toggle-row">
-                <span>Controller rumble</span>
-                <input
-                  type="checkbox"
+                <AdminSettingToggle
+                  id="platform-rumble"
+                  title="Controller rumble"
+                  status={
+                    settings.flags.blsVibration
+                      ? "On — gamepad vibrates on ball edges"
+                      : "Off — no rumble"
+                  }
                   checked={settings.flags.blsVibration}
-                  onChange={(e) =>
+                  tone={settings.flags.blsVibration ? "ok" : "neutral"}
+                  onChange={(blsVibration) =>
                     setSettings({
                       ...settings,
-                      flags: {
-                        ...settings.flags,
-                        blsVibration: e.target.checked,
-                      },
+                      flags: { ...settings.flags, blsVibration },
                     })
                   }
                 />
-              </label>
-              <label className="admin-toggle-row">
-                <span>Session interpreter (JSON phase/SUDs/VoC)</span>
-                <input
-                  type="checkbox"
+                <AdminSettingToggle
+                  id="platform-interpreter"
+                  title="Session interpreter"
+                  status={
+                    settings.flags.sessionInterpreter !== false
+                      ? "On — model returns phase / scale updates"
+                      : "Off — guide runs without structured JSON"
+                  }
                   checked={settings.flags.sessionInterpreter !== false}
-                  onChange={(e) =>
+                  tone={
+                    settings.flags.sessionInterpreter !== false
+                      ? "ok"
+                      : "neutral"
+                  }
+                  onChange={(sessionInterpreter) =>
                     setSettings({
                       ...settings,
-                      flags: {
-                        ...settings.flags,
-                        sessionInterpreter: e.target.checked,
-                      },
+                      flags: { ...settings.flags, sessionInterpreter },
                     })
                   }
                 />
-              </label>
+              </AdminSettingToggleStack>
             </>
           )}
 
@@ -230,19 +256,27 @@ function AdminPlatformPageInner() {
                 Resources for trial users. Paying users never see ads. Frequency
                 applies to the Free-session interstitial only.
               </p>
-              <label className="admin-toggle-row">
-                <span>Enable ads</span>
-                <input
-                  type="checkbox"
+              <AdminSettingToggleStack>
+                <AdminSettingToggle
+                  id="platform-ads"
+                  title="Enable ads"
+                  status={
+                    settings.ads?.enabled === true
+                      ? "On — trial users may see Free-session and Resources ads"
+                      : "Off — no ads for anyone"
+                  }
                   checked={settings.ads?.enabled === true}
-                  onChange={(e) =>
+                  tone={
+                    settings.ads?.enabled === true ? "caution" : "neutral"
+                  }
+                  onChange={(enabled) =>
                     setSettings({
                       ...settings,
-                      ads: { ...settings.ads, enabled: e.target.checked },
+                      ads: { ...settings.ads, enabled },
                     })
                   }
                 />
-              </label>
+              </AdminSettingToggleStack>
               <label className="admin-field-label">
                 Provider
                 <select
