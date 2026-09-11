@@ -2,6 +2,8 @@ import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { LOGIN_PATH } from "@/lib/app-base";
 import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 
 export async function generateMetadata(): Promise<Metadata> {

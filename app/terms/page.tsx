@@ -3,6 +3,8 @@ import { BRAND_LEGAL } from "@/lib/brand";
 import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("terms");
 }

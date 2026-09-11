@@ -3,6 +3,8 @@ import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
 import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 
 export async function generateMetadata(): Promise<Metadata> {

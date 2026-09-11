@@ -14,6 +14,7 @@ import {
   type PlatformSeoConfig,
   type SeoPageId,
   SEO_PAGE_IDS,
+  DEFAULT_PLATFORM_SEO,
 } from "@/lib/seo-config";
 import {
   maskIpForDisplay,
@@ -145,7 +146,16 @@ export async function getResolvedSiteSeoPages(): Promise<{
 }
 
 export async function buildPageMetadata(pageId: SeoPageId): Promise<Metadata> {
-  const { pages, seo } = await getResolvedSiteSeoPages();
+  let pages: SiteSeoPage[];
+  let seo: PlatformSeoConfig = DEFAULT_PLATFORM_SEO;
+  try {
+    const resolved = await getResolvedSiteSeoPages();
+    pages = resolved.pages;
+    seo = resolved.seo;
+  } catch {
+    // Docker/CI builds have no DATABASE_URL — use static defaults.
+    pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO);
+  }
   const page = pages.find((p) => p.id === pageId) ?? pages[0];
   const verification: Metadata["verification"] = {};
   if (seo.gscVerification.trim()) {

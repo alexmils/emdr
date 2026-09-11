@@ -4,6 +4,8 @@ import { getLandingBlogPosts } from "@/lib/landing-blog-server";
 import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("home");
 }

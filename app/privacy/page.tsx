@@ -4,12 +4,20 @@ import { getPlatformSettings } from "@/lib/platform-settings";
 import { buildPageMetadata } from "@/lib/site-seo";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("privacy");
 }
 
 export default async function PrivacyPage() {
-  const settings = await getPlatformSettings();
+  let supportEmail = "your support email";
+  try {
+    const settings = await getPlatformSettings();
+    supportEmail = settings.supportEmail || supportEmail;
+  } catch {
+    // Build-time / DB unavailable
+  }
 
   return (
     <FrontendShell>
@@ -21,7 +29,7 @@ export default async function PrivacyPage() {
           with your full policy before production launch.
         </p>
         <p>
-          Contact: {settings.supportEmail || "your support email"} for data
+          Contact: {supportEmail} for data
           requests.
         </p>
         <p>
