@@ -14,6 +14,7 @@ import { withAuth } from "@/lib/api-auth";
 import { isChoosableSessionMode } from "@/lib/session-mode";
 import { consumeGuidedSessionIfNeeded, TrialLimitError } from "@/lib/trial-usage";
 import { getEntitlementForUser, publicEntitlement } from "@/lib/entitlements";
+import { getPlatformSettings } from "@/lib/platform-settings";
 
 export async function GET(request: Request) {
   return withAuth(async () => {
@@ -114,6 +115,13 @@ export async function POST(request: Request) {
       body.threadId &&
       body.setId !== undefined
     ) {
+      const platform = await getPlatformSettings();
+      if (platform.flags.memory === false) {
+        return NextResponse.json(
+          { error: "Memory is turned off" },
+          { status: 403 }
+        );
+      }
       await setThreadMemorySet(body.threadId, body.setId, Boolean(body.enabled));
       return NextResponse.json({
         memorySets: await getThreadMemorySets(body.threadId),

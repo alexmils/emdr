@@ -16,6 +16,7 @@ export function ThreadEditMenu({
     threads,
     memorySets,
     threadMemorySets,
+    memoryEnabled,
     updateThreadLocal,
     setThreadMemorySet,
     selectThread,
@@ -93,60 +94,65 @@ export function ThreadEditMenu({
             onChange={(e) => setDescription(e.target.value)}
           />
         </label>
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-[13px] font-medium">Memory sets</p>
-          <Link
-            href="/app/settings?tab=memory"
-            className="text-[12px] font-medium text-[var(--accent)] hover:underline"
-            onClick={onClose}
-          >
-            Open Settings
-          </Link>
-        </div>
-        <div className="settings-group mb-3 max-h-44 overflow-y-auto">
-          {memorySets.length === 0 && (
-            <p className="settings-row text-[13px] text-[var(--text-secondary)]">
-              No memory sets yet. Create one below, or manage memories in
-              Settings.
-            </p>
-          )}
-          {memorySets.map((set) => (
-            <div
-              key={set.id}
-              className="settings-row settings-toggle-row items-center"
-            >
-              <span className="text-[13px]">{set.name}</span>
-              <AppleToggle
-                label={`Enable ${set.name}`}
-                checked={isSetEnabled(set.id)}
-                onChange={(enabled) => void setThreadMemorySet(set.id, enabled)}
-              />
+        {memoryEnabled && (
+          <>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[13px] font-medium">Session sets</p>
+              <Link
+                href="/app/settings?tab=memory"
+                className="text-[12px] font-medium text-[var(--accent)] hover:underline"
+                onClick={onClose}
+              >
+                Open Settings
+              </Link>
             </div>
-          ))}
-        </div>
-        <div className="mb-5 flex gap-2">
-          <input
-            className="field flex-1"
-            value={newSetName}
-            placeholder="New set name"
-            maxLength={80}
-            onChange={(e) => setNewSetName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void createSet();
-              }
-            }}
-          />
-          <button
-            type="button"
-            className="btn-secondary shrink-0"
-            disabled={!newSetName.trim() || creatingSet}
-            onClick={() => void createSet()}
-          >
-            {creatingSet ? "Adding…" : "Add set"}
-          </button>
-        </div>
+            <div className="settings-group mb-3 max-h-44 overflow-y-auto">
+              {memorySets.length === 0 && (
+                <p className="settings-row text-[13px] text-[var(--text-secondary)]">
+                  No sets yet. Create one below, or open Settings.
+                </p>
+              )}
+              {memorySets.map((set) => (
+                <div
+                  key={set.id}
+                  className="settings-row settings-toggle-row items-center"
+                >
+                  <span className="text-[13px]">{set.name}</span>
+                  <AppleToggle
+                    label={`Enable ${set.name}`}
+                    checked={isSetEnabled(set.id)}
+                    onChange={(enabled) =>
+                      void setThreadMemorySet(set.id, enabled)
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mb-5 flex gap-2">
+              <input
+                className="field flex-1"
+                value={newSetName}
+                placeholder="New set name"
+                maxLength={80}
+                onChange={(e) => setNewSetName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void createSet();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn-secondary shrink-0"
+                disabled={!newSetName.trim() || creatingSet}
+                onClick={() => void createSet()}
+              >
+                {creatingSet ? "Adding…" : "Add set"}
+              </button>
+            </div>
+          </>
+        )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>
             Cancel

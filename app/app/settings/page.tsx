@@ -2,10 +2,11 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppleToggle } from "@/app/components/AppleToggle";
 import { PasskeySettings } from "@/app/components/PasskeySettings";
 import { Avatar } from "@/app/components/Avatar";
+import { MemoryImportDropzone } from "@/app/components/MemoryImportDropzone";
 import {
   displayNameFor,
   notifyUserUpdated,
@@ -18,7 +19,7 @@ import { DEFAULT_SETTINGS } from "@/lib/types";
 
 type SettingsTab = "profile" | "voice" | "memory" | "security" | "coming-soon";
 
-const TABS: { id: SettingsTab; label: string }[] = [
+const ALL_TABS: { id: SettingsTab; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "voice", label: "Voice" },
   { id: "memory", label: "Memory" },
@@ -37,6 +38,7 @@ function isSettingsTab(value: string | null): value is SettingsTab {
 }
 
 function SettingsPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [tab, setTab] = useState<SettingsTab>(
@@ -47,16 +49,24 @@ function SettingsPageContent() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [newMemTitle, setNewMemTitle] = useState("");
   const [newMemBody, setNewMemBody] = useState("");
   const [newSetName, setNewSetName] = useState("");
   const [addToSetId, setAddToSetId] = useState("");
   const [addMemId, setAddMemId] = useState("");
+  const [editingMemId, setEditingMemId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const [editSetName, setEditSetName] = useState("");
   const [profileName, setProfileName] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const tabs = ALL_TABS.filter((t) => t.id !== "memory" || memoryEnabled);
 
   useEffect(() => {
     setProfileName(user?.name ?? "");
@@ -68,6 +78,7 @@ function SettingsPageContent() {
     setSettings(data.settings ?? DEFAULT_SETTINGS);
     setMemories(data.memories ?? []);
     setMemorySets(data.memorySets ?? []);
+    setMemoryEnabled(data.memoryEnabled !== false);
   };
 
   useEffect(() => {
@@ -77,6 +88,13 @@ function SettingsPageContent() {
   useEffect(() => {
     if (isSettingsTab(tabParam)) setTab(tabParam);
   }, [tabParam]);
+
+  useEffect(() => {
+    if (!memoryEnabled && tab === "memory") {
+      setTab("profile");
+      router.replace("/app/settings?tab=profile");
+    }
+  }, [memoryEnabled, tab, router]);
 
   useEffect(() => {
     const active = document.querySelector(
@@ -181,7 +199,7 @@ function SettingsPageContent() {
     }
   };
 
-  const panelTitle = TABS.find((t) => t.id === tab)?.label ?? "Settings";
+  const panelTitle = tabs.find((t) => t.id === tab)?.label ?? "Settings";
   const label = displayNameFor(user);
 
   return (
@@ -194,7 +212,7 @@ function SettingsPageContent() {
           <p className="settings-page-title">Settings</p>
         </div>
         <nav className="settings-nav" aria-label="Settings sections">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -314,18 +332,35 @@ function SettingsPageContent() {
             </div>
           )}
 
-          {tab === "memory" && (
+          {tab === "memory" && memoryEnabled && (
             <div className="settings-group">
+              <div className="settings-row">
+                <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                  Turn a set on for a Guided session — the guide only sees what
+                  you enable. Intake history is saved separately and is not
+                  listed here.
+                </p>
+              </div>
+
+              <MemoryImportDropzone
+                onImported={() => void load()}
+                toast={toast}
+              />
+
               <div className="settings-row space-y-2">
+                <p className="text-[12px] font-medium text-[var(--text-secondary)]">
+                  Notes
+                </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input
-                    placeholder="Memory title"
+                    placeholder="Title"
                     className="field"
                     value={newMemTitle}
+                    maxLength={120}
                     onChange={(e) => setNewMemTitle(e.target.value)}
                   />
                   <input
-                    placeholder="Memory text"
+                    placeholder="Short note"
                     className="field"
                     value={newMemBody}
                     onChange={(e) => setNewMemBody(e.target.value)}
@@ -345,128 +380,411 @@ function SettingsPageContent() {
                           body: newMemBody,
                         }),
                       });
-                      if (!res.ok) throw new Error("Could not create memory");
+                      const data = await res.json();
+                      if (!res.ok) {
+                        throw new Error(data.error || "Could not save note");
+                      }
                       setNewMemTitle("");
                       setNewMemBody("");
                       void load();
-                      toast("Memory created");
+                      toast("Note saved");
                     } catch (err) {
                       toast(
                         err instanceof Error
                           ? err.message
-                          : "Could not create memory",
+                          : "Could not save note",
                         "error"
                       );
                     }
                   }}
                 >
-                  New memory
+                  Save note
                 </button>
+                {memories.length === 0 && (
+                  <p className="text-[12px] text-[var(--text-secondary)]">
+                    No notes yet. Add a title and a short note, then put them in
+                    a set.
+                  </p>
+                )}
+                {memories.map((m) => (
+                  <div key={m.id} className="rounded-[6px] border border-[var(--border)] p-3">
+                    {editingMemId === m.id ? (
+                      <div className="space-y-2">
+                        <input
+                          className="field"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                        />
+                        <textarea
+                          className="field min-h-[4.5rem]"
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/settings", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    action: "update_memory",
+                                    id: m.id,
+                                    title: editTitle,
+                                    body: editBody,
+                                  }),
+                                });
+                                const data = await res.json();
+                                if (!res.ok) {
+                                  throw new Error(data.error || "Could not save");
+                                }
+                                setEditingMemId(null);
+                                void load();
+                                toast("Saved");
+                              } catch (err) {
+                                toast(
+                                  err instanceof Error
+                                    ? err.message
+                                    : "Could not save",
+                                  "error"
+                                );
+                              }
+                            }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => setEditingMemId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-[13px] font-medium">{m.title}</p>
+                        <p className="mt-0.5 line-clamp-1 text-[12px] text-[var(--text-secondary)]">
+                          {m.body}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => {
+                              setEditingMemId(m.id);
+                              setEditTitle(m.title);
+                              setEditBody(m.body);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={async () => {
+                              if (
+                                !window.confirm(
+                                  "Delete this note? It will leave every set that includes it."
+                                )
+                              ) {
+                                return;
+                              }
+                              try {
+                                const res = await fetch("/api/settings", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    action: "delete_memory",
+                                    id: m.id,
+                                  }),
+                                });
+                                if (!res.ok) throw new Error("Could not delete");
+                                void load();
+                                toast("Note deleted");
+                              } catch (err) {
+                                toast(
+                                  err instanceof Error
+                                    ? err.message
+                                    : "Could not delete",
+                                  "error"
+                                );
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <input
-                  placeholder="New set name"
-                  className="field min-w-0 flex-1"
-                  value={newSetName}
-                  onChange={(e) => setNewSetName(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn-secondary w-full sm:w-auto"
-                  onClick={async () => {
-                    try {
-                      const res = await fetch("/api/settings", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          action: "create_set",
-                          name: newSetName,
-                        }),
-                      });
-                      if (!res.ok) throw new Error("Could not create set");
-                      setNewSetName("");
-                      void load();
-                      toast("Memory set created");
-                    } catch (err) {
-                      toast(
-                        err instanceof Error
-                          ? err.message
-                          : "Could not create set",
-                        "error"
-                      );
-                    }
-                  }}
-                >
-                  New set
-                </button>
-              </div>
-              <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <select
-                  className="field settings-select"
-                  value={addToSetId}
-                  onChange={(e) => setAddToSetId(e.target.value)}
-                >
-                  <option value="">Set…</option>
-                  {memorySets.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="field settings-select"
-                  value={addMemId}
-                  onChange={(e) => setAddMemId(e.target.value)}
-                >
-                  <option value="">Memory…</option>
-                  {memories.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.title}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className="btn-primary w-full sm:w-auto"
-                  disabled={!addToSetId || !addMemId}
-                  onClick={async () => {
-                    try {
-                      const res = await fetch("/api/settings", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          action: "add_to_set",
-                          setId: addToSetId,
-                          memoryId: addMemId,
-                        }),
-                      });
-                      if (!res.ok) throw new Error("Could not add to set");
-                      void load();
-                      toast("Added to set");
-                    } catch (err) {
-                      toast(
-                        err instanceof Error
-                          ? err.message
-                          : "Could not add to set",
-                        "error"
-                      );
-                    }
-                  }}
-                >
-                  Add to set
-                </button>
-              </div>
-              {memorySets.map((set) => (
-                <div key={set.id} className="settings-row">
-                  <p className="text-[13px] font-semibold">{set.name}</p>
-                  <ul className="mt-1 space-y-0.5 text-[12px] text-[var(--text-secondary)]">
-                    {set.memoryIds.map((mid) => {
-                      const m = memories.find((x) => x.id === mid);
-                      return m ? <li key={mid}>{m.title}</li> : null;
-                    })}
-                  </ul>
+
+              <div className="settings-row space-y-2">
+                <p className="text-[12px] font-medium text-[var(--text-secondary)]">
+                  Sets
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  <input
+                    placeholder="Set name"
+                    className="field min-w-0 flex-1"
+                    value={newSetName}
+                    maxLength={80}
+                    onChange={(e) => setNewSetName(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-secondary w-full sm:w-auto"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/settings", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            action: "create_set",
+                            name: newSetName,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          throw new Error(data.error || "Could not create set");
+                        }
+                        setNewSetName("");
+                        void load();
+                        toast("Set created");
+                      } catch (err) {
+                        toast(
+                          err instanceof Error
+                            ? err.message
+                            : "Could not create set",
+                          "error"
+                        );
+                      }
+                    }}
+                  >
+                    New set
+                  </button>
                 </div>
-              ))}
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  <select
+                    className="field settings-select"
+                    value={addToSetId}
+                    onChange={(e) => setAddToSetId(e.target.value)}
+                  >
+                    <option value="">Set…</option>
+                    {memorySets.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="field settings-select"
+                    value={addMemId}
+                    onChange={(e) => setAddMemId(e.target.value)}
+                  >
+                    <option value="">Note…</option>
+                    {memories.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.title}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn-primary w-full sm:w-auto"
+                    disabled={!addToSetId || !addMemId}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/settings", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            action: "add_to_set",
+                            setId: addToSetId,
+                            memoryId: addMemId,
+                          }),
+                        });
+                        if (!res.ok) throw new Error("Could not add to set");
+                        void load();
+                        toast("Added to set");
+                      } catch (err) {
+                        toast(
+                          err instanceof Error
+                            ? err.message
+                            : "Could not add to set",
+                          "error"
+                        );
+                      }
+                    }}
+                  >
+                    Add to set
+                  </button>
+                </div>
+                {memorySets.map((set) => (
+                  <div
+                    key={set.id}
+                    className="rounded-[6px] border border-[var(--border)] p-3"
+                  >
+                    {editingSetId === set.id ? (
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        <input
+                          className="field min-w-0 flex-1"
+                          value={editSetName}
+                          onChange={(e) => setEditSetName(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch("/api/settings", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  action: "update_set",
+                                  id: set.id,
+                                  name: editSetName,
+                                }),
+                              });
+                              if (!res.ok) throw new Error("Could not save");
+                              setEditingSetId(null);
+                              void load();
+                              toast("Saved");
+                            } catch (err) {
+                              toast(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Could not save",
+                                "error"
+                              );
+                            }
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => setEditingSetId(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          className="text-left text-[13px] font-semibold hover:underline"
+                          onClick={() => {
+                            setEditingSetId(set.id);
+                            setEditSetName(set.name);
+                          }}
+                        >
+                          {set.name}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={async () => {
+                            if (
+                              !window.confirm(
+                                "Delete this set? Notes stay; only the set is removed."
+                              )
+                            ) {
+                              return;
+                            }
+                            try {
+                              const res = await fetch("/api/settings", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  action: "delete_set",
+                                  id: set.id,
+                                }),
+                              });
+                              if (!res.ok) throw new Error("Could not delete");
+                              void load();
+                              toast("Set deleted");
+                            } catch (err) {
+                              toast(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Could not delete",
+                                "error"
+                              );
+                            }
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                    <ul className="space-y-1 text-[12px] text-[var(--text-secondary)]">
+                      {set.memoryIds.length === 0 && (
+                        <li>No notes in this set.</li>
+                      )}
+                      {set.memoryIds.map((mid) => {
+                        const m = memories.find((x) => x.id === mid);
+                        if (!m) return null;
+                        return (
+                          <li
+                            key={mid}
+                            className="flex items-center justify-between gap-2"
+                          >
+                            <span className="min-w-0 truncate">{m.title}</span>
+                            <button
+                              type="button"
+                              className="shrink-0 text-[12px] font-medium text-[var(--accent)] hover:underline"
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch("/api/settings", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      action: "remove_from_set",
+                                      setId: set.id,
+                                      memoryId: mid,
+                                    }),
+                                  });
+                                  if (!res.ok) {
+                                    throw new Error("Could not remove");
+                                  }
+                                  void load();
+                                  toast("Removed from set");
+                                } catch (err) {
+                                  toast(
+                                    err instanceof Error
+                                      ? err.message
+                                      : "Could not remove",
+                                    "error"
+                                  );
+                                }
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

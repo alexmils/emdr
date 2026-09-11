@@ -60,6 +60,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Admin top search**: sticky search in `/admin` canvas finds sections, pages, and tabs from `lib/admin-nav.ts` (`buildAdminSearchIndex`); Ctrl/⌘K focus; Cursor rule `.cursor/rules/admin-nav-search.mdc` — new admin routes must register in `ADMIN_NAV_SECTIONS` so sidebar + search stay in sync
 - **Coolify production**: `Dockerfile` (Next.js `output: "standalone"`, port **3471**) + `.dockerignore`; host `nurahelp.com` / `www` on Coolify at `server.nurahelp.com` (SSH **217.76.58.141**); GitHub Actions builds/pushes `ghcr.io/alexmils/nura`, Coolify only pulls the image (no on-server Next build)
 - **Admin SEO**: `/admin/seo` (Overview / Pages / Analytics / Connections / Indexing / Cookies) — per-page title/description/OG in `app_settings.seo`; editable GA4, GTM, Clarity, GSC, Bing, ignored IPs + Google service account; GA4 Data API + Search Console analytics; public cookie banner + tags on marketing pages only (`FrontendShell`); `generateMetadata` on public routes
+- **Memory sets upgrade**: edit/delete notes and sets, remove from set; platform `flags.memory` hides Settings Memory tab + session toggles and skips chat context; JOIN + 3k-char cap for enabled-set prompt context; client-side drag-drop import of ChatGPT/Claude `.json`/`.zip` (and plain text) into notes + auto set (`Imported from…`) via `fflate` + `lib/memory-import.ts`
+- Cursor rule `git-commit-push`: **always commit** when a coding turn finishes (lint+test gate); push only when asked (or when user says commit without “only”)
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)

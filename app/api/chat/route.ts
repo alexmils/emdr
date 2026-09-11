@@ -98,7 +98,10 @@ export async function POST(request: Request) {
     const { userId } = getRlsContext();
     const settings = await getLlmRuntimeConfig();
     const platform = await getPlatformSettings();
-    const memoryContext = await getEnabledMemoryContext(threadId);
+    const memoryContext =
+      platform.flags.memory === false
+        ? ""
+        : await getEnabledMemoryContext(threadId);
     const profile = await getClientProfile(userId);
     const profileContext = clientProfileContextBlock(profile);
     const history = await listMessages(threadId);

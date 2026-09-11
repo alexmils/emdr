@@ -2882,6 +2882,29 @@ body:has(.app-shell.session-immersive) .help-fab {
   max-width: 42rem; /* ~672px — slightly wider than the old 640px flush-left column */
 }
 
+.memory-import-drop {
+  width: 100%;
+  cursor: pointer;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 1rem 1.1rem;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.memory-import-drop:hover,
+.memory-import-drop:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.memory-import-drop-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+}
+
 .settings-panel-title {
   font-size: 1.35rem;
   font-weight: 600;

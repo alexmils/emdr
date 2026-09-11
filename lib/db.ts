@@ -15,6 +15,7 @@ import { ensureAuthFunctions } from "./auth/db-auth";
 import { ensureRlsPolicies } from "./rls-policies";
 import { dbQuery } from "./rls";
 import { getRlsContext } from "./rls";
+import { formatMemoryContext } from "./memory-context";
 
 let pool: Pool | null = null;
 let schemaDone = false;
@@ -756,23 +757,62 @@ export async function createMemory(title: string, body: string): Promise<Memory>
   return m;
 }
 
+export async function createMemories(
+  notes: { title: string; body: string }[]
+): Promise<Memory[]> {
+  const created: Memory[] = [];
+  for (const note of notes) {
+    created.push(await createMemory(note.title, note.body));
+  }
+  return created;
+}
+
+export async function updateMemory(
+  id: string,
+  title: string,
+  body: string
+): Promise<Memory | null> {
+  const { rows } = await dbQuery(
+    `UPDATE memories SET title = $1, body = $2 WHERE id = $3
+     RETURNING id, title, body, created_at`,
+    [title, body, id]
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    id: r.id as string,
+    title: r.title as string,
+    body: r.body as string,
+    createdAt: new Date(r.created_at as string).toISOString(),
+  };
+}
+
+export async function deleteMemory(id: string): Promise<boolean> {
+  const { rowCount } = await dbQuery("DELETE FROM memories WHERE id = $1", [id]);
+  return (rowCount ?? 0) > 0;
+}
+
 export async function listMemorySets(): Promise<MemorySet[]> {
   const { rows: sets } = await dbQuery<{ id: string; name: string }>(
     "SELECT * FROM memory_sets ORDER BY name ASC"
   );
-  const result: MemorySet[] = [];
-  for (const s of sets) {
-    const { rows } = await dbQuery<{ memory_id: string }>(
-      "SELECT memory_id FROM memory_set_items WHERE set_id = $1",
-      [s.id]
-    );
-    result.push({
-      id: s.id,
-      name: s.name,
-      memoryIds: rows.map((r) => r.memory_id),
-    });
+  if (!sets.length) return [];
+  const setIds = sets.map((s) => s.id);
+  const { rows: items } = await dbQuery<{ set_id: string; memory_id: string }>(
+    "SELECT set_id, memory_id FROM memory_set_items WHERE set_id = ANY($1)",
+    [setIds]
+  );
+  const bySet = new Map<string, string[]>();
+  for (const row of items) {
+    const list = bySet.get(row.set_id) ?? [];
+    list.push(row.memory_id);
+    bySet.set(row.set_id, list);
   }
-  return result;
+  return sets.map((s) => ({
+    id: s.id,
+    name: s.name,
+    memoryIds: bySet.get(s.id) ?? [],
+  }));
 }
 
 export async function createMemorySet(name: string): Promise<MemorySet> {
@@ -785,7 +825,49 @@ export async function createMemorySet(name: string): Promise<MemorySet> {
   return set;
 }
 
+export async function updateMemorySet(
+  id: string,
+  name: string
+): Promise<MemorySet | null> {
+  const { rows } = await dbQuery(
+    "UPDATE memory_sets SET name = $1 WHERE id = $2 RETURNING id, name",
+    [name, id]
+  );
+  if (!rows[0]) return null;
+  const sets = await listMemorySets();
+  return sets.find((s) => s.id === id) ?? null;
+}
+
+export async function deleteMemorySet(id: string): Promise<boolean> {
+  const { rowCount } = await dbQuery("DELETE FROM memory_sets WHERE id = $1", [
+    id,
+  ]);
+  return (rowCount ?? 0) > 0;
+}
+
+export async function findMemorySetByName(
+  name: string
+): Promise<MemorySet | null> {
+  const sets = await listMemorySets();
+  return sets.find((s) => s.name === name) ?? null;
+}
+
 export async function addMemoryToSet(setId: string, memoryId: string) {
+  const { userId } = getRlsContext();
+  const { rows: setRows } = await dbQuery<{ id: string }>(
+    "SELECT id FROM memory_sets WHERE id = $1 AND user_id = $2",
+    [setId, userId]
+  );
+  if (!setRows[0]) {
+    throw new Error("Memory set not found");
+  }
+  const { rows: memRows } = await dbQuery<{ id: string }>(
+    "SELECT id FROM memories WHERE id = $1 AND user_id = $2",
+    [memoryId, userId]
+  );
+  if (!memRows[0]) {
+    throw new Error("Memory not found");
+  }
   await dbQuery(
     "INSERT INTO memory_set_items (set_id, memory_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
     [setId, memoryId]
@@ -826,19 +908,31 @@ export async function setThreadMemorySet(
 }
 
 export async function getEnabledMemoryContext(threadId: string): Promise<string> {
-  const enabled = (await getThreadMemorySets(threadId)).filter((t) => t.enabled);
-  if (!enabled.length) return "";
-  const sets = (await listMemorySets()).filter((s) =>
-    enabled.some((e) => e.setId === s.id)
+  const { rows } = await dbQuery<{
+    set_name: string;
+    title: string | null;
+    body: string | null;
+  }>(
+    `SELECT ms.name AS set_name, m.title, m.body
+     FROM thread_memory_sets tms
+     INNER JOIN memory_sets ms ON ms.id = tms.set_id
+     LEFT JOIN memory_set_items msi ON msi.set_id = ms.id
+     LEFT JOIN memories m ON m.id = msi.memory_id
+     WHERE tms.thread_id = $1 AND tms.enabled = TRUE
+     ORDER BY ms.name ASC, m.created_at DESC NULLS LAST`,
+    [threadId]
   );
-  const memories = await listMemories();
+  if (!rows.length) return "";
   const lines: string[] = [];
-  for (const set of sets) {
-    lines.push(`[${set.name}]`);
-    for (const mid of set.memoryIds) {
-      const m = memories.find((x) => x.id === mid);
-      if (m) lines.push(`- ${m.title}: ${m.body}`);
+  let currentSet: string | null = null;
+  for (const row of rows) {
+    if (row.set_name !== currentSet) {
+      currentSet = row.set_name;
+      lines.push(`[${row.set_name}]`);
+    }
+    if (row.title != null && row.body != null) {
+      lines.push(`- ${row.title}: ${row.body}`);
     }
   }
-  return lines.join("\n");
+  return formatMemoryContext(lines);
 }

@@ -97,6 +97,7 @@ interface AppState {
   messages: Message[];
   memorySets: MemorySet[];
   threadMemorySets: ThreadMemorySet[];
+  memoryEnabled: boolean;
   settings: AppSettings;
   bls: BlsSettings;
   sessionMode: SessionMode;
@@ -143,6 +144,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [threadMemorySets, setThreadMemorySets] = useState<ThreadMemorySet[]>(
     []
   );
@@ -503,10 +505,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         settings?: AppSettings;
         memories?: Memory[];
         memorySets?: MemorySet[];
+        memoryEnabled?: boolean;
       }>("/api/settings");
       setSettings(data.settings ?? DEFAULT_SETTINGS);
       setMemories(data.memories ?? []);
       setMemorySets(data.memorySets ?? []);
+      setMemoryEnabled(data.memoryEnabled !== false);
     } catch (err) {
       console.error("refreshSettings failed:", err);
     }
@@ -607,6 +611,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       messages,
       memorySets,
       threadMemorySets,
+      memoryEnabled,
       settings,
       bls,
       sessionMode,
@@ -642,6 +647,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       messages,
       memorySets,
       threadMemorySets,
+      memoryEnabled,
       settings,
       bls,
       sessionMode,

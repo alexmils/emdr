@@ -194,8 +194,8 @@ function AdminPlatformPageInner() {
                   title="Memory"
                   status={
                     settings.flags.memory
-                      ? "On — memory sets available in guided chat"
-                      : "Off — memory tools stay hidden"
+                      ? "On — Memory tab and session set toggles available"
+                      : "Off — Memory tab hidden; guided chat gets no session notes"
                   }
                   checked={settings.flags.memory}
                   tone={settings.flags.memory ? "ok" : "neutral"}

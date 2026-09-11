@@ -1,43 +1,43 @@
 ---
-description: When user says commit/push/ship — commit and push in the same turn (no second ask)
+description: Always commit when finishing work; commit+push when user asks ship/push
 alwaysApply: true
 ---
 
 # EMDR — git commit & push
 
-## When the user asks to commit / push
+## When finishing a coding turn (default — no ask needed)
 
-If the user says **commit**, **push**, **commit push**, **ship**, or similar (any language, e.g. “uradi commit”, “pushaj”):
+If this turn **changed product/code/docs/rules** (not pure Q&A / plan-only):
 
-1. Follow the normal git safety protocol (status, diff, log; no force-push to main; no secrets).
-2. **Hard gate before commit/push** (when code/config/behavior changed) — **required, never skip**:
-   - `npm test`
-   - `npm run lint` (ESLint via `next lint`)
-   - `ReadLints` on files you touched in this turn
-   - If **any** fail: fix first, re-run, then commit/push. **Do not push a red tree.**
-   - **Do not** run `npm run build` / full Next compile before push — it slows the loop; GitHub Actions Docker build covers that. Lint + tests are enough locally to catch the errors that usually break CI.
-3. **Commit** all relevant product/code/docs/rules changes from the current work in the same turn (include a rule/docs tweak made in that turn).
-4. **Push** to the tracked remote (`git push -u origin HEAD` if needed) in the **same turn**, unless they explicitly said **commit only** / **bez push**.
-5. Do **not** wait for a second confirmation after an explicit commit/push request.
-6. After a coding session that changed files, if they say commit (even without “push”), treat it as **commit + push** — that is the default for this project.
-7. If GitHub Actions fails after push, check whether it is **build** vs **Coolify deploy** (curl exit 22 / HTTP 401 = bad `COOLIFY_TOKEN`, not lint).
+1. Hard gate (required): `npm test`, `npm run lint`, `ReadLints` on touched files. Fix failures before committing.
+2. **Always commit** relevant files in the **same turn** — do not wait for the user to ask.
+3. Do **not** auto-push on finish. Push only when the user asked (see below), unless they already said ship/push this turn.
+4. Skip auto-commit only when there is nothing to commit (no product diffs) or only noise (`.next`, scratch).
 
-## After finishing work
+Commit message: concise why-focused; include any rule/docs tweak from the same turn.
 
-Do **not** auto-commit without being asked.
+## When the user asks to commit / push / ship
 
-When the user says commit/push after changes: ship immediately (commit + push) as above.
+If they say **commit**, **push**, **commit push**, **ship**, or similar (any language):
 
-At the end of a coding turn (or when starting a new task), if **either** is true and they have not just asked to commit, briefly remind once:
+1. Same hard gate as above.
+2. Commit all relevant product/code/docs/rules changes.
+3. **Push** to the tracked remote in the same turn, unless they explicitly said **commit only** / **bez push** / **samo commit**.
+4. Do not wait for a second confirmation.
+5. If they say commit after a coding session (even without “push”), treat as **commit + push** — that remains the default when they *ask*.
 
-1. **Many unpushed changes** — roughly **8+** modified/untracked product files, or a large diff vs `origin/main`, and nothing pushed yet for that work; or
-2. **Stale push** — local commits ahead of `origin`, or substantial dirty tree, and the latest `origin/main` tip is older than about **1 day** (or this chat has shipped several features without a push).
+## Reminders (push lag)
 
-Reminder tone: one short line, e.g. “Imamo dosta lokalnih izmena / nije bilo push-a odavno — hoćeš commit + push?”
+At the end of a turn, if there are **local commits ahead of origin** or a large unpushed history, and they did not just push, one short reminder is OK: e.g. “Lokalni commitovi nisu na origin — hoćeš push?”
 
-Skip the reminder if they just pushed, or the only leftovers are noise (`.next`, build info, scratch scripts).
+Skip if they just pushed or only noise remains.
 
 ## What not to commit
 
 - `.env`, credentials, `node_modules`, `.next`, scratch `scripts/_tmp-*`, `*.tsbuildinfo`
+- Unrelated untracked assets unless part of the task
 - Do not update git config; do not `--force` to `main`/`master`
+
+## Gates note
+
+Do **not** run full `npm run build` as a local pre-commit gate (Actions Docker covers compile). Lint + tests are enough.
