@@ -264,7 +264,7 @@ export function buildMarketingSeoStatus(
       status: ga4On ? "connected" : "not_connected",
       publicIdMasked: ga4On ? maskPublicId(ga4) : null,
       detail: null,
-      hint: "Loads on the homepage and legal pages after someone allows analytics cookies. Visit numbers live on the Analytics tab. Do not also add this ID in Tag Manager.",
+      hint: "Tag loads on the homepage and legal pages with Consent Mode (storage stays off until analytics cookies are allowed). Visit numbers live on the Analytics tab. Do not also add this ID in Tag Manager.",
     },
     {
       id: "gtm",

@@ -10,7 +10,12 @@ alwaysApply: true
 If the user says **commit**, **push**, **commit push**, **ship**, or similar (any language, e.g. “uradi commit”, “pushaj”):
 
 1. Follow the normal git safety protocol (status, diff, log; no force-push to main; no secrets).
-2. **Before push** (and before commit when code/config changed): run `npm test` and `npm run lint`. If either fails, fix first — do not push a red tree. For non-trivial app changes also prefer `npm run build` (or rely on the Docker build in Actions) and fix TypeScript/page collect errors before shipping.
+2. **Hard gate before commit/push** (when code/config/behavior changed) — **required, never skip**:
+   - `npm test`
+   - `npm run lint` (ESLint via `next lint`)
+   - `ReadLints` on files you touched in this turn
+   - If **any** fail: fix first, re-run, then commit/push. **Do not push a red tree.**
+   - **Do not** run `npm run build` / full Next compile before push — it slows the loop; GitHub Actions Docker build covers that. Lint + tests are enough locally to catch the errors that usually break CI.
 3. **Commit** all relevant product/code/docs/rules changes from the current work in the same turn (include a rule/docs tweak made in that turn).
 4. **Push** to the tracked remote (`git push -u origin HEAD` if needed) in the **same turn**, unless they explicitly said **commit only** / **bez push**.
 5. Do **not** wait for a second confirmation after an explicit commit/push request.

@@ -6,15 +6,14 @@ import { useEffect, useState } from "react";
 import {
   CONSENT_UPDATE_EVENT,
   applyConsentToGtag,
-  consentToMode,
   isGtmAllowedPath,
   readConsent,
 } from "@/lib/marketing-consent";
 import type { PublicMarketingTags } from "@/lib/site-seo";
 
 /**
- * Loads GA4 / Clarity / GTM only on marketing paths after analytics consent.
- * Skipped entirely when Admin → SEO ignored IPs match the visitor.
+ * GA4 loads with Google Consent Mode (storage denied until analytics cookies).
+ * Clarity / GTM still wait for consent. Skipped when ignored IPs match.
  */
 export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   const pathname = usePathname() || "/";
@@ -35,24 +34,24 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
 
   const analyticsOk = consent?.analytics === true;
   const marketingOk = consent?.marketing === true;
-  const mode = consentToMode(consent);
 
   return (
     <>
+      {/* Consent Mode default denied; cookie banner / localStorage call consent update. */}
       <Script id="nura-consent-default" strategy="afterInteractive">{`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         window.gtag = gtag;
         gtag('consent', 'default', {
-          analytics_storage: '${mode.analytics_storage}',
-          ad_storage: '${mode.ad_storage}',
-          ad_user_data: '${mode.ad_user_data}',
-          ad_personalization: '${mode.ad_personalization}',
+          analytics_storage: 'denied',
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
           wait_for_update: 500
         });
       `}</Script>
 
-      {analyticsOk && tags.ga4MeasurementId ? (
+      {tags.ga4MeasurementId ? (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${tags.ga4MeasurementId}`}
@@ -63,7 +62,10 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
             function gtag(){dataLayer.push(arguments);}
             window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', '${tags.ga4MeasurementId}', { anonymize_ip: true });
+            gtag('config', '${tags.ga4MeasurementId}', {
+              anonymize_ip: true,
+              send_page_view: true
+            });
           `}</Script>
         </>
       ) : null}

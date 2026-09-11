@@ -130,6 +130,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Marketing footer mobile: contain logo marquee (`min-width: 0` + overflow), center CTA/actions, smaller wave logos so the slider doesn’t spill off-screen
 - Back-to-top: icon-only (removed “Top” label)
 - Auth review fixes: desktop form pane top padding so absolute logo/Home don’t overlap tall forms; create-account OAuth errors stay on methods + strip `?error=` from URL; focus title on step change; mockup copy not `aria-hidden`; Terms on email step; footer tagline wraps before mid widths; `lib/auth/create-account-ui.ts` + tests
+- Pre-push gate: always `npm test` + `npm run lint` (+ ReadLints) before commit/push; **do not** run full `npm run build` as a local gate (Actions Docker build covers compile) — `.cursor/rules/git-commit-push.mdc` + `verify-before-done.mdc`
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -279,6 +280,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Production Docker: `WORKDIR` `/app` → `/nura` so standalone traces do not collide with App Router `app/` + console `/app` (fixes unstyled pages and `/` rendering as login/AppAccessGate; vercel/next.js#68690)
 - Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 - **Production runbook**: `docs/production.md` + always-on Cursor rule `.cursor/rules/nura-production.mdc` (Coolify UUIDs, VPS, nginx/Cloudflare path, GHCR deploy, WORKDIR `/nura`)
+- GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; Clarity/GTM stay consent-gated (`MarketingTags`, Connections hint)
 
 ---
 

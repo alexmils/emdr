@@ -11,7 +11,7 @@ Before ending your turn on any task that changes code, config, or behavior:
 
 1. **Lint edited files** — run `ReadLints` on every file you created or modified; fix new issues you introduced.
 2. **Run tests** — `npm test` in the repo root. If tests fail, fix or explain before finishing.
-3. **Type/build sanity** — after non-trivial changes, run `npm run lint` (or `npm run build` if lint is insufficient). Do not leave a broken build.
+3. **ESLint / project lint** — always run `npm run lint` (`next lint`) when code/config changed. Fix all errors before ending or pushing. This is the local stand-in for “would CI/Docker build fail on lint?” — **do not** run `npm run build` just to verify (too slow; Actions builds the image).
 4. **Runtime smoke** — when touching API routes, auth, middleware, or DB schema:
    - confirm the dev server starts or is already running on port **3471**;
    - hit the affected route(s) or check terminal output for **500**, **tuple concurrently updated**, or stack traces;
@@ -22,7 +22,9 @@ Before ending your turn on any task that changes code, config, or behavior:
 
 ## Do not
 
-- End a coding turn without running at least lint + tests when code changed.
+- End a coding turn without running at least **`npm run lint` + `npm test`** when code changed.
+- Push / ship without a green lint + test run in the same turn (see `git-commit-push`).
+- Run a full `npm run build` as a pre-push gate unless the user explicitly asks — prefer lint + tests.
 - Assume success without evidence from commands or terminal output.
 - Ignore errors in the dev server log the user pasted or that appear in your shell.
 

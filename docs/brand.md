@@ -75,7 +75,7 @@ Do not use Inter on any surface. Avoid rounded soft grotesks (Nunito, Manrope, r
   - Black on white / white on black: `nura-wave-logo-black-on-white-*`, `nura-wave-logo-white-on-black-*`
   - Color transparent: `nura-wave-logo-color-{500,2500}.png`
   - Color on white / black: `nura-wave-logo-color-on-white-*`, `nura-wave-logo-color-on-black-*`
-- Wordmark only (no wave) — solid letterforms (`nura-text.svg` / filled masters):
+- Wordmark only (no wave) — solid letterforms (filled PNG masters):
   - Transparent: `nura-text.png`, `nura-text-black.png`, `nura-text-white.png` (+ `-500` / `-2500` squares)
   - On backgrounds: `nura-text-color-on-white|black-*`, `nura-text-black-on-white-*`, `nura-text-white-on-black-*`
 - Never: brain, lotus, chat bubble, cross, heart, or the retired two-dots arc.
