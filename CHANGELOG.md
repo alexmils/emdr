@@ -131,6 +131,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Back-to-top: icon-only (removed “Top” label)
 - Auth review fixes: desktop form pane top padding so absolute logo/Home don’t overlap tall forms; create-account OAuth errors stay on methods + strip `?error=` from URL; focus title on step change; mockup copy not `aria-hidden`; Terms on email step; footer tagline wraps before mid widths; `lib/auth/create-account-ui.ts` + tests
 - Pre-push gate: always `npm test` + `npm run lint` (+ ReadLints) before commit/push; **do not** run full `npm run build` as a local gate (Actions Docker build covers compile) — `.cursor/rules/git-commit-push.mdc` + `verify-before-done.mdc`
+- Admin Billing Stripe: Demo mode is a clear status card (on/off line + toggle); Sandbox/Live tabs say **checkout**; webhook/secret tip moved under the tabs — less stacked prose around the switch
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime

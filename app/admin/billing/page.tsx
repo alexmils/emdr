@@ -286,42 +286,55 @@ function AdminBillingPageInner() {
           >
             <h2 className="admin-panel-title">Stripe configuration</h2>
             <p className="admin-panel-sub">
-              Store sandbox and live credentials separately.{" "}
-              <strong>Demo mode</strong> chooses which set Checkout uses.
-              Webhook URL:{" "}
-              <code className="admin-code">/api/webhooks/stripe</code>
-              {canEdit
-                ? " — leave secret fields blank to keep the saved value."
-                : " — view only (secrets hidden; platform admin can edit)."}
+              Keep sandbox and live keys in separate tabs. Checkout always uses
+              the mode below.
             </p>
-            <div className="admin-toggle-row admin-toggle-row-compact">
-              <label htmlFor="admin-stripe-demo-mode">Demo mode</label>
-              <AppleToggle
-                id="admin-stripe-demo-mode"
-                checked={stripe.demoMode}
-                disabled={!canEdit}
-                onChange={(nextDemo) => {
-                  if (
-                    !nextDemo &&
-                    !window.confirm(
-                      "Turn off Demo mode? Live Stripe keys will be used for Checkout and real charges can occur."
-                    )
-                  ) {
-                    return;
-                  }
-                  setStripe((s) => ({
-                    ...s,
-                    demoMode: nextDemo,
-                    activeEnv: nextDemo ? "sandbox" : "live",
-                  }));
-                }}
-              />
+
+            <div
+              className={
+                stripe.demoMode
+                  ? "admin-stripe-mode admin-stripe-mode-demo"
+                  : "admin-stripe-mode admin-stripe-mode-live"
+              }
+            >
+              <div className="admin-stripe-mode-row">
+                <div className="admin-stripe-mode-copy">
+                  <p className="admin-stripe-mode-title">Demo mode</p>
+                  <p className="admin-stripe-mode-status">
+                    {stripe.demoMode
+                      ? "On — sandbox keys, test charges only"
+                      : "Off — live keys, real charges"}
+                  </p>
+                </div>
+                <AppleToggle
+                  id="admin-stripe-demo-mode"
+                  checked={stripe.demoMode}
+                  disabled={!canEdit}
+                  label="Demo mode"
+                  onChange={(nextDemo) => {
+                    if (
+                      !nextDemo &&
+                      !window.confirm(
+                        "Turn off Demo mode? Checkout will use live Stripe keys and real charges can occur."
+                      )
+                    ) {
+                      return;
+                    }
+                    setStripe((s) => ({
+                      ...s,
+                      demoMode: nextDemo,
+                      activeEnv: nextDemo ? "sandbox" : "live",
+                    }));
+                  }}
+                />
+              </div>
             </div>
-            <p className="admin-panel-sub admin-toggle-hint">
-              On = sandbox keys for Checkout. Off = live keys (real charges).
-              Sandbox / Live below only picks which credentials you edit.
-            </p>
-            <div className="admin-segmented" role="tablist" aria-label="Stripe environment">
+
+            <div
+              className="admin-segmented"
+              role="tablist"
+              aria-label="Credential set to edit"
+            >
               <button
                 type="button"
                 role="tab"
@@ -334,7 +347,7 @@ function AdminBillingPageInner() {
                 onClick={() => setEditorEnv("sandbox")}
               >
                 Sandbox
-                {stripe.demoMode ? " · active" : ""}
+                {stripe.demoMode ? " · checkout" : ""}
               </button>
               <button
                 type="button"
@@ -348,14 +361,20 @@ function AdminBillingPageInner() {
                 onClick={() => setEditorEnv("live")}
               >
                 Live
-                {!stripe.demoMode ? " · active" : ""}
+                {!stripe.demoMode ? " · checkout" : ""}
               </button>
             </div>
-            <p className="admin-panel-sub">
-              Editing <strong>{editorEnv}</strong> credentials
+            <p className="admin-panel-sub admin-stripe-edit-hint">
+              Editing <strong>{editorEnv}</strong> keys
               {editorEnv === stripe.activeEnv
-                ? " (currently used for Checkout)."
-                : " (saved for when you switch Demo mode)."}
+                ? " — this set runs Checkout."
+                : " — not used for Checkout until you switch mode."}
+              {" "}
+              Webhook:{" "}
+              <code className="admin-code">/api/webhooks/stripe</code>
+              {canEdit
+                ? ". Leave secrets blank to keep the saved value."
+                : ". View only — platform admin can edit."}
             </p>
             <label className="admin-field-label">
               Secret key
