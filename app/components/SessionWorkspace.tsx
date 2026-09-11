@@ -435,11 +435,11 @@ export function SessionWorkspace() {
           </div>
         </header>
         <div className="workspace-home-empty flex flex-1 flex-col items-center justify-center gap-6 px-6 py-8">
-          <div className="workspace-home-empty-top flex flex-col items-center gap-3 text-center">
-            <h2 className="text-[1.125rem] font-semibold tracking-[-0.02em] text-[var(--text)]">
+          <div className="workspace-home-empty-top flex flex-col items-center gap-4 text-center">
+            <h2 className="session-start-title">
               Start a session
             </h2>
-            <p className="max-w-sm text-[13px] leading-relaxed text-[var(--text-secondary)]">
+            <p className="session-start-subtitle max-w-md">
               Open a new chat to choose Guided or Free mode.
             </p>
             <button

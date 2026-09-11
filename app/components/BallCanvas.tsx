@@ -226,7 +226,7 @@ export function BallCanvas({
         />
       )}
       {!running && idleHint === "default" && (
-        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center leading-relaxed">
           <span className="canvas-idle-hint-desktop">
             Press{" "}
             <span className="canvas-idle-hint-strong font-medium">Space</span>{" "}
@@ -236,12 +236,12 @@ export function BallCanvas({
         </p>
       )}
       {!running && idleHint === "check_in" && (
-        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center leading-relaxed">
           <span>Reply to the check-in, or use Repeat set if you missed this one</span>
         </p>
       )}
       {!running && idleHint === "intake" && (
-        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] leading-relaxed">
+        <p className="canvas-idle-hint pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center leading-relaxed">
           <span>
             We&apos;ll set up the ball once we know what we&apos;re working on
           </span>

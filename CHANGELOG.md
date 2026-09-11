@@ -63,6 +63,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Memory sets upgrade**: edit/delete notes and sets, remove from set; platform `flags.memory` hides Settings Memory tab + session toggles and skips chat context; JOIN + 3k-char cap for enabled-set prompt context; client-side drag-drop import of ChatGPT/Claude `.json`/`.zip` (and plain text) into notes + auto set (`Imported from…`) via `fflate` + `lib/memory-import.ts`
 - Cursor rule `git-commit-push`: **always commit** when a coding turn finishes (lint+test gate); push only when asked (or when user says commit without “only”)
 - **/app/settings type scale**: larger body (~17px), muted (~16px), titles (Fraunces), taller fields/buttons (48px), wider panel (~48rem); scoped under `.settings-shell` so the rest of the app is unchanged
+- **Product UI type scale**: shared `--ui-*` tokens (body ~17px, muted 16px, caption 15px, controls 48px); sidebar, Home “Start a session”, Learn cards, buttons/fields, workspace header aligned with Settings
+- **Guided Voice Mode**: ChatGPT-style voice in Guided sessions — browser Web Speech mic, ElevenLabs replies, live transcript; interpreter `startSet` auto-starts the moving ball when ready (`AgentOverlay`, `useGuidedVoiceMode`, `lib/browser-speech.ts`)
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
@@ -297,6 +299,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Guided intake welcome (Pukao-style): ball setup line lives in the centered overlay above topic pills; sage-border chips + soft mint capsule composer; canvas no longer duplicates the hint behind the prompt (`AgentOverlay`, `SessionWorkspace`, `globals.css`)
 - Intake welcome: dropped “We’ll set up the ball…” — echoed the opening ask; chips + composer already carry the next step
 - Intake welcome hierarchy: quieter outline chips, more air under the guide line, soft mint composer as the only glow focal
+- Intake welcome copy: shorter opening (“Welcome. In a few words — what would you like to work on today?”); placeholder example “Anxiety, a memory…” (no echo); controls dock already hidden in intake via `showsBlsToolbar`
 
 ---
 

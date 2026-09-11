@@ -69,13 +69,11 @@ export function ThreadEditMenu({
         className="apple-sheet w-full max-w-md p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-4 text-[17px] font-semibold tracking-[-0.02em]">
+        <h2 className="mb-4 text-[length:var(--ui-headline)] font-semibold tracking-[-0.02em]">
           Edit session
         </h2>
         <label className="mb-4 block">
-          <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
-            Title
-          </span>
+          <span className="settings-label mb-2">Title</span>
           <input
             className="field"
             value={title}
@@ -83,9 +81,7 @@ export function ThreadEditMenu({
           />
         </label>
         <label className="mb-4 block">
-          <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
-            Description
-          </span>
+          <span className="settings-label mb-2">Description</span>
           <input
             className="field"
             value={description}
@@ -97,18 +93,18 @@ export function ThreadEditMenu({
         {memoryEnabled && (
           <>
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-[13px] font-medium">Session sets</p>
+              <p className="settings-body-text">Session sets</p>
               <Link
                 href="/app/settings?tab=memory"
-                className="text-[12px] font-medium text-[var(--accent)] hover:underline"
+                className="settings-muted font-medium text-[var(--accent)] hover:underline"
                 onClick={onClose}
               >
                 Open Settings
               </Link>
             </div>
-            <div className="settings-group mb-3 max-h-44 overflow-y-auto">
+            <div className="settings-group mb-3 max-h-52 overflow-y-auto">
               {memorySets.length === 0 && (
-                <p className="settings-row text-[13px] text-[var(--text-secondary)]">
+                <p className="settings-row settings-help">
                   No sets yet. Create one below, or open Settings.
                 </p>
               )}
@@ -117,7 +113,7 @@ export function ThreadEditMenu({
                   key={set.id}
                   className="settings-row settings-toggle-row items-center"
                 >
-                  <span className="text-[13px]">{set.name}</span>
+                  <span className="settings-body-text">{set.name}</span>
                   <AppleToggle
                     label={`Enable ${set.name}`}
                     checked={isSetEnabled(set.id)}

@@ -180,7 +180,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={onNewChat}
-          className="btn-primary flex w-full !min-h-[36px] !text-[13px]"
+          className="btn-primary flex w-full"
         >
           <Plus size={15} strokeWidth={2} />
           New chat
@@ -229,7 +229,7 @@ export function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
         {threads.length === 0 && (
-          <p className="text-sidebar-muted px-3 py-4 text-center text-[13px]">
+          <p className="text-sidebar-muted px-3 py-4 text-center">
             No sessions yet
           </p>
         )}
@@ -354,7 +354,7 @@ export function Sidebar() {
               fallback={label}
               className="avatar-sm"
             />
-            <span className="min-w-0 truncate text-[13px]">
+            <span className="min-w-0 truncate text-[length:var(--ui-body)]">
               {label}
               {user?.role === "platform_admin" && (
                 <span className="ml-1 text-[var(--accent)]">· Admin</span>
