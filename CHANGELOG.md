@@ -58,6 +58,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Admin Finances**: `/admin/finance` ledger dashboard (Dashboard / Plans / Payments) — recurring MRR, collected charges, AI spend, plan mix, Stripe wallets, upcoming renewals; `GET /api/admin/finance`
 - **Admin Analytics**: `/admin/analytics` (Overview / Audience / Acquisition / Engagement / Conversions) — unique users, sessions, messages, engagement, paid conversion from first-party logs; `GET /api/admin/analytics`
 - **Admin top search**: sticky search in `/admin` canvas finds sections, pages, and tabs from `lib/admin-nav.ts` (`buildAdminSearchIndex`); Ctrl/⌘K focus; Cursor rule `.cursor/rules/admin-nav-search.mdc` — new admin routes must register in `ADMIN_NAV_SECTIONS` so sidebar + search stay in sync
+- **Coolify production**: `Dockerfile` (Next.js `output: "standalone"`, port **3471**) + `.dockerignore`; host `nurahelp.com` / `www` on Coolify at `server.nurahelp.com` (SSH **217.76.58.141**); GitHub push webhook auto-deploy from `alexmils/nura`
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
