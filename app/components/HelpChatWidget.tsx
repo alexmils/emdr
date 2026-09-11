@@ -14,6 +14,7 @@ import { MessageCircle, X } from "lucide-react";
 import { APP_BASE, LOGIN_PATH } from "@/lib/app-base";
 
 const OPEN_EVENT = "emdr-open-help";
+const HELP_KEYBOARD_VAR = "--help-keyboard-inset";
 
 export function openHelpChat() {
   if (typeof window !== "undefined") {
@@ -64,6 +65,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const scrollToEnd = () => {
     requestAnimationFrame(() => {
@@ -116,6 +118,48 @@ export function HelpChatWidget({ showFab = true }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    closeBtnRef.current?.focus();
+  }, [open]);
+
+  /** Lift panel above soft keyboard via visualViewport. */
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    const sync = () => {
+      const vv = window.visualViewport;
+      if (!vv) {
+        root.style.setProperty(HELP_KEYBOARD_VAR, "0px");
+        return;
+      }
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      root.style.setProperty(HELP_KEYBOARD_VAR, `${Math.round(inset)}px`);
+    };
+    sync();
+    window.visualViewport?.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("scroll", sync);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+      root.style.setProperty(HELP_KEYBOARD_VAR, "0px");
+    };
+  }, [open]);
+
+  /** Marketing hides help ≤768px — close so open state is not stuck invisible. */
+  useEffect(() => {
+    if (!open) return;
+    const mq = window.matchMedia("(max-width: 768px)");
+    const maybeClose = () => {
+      if (mq.matches && document.querySelector(".frontend-home")) {
+        setOpen(false);
+      }
+    };
+    maybeClose();
+    mq.addEventListener("change", maybeClose);
+    return () => mq.removeEventListener("change", maybeClose);
   }, [open]);
 
   const send = async () => {
@@ -181,6 +225,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
             type="button"
             className="help-drawer-backdrop"
             aria-label="Close help"
+            tabIndex={-1}
             onClick={() => setOpen(false)}
           />
           <aside
@@ -197,6 +242,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
                 <p className="help-drawer-sub">Product support chat</p>
               </div>
               <button
+                ref={closeBtnRef}
                 type="button"
                 className="help-drawer-close"
                 onClick={() => setOpen(false)}

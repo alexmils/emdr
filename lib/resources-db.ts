@@ -77,7 +77,35 @@ export async function ensureResourcesSchema(): Promise<void> {
   }
 
   await remapRetiredResourceCopy(db);
+  await syncFeaturedSeedSummaries(db);
   resourcesSchemaDone = true;
+}
+
+/** Refresh home-teaser blurbs when they still match the previous seed text. */
+async function syncFeaturedSeedSummaries(
+  db: ReturnType<typeof getPool>
+): Promise<void> {
+  const legacyBySlug: Record<string, string[]> = {
+    "what-is-emdr": [
+      "A short overview of the moving ball and how Guided sessions are structured in Nura.",
+    ],
+    "grounding-before-a-set": [
+      "Simple ways to settle your nervous system before starting a set with the moving ball.",
+    ],
+    "when-to-pause": [
+      "Signs that you should take a break, ground, or reach out for support.",
+    ],
+  };
+  for (const seed of SEED_RESOURCES) {
+    const legacy = legacyBySlug[seed.slug];
+    if (!legacy?.length) continue;
+    await db.query(
+      `UPDATE resources
+       SET summary = $1, updated_at = NOW()
+       WHERE slug = $2 AND summary = ANY($3::text[])`,
+      [seed.summary, seed.slug, legacy]
+    );
+  }
 }
 
 async function remapRetiredResourceCopy(

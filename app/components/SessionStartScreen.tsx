@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SessionKind } from "@/lib/types";
 import { useApp } from "./AppProvider";
-import { LearnTeaser } from "./LearnTeaser";
 
 type Choice = Exclude<SessionKind, "pending">;
 
@@ -33,6 +32,7 @@ export function SessionStartScreen() {
   const { chooseSessionMode, entitlement, openUpgradeModal } = useApp();
   const [focused, setFocused] = useState<Choice>("guided");
   const [busy, setBusy] = useState(false);
+  const [hintVisible, setHintVisible] = useState(true);
 
   const guidedBlocked =
     entitlement?.isTrialLimited &&
@@ -64,6 +64,11 @@ export function SessionStartScreen() {
     },
     [busy, chooseSessionMode, guidedBlocked, blsBlocked, openUpgradeModal]
   );
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setHintVisible(false), 2500);
+    return () => window.clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -157,10 +162,12 @@ export function SessionStartScreen() {
             );
           })}
         </div>
-        <p className="session-start-hint">
+        <p
+          className={`session-start-hint${hintVisible ? "" : " session-start-hint--gone"}`}
+          aria-hidden={!hintVisible}
+        >
           Press 1 or 2 · arrows to move · Enter to confirm
         </p>
-        <LearnTeaser />
       </div>
     </div>
   );

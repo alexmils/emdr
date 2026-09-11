@@ -65,8 +65,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **/app/settings type scale**: larger body (~17px), muted (~16px), titles (Fraunces), taller fields/buttons (48px), wider panel (~48rem); scoped under `.settings-shell` so the rest of the app is unchanged
 - **Product UI type scale**: shared `--ui-*` tokens (body ~17px, muted 16px, caption 15px, controls 48px); sidebar, Home “Start a session”, Learn cards, buttons/fields, workspace header aligned with Settings
 - **Guided Voice Mode**: ChatGPT-style voice in Guided sessions — browser Web Speech mic, ElevenLabs replies, live transcript; interpreter `startSet` auto-starts the moving ball when ready (`AgentOverlay`, `useGuidedVoiceMode`, `lib/browser-speech.ts`)
+- **Help chat widget**: compact bottom-right panel (~360×512 max) instead of full-height side drawer; transparent click-outside; slide-up open
 
 ### Changed
+- **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
+- **Start a session**: mode picker only — removed Learn teaser; keyboard hint fades out after ~2.5s
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
 - Product rebrand: **NuraHelp** / **NuraHelp AI** (feature: **EMDR Support**); defaults, meta, emails, WebAuthn `rpName`, UI chrome, README/`package.json`; clinical protocol copy kept as EMDR
 - UI redesign: **ChatGPT / DeepSeek** product style — dark sidebar, flat BLS bar, bottom chat composer; retired Apple HIG (`apple-design-ui` rule disabled, new `product-ui` rule)
@@ -300,6 +303,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Intake welcome: dropped “We’ll set up the ball…” — echoed the opening ask; chips + composer already carry the next step
 - Intake welcome hierarchy: quieter outline chips, more air under the guide line, soft mint composer as the only glow focal
 - Intake welcome copy: shorter opening (“Welcome. In a few words — what would you like to work on today?”); placeholder example “Anxiety, a memory…” (no echo); controls dock already hidden in intake via `showsBlsToolbar`
+- Home Learn teaser: editorial white panel + sage-rail rows (“Before you begin”) instead of washed-out horizontal cards; shorter featured summaries; subtitle uses secondary ink for contrast
+- Resources article: left-aligned with sidebar toggle (no floated center column); larger Resources back link; white paper body; library scroll also left-aligned
+- Resources article: Receptly-style blog column — menu/back stay left; title + body centered in white paper
 
 ---
 

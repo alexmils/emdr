@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { appPath } from "@/lib/app-base";
 import type { ResourceItem } from "@/lib/resources";
 
@@ -35,35 +35,40 @@ export function LearnTeaser() {
 
   return (
     <section className="learn-teaser" aria-labelledby="learn-teaser-title">
-      <div className="learn-teaser-head">
-        <h3 id="learn-teaser-title" className="learn-teaser-title">
-          Learn
-        </h3>
-        <Link href={appPath("/resources")} className="learn-teaser-link">
-          See all
-          <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-        </Link>
-      </div>
-      <div className="learn-teaser-track">
-        {featured.map((item) => (
-          <Link
-            key={item.slug}
-            href={appPath(`/resources/${item.slug}`)}
-            className="learn-teaser-card"
-          >
-            <span className="learn-teaser-card-icon" aria-hidden="true">
-              <BookOpen size={16} strokeWidth={2} />
-            </span>
-            <span className="learn-teaser-card-title">{item.title}</span>
-            <span className="learn-teaser-card-summary">{item.summary}</span>
-            {item.readMinutes ? (
-              <span className="learn-teaser-card-meta">
-                <Clock size={12} strokeWidth={2} aria-hidden="true" />
-                {item.readMinutes} min read
-              </span>
-            ) : null}
+      <div className="learn-teaser-panel">
+        <div className="learn-teaser-head">
+          <h3 id="learn-teaser-title" className="learn-teaser-title">
+            Before you begin
+          </h3>
+          <Link href={appPath("/resources")} className="learn-teaser-link">
+            Resources
+            <ArrowRight size={14} strokeWidth={2.25} aria-hidden="true" />
           </Link>
-        ))}
+        </div>
+        <ul className="learn-teaser-list">
+          {featured.map((item) => (
+            <li key={item.slug}>
+              <Link
+                href={appPath(`/resources/${item.slug}`)}
+                className="learn-teaser-row"
+              >
+                <span className="learn-teaser-row-body">
+                  <span className="learn-teaser-row-title">{item.title}</span>
+                  {item.summary ? (
+                    <span className="learn-teaser-row-summary">
+                      {item.summary}
+                    </span>
+                  ) : null}
+                </span>
+                {item.readMinutes ? (
+                  <span className="learn-teaser-row-meta">
+                    {item.readMinutes} min
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

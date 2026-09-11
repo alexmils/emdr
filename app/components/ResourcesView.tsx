@@ -270,72 +270,75 @@ export function ResourceArticleView({ item }: { item: ResourceItem }) {
         <div className="workspace-header-row">
           <div className="workspace-header-lead">
             <WorkspaceMenuButton />
-            <div className="min-w-0">
-              <Link href={appPath("/resources")} className="resource-back-link">
-                <ArrowLeft size={14} strokeWidth={2} aria-hidden="true" />
-                Resources
-              </Link>
-              <h1 className="workspace-title">{item.title}</h1>
-              {item.readMinutes ? (
-                <p className="workspace-hint resource-article-meta">
-                  <Clock size={13} strokeWidth={2} aria-hidden="true" />
-                  {item.readMinutes} min read
-                </p>
-              ) : null}
-            </div>
+            <Link href={appPath("/resources")} className="resource-back-link">
+              <ArrowLeft size={16} strokeWidth={2.25} aria-hidden="true" />
+              Resources
+            </Link>
           </div>
         </div>
       </header>
 
       <article className="resource-article">
-        {item.coverUrl && isValidResourceImageUrl(item.coverUrl) ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.coverUrl}
-            alt=""
-            className="resource-article-cover"
-          />
-        ) : null}
-
-        {embed ? (
-          <div className="resource-article-video">
-            <iframe
-              src={embed}
-              title={item.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        ) : item.videoUrl ? (
-          <p className="resource-article-p">
-            <a href={item.videoUrl} target="_blank" rel="noopener noreferrer">
-              Open video
-            </a>
-          </p>
-        ) : null}
-
-        {paragraphs.map((paragraph, index) => (
-          <Fragment key={index}>
-            <p className="resource-article-p">
-              {renderInlineMarkdown(paragraph)}
-            </p>
-            {index === midIndex ? (
-              <AdDisplayUnit
-                config={adsConfig}
-                adsReady={adsReady}
-                className="ad-display-unit--article"
-              />
+        <div className="resource-article-paper">
+          <header className="resource-article-paper-head">
+            <h1 className="resource-article-title">{item.title}</h1>
+            {item.readMinutes ? (
+              <p className="resource-article-meta">
+                <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                {item.readMinutes} min read
+              </p>
             ) : null}
-          </Fragment>
-        ))}
+          </header>
 
-        {midIndex < 0 ? (
-          <AdDisplayUnit
-            config={adsConfig}
-            adsReady={adsReady}
-            className="ad-display-unit--article"
-          />
-        ) : null}
+          {item.coverUrl && isValidResourceImageUrl(item.coverUrl) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.coverUrl}
+              alt=""
+              className="resource-article-cover"
+            />
+          ) : null}
+
+          {embed ? (
+            <div className="resource-article-video">
+              <iframe
+                src={embed}
+                title={item.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : item.videoUrl ? (
+            <p className="resource-article-p">
+              <a href={item.videoUrl} target="_blank" rel="noopener noreferrer">
+                Open video
+              </a>
+            </p>
+          ) : null}
+
+          {paragraphs.map((paragraph, index) => (
+            <Fragment key={index}>
+              <p className="resource-article-p">
+                {renderInlineMarkdown(paragraph)}
+              </p>
+              {index === midIndex ? (
+                <AdDisplayUnit
+                  config={adsConfig}
+                  adsReady={adsReady}
+                  className="ad-display-unit--article"
+                />
+              ) : null}
+            </Fragment>
+          ))}
+
+          {midIndex < 0 ? (
+            <AdDisplayUnit
+              config={adsConfig}
+              adsReady={adsReady}
+              className="ad-display-unit--article"
+            />
+          ) : null}
+        </div>
       </article>
     </main>
   );

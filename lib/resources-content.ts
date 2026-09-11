@@ -8,8 +8,7 @@ export const SEED_RESOURCES: ResourceItem[] = [
     slug: "what-is-emdr",
     kind: "article",
     title: "What is EMDR?",
-    summary:
-      "A short overview of the moving ball and how Guided sessions are structured in Nura.",
+    summary: "How the moving ball fits Guided and Free.",
     readMinutes: 3,
     featured: true,
     body: `EMDR (Eye Movement Desensitization and Reprocessing) is a structured approach often used with traumatic or distressing memories. In practice, many people follow a **moving target left and right** — like the ball in Free or Guided mode — while holding a target memory or sensation in mind.
@@ -25,8 +24,7 @@ This app is a **self-help tool**, not a replacement for licensed clinical care. 
     slug: "grounding-before-a-set",
     kind: "article",
     title: "Grounding before a set",
-    summary:
-      "Simple ways to settle your nervous system before starting a set with the moving ball.",
+    summary: "Settle before you start a set.",
     readMinutes: 2,
     featured: true,
     body: `Before a processing set, it helps to know you can return to the present. Try one of these for 30–60 seconds:
@@ -41,8 +39,7 @@ In a **Guided** session, the guide will not start a set until after intake and g
     slug: "when-to-pause",
     kind: "article",
     title: "When to pause or stop",
-    summary:
-      "Signs that you should take a break, ground, or reach out for support.",
+    summary: "When to stop the ball and ground.",
     readMinutes: 2,
     featured: true,
     body: `Stop or pause the moving ball if you notice:

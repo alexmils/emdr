@@ -16,6 +16,11 @@
   background: #fff;
 }
 
+.frontend-home .help-drawer {
+  border-color: rgba(42, 48, 32, 0.12);
+  box-shadow: 0 16px 48px rgba(42, 48, 32, 0.16);
+}
+
 /* Stack back-to-top above the help pill on desktop */
 @media (min-width: 769px) {
   .frontend-home .fe-back-top {
@@ -26,6 +31,10 @@
 /* Hide on mobile / narrow viewports — pill crowds the shell */
 @media (max-width: 768px) {
   .frontend-home .help-fab {
+    display: none !important;
+  }
+
+  .frontend-home .help-drawer-root {
     display: none !important;
   }
 }
