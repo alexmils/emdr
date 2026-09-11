@@ -62,6 +62,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Admin SEO**: `/admin/seo` (Overview / Pages / Analytics / Connections / Indexing / Cookies) — per-page title/description/OG in `app_settings.seo`; editable GA4, GTM, Clarity, GSC, Bing, ignored IPs + Google service account; GA4 Data API + Search Console analytics; public cookie banner + tags on marketing pages only (`FrontendShell`); `generateMetadata` on public routes
 - **Memory sets upgrade**: edit/delete notes and sets, remove from set; platform `flags.memory` hides Settings Memory tab + session toggles and skips chat context; JOIN + 3k-char cap for enabled-set prompt context; client-side drag-drop import of ChatGPT/Claude `.json`/`.zip` (and plain text) into notes + auto set (`Imported from…`) via `fflate` + `lib/memory-import.ts`
 - Cursor rule `git-commit-push`: **always commit** when a coding turn finishes (lint+test gate); push only when asked (or when user says commit without “only”)
+- **/app/settings type scale**: larger body (~17px), muted (~16px), titles (Fraunces), taller fields/buttons (48px), wider panel (~48rem); scoped under `.settings-shell` so the rest of the app is unchanged
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
@@ -293,6 +294,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Favicon/mark quality: round-cap stroke wave, equal padding both sides, brighter right tip (mint→sage), supersampled PNGs — no flat crop into the letter `n`
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
+- Guided intake welcome (Pukao-style): ball setup line lives in the centered overlay above topic pills; sage-border chips + soft mint capsule composer; canvas no longer duplicates the hint behind the prompt (`AgentOverlay`, `SessionWorkspace`, `globals.css`)
+- Intake welcome: dropped “We’ll set up the ball…” — echoed the opening ask; chips + composer already carry the next step
+- Intake welcome hierarchy: quieter outline chips, more air under the guide line, soft mint composer as the only glow focal
 
 ---
 

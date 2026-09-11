@@ -99,8 +99,8 @@ export function PasskeySettings() {
   return (
     <div className="settings-group">
       <div className="settings-row">
-        <p className="text-[13px] font-medium">Passkeys</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-secondary)]">
+        <p className="settings-body-text">Passkeys</p>
+        <p className="settings-help mt-1.5">
           Sign in with Face ID, Touch ID, Windows Hello, or a security key —
           no password needed.
         </p>
@@ -108,20 +108,18 @@ export function PasskeySettings() {
 
       {error && (
         <div className="settings-row">
-          <p className="text-[13px] text-[var(--destructive)]">{error}</p>
+          <p className="settings-body-text text-[var(--destructive)]">{error}</p>
         </div>
       )}
       {message && (
         <div className="settings-row">
-          <p className="text-[13px] text-[#248a3d]">{message}</p>
+          <p className="settings-body-text text-[#248a3d]">{message}</p>
         </div>
       )}
 
       {passkeys.length === 0 ? (
         <div className="settings-row">
-          <p className="text-[13px] text-[var(--text-secondary)]">
-            No passkeys yet
-          </p>
+          <p className="settings-muted">No passkeys yet</p>
         </div>
       ) : (
         passkeys.map((p) => (
@@ -130,10 +128,10 @@ export function PasskeySettings() {
             className="settings-row flex items-center justify-between gap-3"
           >
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium">
+              <p className="settings-body-text truncate">
                 {p.friendlyName ?? "Passkey"}
               </p>
-              <p className="text-[12px] text-[var(--text-secondary)]">
+              <p className="settings-muted mt-0.5">
                 Added {new Date(p.createdAt).toLocaleDateString()}
                 {p.backedUp ? " · synced" : ""}
               </p>
@@ -142,7 +140,7 @@ export function PasskeySettings() {
               type="button"
               disabled={busyId === p.id}
               onClick={() => void removePasskey(p.id)}
-              className="btn-ghost text-[13px] text-[var(--destructive)] disabled:opacity-60"
+              className="btn-ghost text-[var(--destructive)] disabled:opacity-60"
             >
               Remove
             </button>

@@ -243,8 +243,8 @@ function SettingsPageContent() {
                   className="avatar-lg"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium">Profile photo</p>
-                  <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                  <p className="settings-body-text">Profile photo</p>
+                  <p className="mt-1 settings-help">
                     Shown in chat and the sidebar. JPG, PNG, or WebP.
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -279,7 +279,7 @@ function SettingsPageContent() {
                 </div>
               </div>
               <label className="settings-row block">
-                <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
+                <span className="settings-label mb-2">
                   Display name
                 </span>
                 <input
@@ -291,7 +291,7 @@ function SettingsPageContent() {
                 />
               </label>
               <div className="settings-row flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="min-w-0 break-all text-[12px] text-[var(--text-muted)]">
+                <p className="settings-muted min-w-0 break-all">
                   {user?.email}
                 </p>
                 <button
@@ -304,7 +304,7 @@ function SettingsPageContent() {
                 </button>
               </div>
               {profileError && (
-                <p className="settings-row text-[13px] text-[var(--destructive)]">
+                <p className="settings-row settings-body-text text-[var(--destructive)]">
                   {profileError}
                 </p>
               )}
@@ -315,8 +315,8 @@ function SettingsPageContent() {
             <div className="settings-group">
               <div className="settings-row settings-toggle-row">
                 <div className="min-w-0 flex-1">
-                  <span className="text-[13px] font-medium">Auto voice</span>
-                  <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                  <span className="settings-body-text">Auto voice</span>
+                  <p className="settings-help mt-1">
                     Automatically read each agent line aloud (not while a set is
                     running).
                     Use the speaker icon on each message when off. Voice provider
@@ -335,7 +335,7 @@ function SettingsPageContent() {
           {tab === "memory" && memoryEnabled && (
             <div className="settings-group">
               <div className="settings-row">
-                <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                <p className="settings-lead">
                   Turn a set on for a Guided session — the guide only sees what
                   you enable. Intake history is saved separately and is not
                   listed here.
@@ -348,7 +348,7 @@ function SettingsPageContent() {
               />
 
               <div className="settings-row space-y-2">
-                <p className="text-[12px] font-medium text-[var(--text-secondary)]">
+                <p className="settings-label">
                   Notes
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -401,7 +401,7 @@ function SettingsPageContent() {
                   Save note
                 </button>
                 {memories.length === 0 && (
-                  <p className="text-[12px] text-[var(--text-secondary)]">
+                  <p className="settings-help">
                     No notes yet. Add a title and a short note, then put them in
                     a set.
                   </p>
@@ -468,8 +468,8 @@ function SettingsPageContent() {
                       </div>
                     ) : (
                       <>
-                        <p className="text-[13px] font-medium">{m.title}</p>
-                        <p className="mt-0.5 line-clamp-1 text-[12px] text-[var(--text-secondary)]">
+                        <p className="settings-body-text">{m.title}</p>
+                        <p className="mt-0.5 line-clamp-1 settings-help">
                           {m.body}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
@@ -529,7 +529,7 @@ function SettingsPageContent() {
               </div>
 
               <div className="settings-row space-y-2">
-                <p className="text-[12px] font-medium text-[var(--text-secondary)]">
+                <p className="settings-label">
                   Sets
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -685,7 +685,7 @@ function SettingsPageContent() {
                       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <button
                           type="button"
-                          className="text-left text-[13px] font-semibold hover:underline"
+                          className="settings-body-text text-left font-semibold hover:underline"
                           onClick={() => {
                             setEditingSetId(set.id);
                             setEditSetName(set.name);
@@ -732,7 +732,7 @@ function SettingsPageContent() {
                         </button>
                       </div>
                     )}
-                    <ul className="space-y-1 text-[12px] text-[var(--text-secondary)]">
+                    <ul className="space-y-1 settings-help">
                       {set.memoryIds.length === 0 && (
                         <li>No notes in this set.</li>
                       )}
@@ -747,7 +747,7 @@ function SettingsPageContent() {
                             <span className="min-w-0 truncate">{m.title}</span>
                             <button
                               type="button"
-                              className="shrink-0 text-[12px] font-medium text-[var(--accent)] hover:underline"
+                              className="shrink-0 settings-muted font-medium text-[var(--accent)] hover:underline"
                               onClick={async () => {
                                 try {
                                   const res = await fetch("/api/settings", {
@@ -792,7 +792,7 @@ function SettingsPageContent() {
 
           {tab === "coming-soon" && (
             <div className="apple-card border-dashed p-5 opacity-80">
-              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+              <p className="settings-lead">
                 Additional personalization options will be added in a future
                 release.
               </p>

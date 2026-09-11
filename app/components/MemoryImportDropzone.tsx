@@ -159,14 +159,14 @@ export function MemoryImportDropzone({ onImported, toast }: Props) {
           }
         }}
       >
-        <p className="text-[13px] font-medium text-[var(--text)]">
+        <p className="settings-body-text">
           {scanning
             ? "Scanning…"
             : dragging
               ? "Drop to scan — nothing is saved until you choose."
               : "Drop a ChatGPT or Claude export here (.json or .zip), or a plain text note."}
         </p>
-        <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+        <p className="settings-help mt-1.5">
           We read the file in your browser. Only the notes you select are saved
           to Nura.
         </p>
@@ -186,28 +186,28 @@ export function MemoryImportDropzone({ onImported, toast }: Props) {
       {candidates.length > 0 && source && (
         <div className="space-y-2 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[13px] font-medium">Choose what to import</p>
+            <p className="settings-body-text">Choose what to import</p>
             <button
               type="button"
-              className="btn-secondary text-[12px]"
+              className="btn-secondary"
               onClick={selectAll}
             >
               Select all
             </button>
           </div>
-          <ul className="max-h-48 space-y-2 overflow-y-auto">
+          <ul className="max-h-56 space-y-2.5 overflow-y-auto">
             {candidates.map((c) => (
               <li key={c.id}>
-                <label className="flex cursor-pointer items-start gap-2 text-[13px]">
+                <label className="flex cursor-pointer items-start gap-2.5 settings-body-text">
                   <input
                     type="checkbox"
-                    className="mt-0.5"
+                    className="mt-1 size-4"
                     checked={selected.has(c.id)}
                     onChange={() => toggle(c.id)}
                   />
                   <span className="min-w-0">
                     <span className="block font-medium">{c.title}</span>
-                    <span className="block text-[12px] text-[var(--text-secondary)]">
+                    <span className="settings-muted mt-0.5 block">
                       {c.bodyPreview}
                     </span>
                   </span>
@@ -216,7 +216,7 @@ export function MemoryImportDropzone({ onImported, toast }: Props) {
             ))}
           </ul>
           {candidates.length > IMPORT_MAX_NOTES && (
-            <p className="text-[12px] text-[var(--text-secondary)]">
+            <p className="settings-help">
               Import up to 40 at a time. Deselect some, then try again.
             </p>
           )}
