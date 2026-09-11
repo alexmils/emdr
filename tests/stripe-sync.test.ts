@@ -6,7 +6,7 @@ import {
   formatStripeDisplayPrice,
   pickPlanPricesFromStripeList,
 } from "../lib/stripe-sync.ts";
-import { DEFAULT_PLATFORM_STRIPE } from "../lib/platform-settings.ts";
+import { DEFAULT_STRIPE_CREDENTIALS } from "../lib/stripe-config.ts";
 
 describe("formatStripeDisplayPrice", () => {
   it("formats eur and usd", () => {
@@ -133,7 +133,7 @@ describe("pickPlanPricesFromStripeList", () => {
 
 describe("applyCatalogSyncToStripeConfig", () => {
   it("writes synced ids and keeps missing intervals", () => {
-    const next = applyCatalogSyncToStripeConfig(DEFAULT_PLATFORM_STRIPE, {
+    const next = applyCatalogSyncToStripeConfig(DEFAULT_STRIPE_CREDENTIALS, {
       weekly: {
         priceId: "price_w",
         displayPrice: "€4.99",

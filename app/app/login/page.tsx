@@ -9,8 +9,10 @@ import {
   AuthError,
   AuthLink,
 } from "@/app/components/AuthShell";
-import { APP_BASE, LOGIN_PATH, appPath } from "@/lib/app-base";
+import { GoogleAuthButton } from "@/app/components/GoogleAuthButton";
+import { APP_BASE, appPath } from "@/lib/app-base";
 import { resolveAccessRedirect } from "@/lib/access-gate";
+import { googleAuthErrorMessage } from "@/lib/auth/google-ui";
 
 function redirectAfterLogin(
   next: string,
@@ -34,10 +36,11 @@ function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? APP_BASE;
+  const oauthError = googleAuthErrorMessage(params.get("error"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
 
@@ -125,7 +128,7 @@ function LoginForm() {
   return (
     <AuthShell
       title="Sign in"
-      subtitle="Access your EMDR Support sessions"
+      subtitle="Pick up where you left your last session."
       footer={
         <p>
           Forgot your password?{" "}
@@ -173,11 +176,13 @@ function LoginForm() {
         <div className="h-px flex-1 bg-[var(--separator-opaque)]" />
       </div>
 
+      <GoogleAuthButton next={next} from="login" disabled={busy} />
+
       <button
         type="button"
         disabled={busy}
         onClick={() => void signInWithPasskey()}
-        className="btn-secondary w-full disabled:opacity-60"
+        className="btn-secondary mt-3 w-full disabled:opacity-60"
       >
         {passkeyLoading ? "Waiting for passkey…" : "Sign in with passkey"}
       </button>

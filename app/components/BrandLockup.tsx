@@ -1,46 +1,82 @@
+import Image from "next/image";
 import Link from "next/link";
+import { BRAND_LEGAL } from "@/lib/brand";
+
+/** Logo art — color on light, white on dark, black when mono is clearer. */
+export type BrandLogoTone = "color" | "black" | "white";
+
+/** @deprecated Prefer BrandLogoTone; paper→color, inverse→white */
+type LegacyTone = "paper" | "inverse";
 
 type BrandLockupProps = {
   href?: string | null;
-  /** paper = marketing/auth; inverse = dark sidebar */
-  tone?: "paper" | "inverse";
-  showHelp?: boolean;
+  /**
+   * color — light marketing / auth / onboarding
+   * white — dark sidebar, admin, dark footer, hero overlay
+   * black — light mono (cards, dense UI)
+   * paper / inverse — legacy aliases (color / white)
+   */
+  tone?: BrandLogoTone | LegacyTone;
   className?: string;
 };
 
-export function BrandMark({ className = "" }: { className?: string }) {
+const LOGO_SRC: Record<BrandLogoTone, string> = {
+  color: "/brand/nura-wave-logo.png",
+  black: "/brand/nura-wave-logo-black.png",
+  white: "/brand/nura-wave-logo-white.png",
+};
+
+const MARK_SRC: Record<BrandLogoTone, string> = {
+  color: "/brand/mark.png",
+  black: "/brand/mark-black.png",
+  white: "/brand/mark-white.png",
+};
+
+function resolveTone(tone: BrandLogoTone | LegacyTone): BrandLogoTone {
+  if (tone === "paper") return "color";
+  if (tone === "inverse") return "white";
+  return tone;
+}
+
+export function BrandMark({
+  className = "",
+  tone = "color",
+}: {
+  className?: string;
+  tone?: BrandLogoTone | LegacyTone;
+}) {
+  const t = resolveTone(tone);
   return (
-    <svg
-      viewBox="0 0 40 24"
-      className={`brand-mark ${className}`.trim()}
+    <Image
+      src={MARK_SRC[t]}
+      alt=""
+      width={100}
+      height={38}
+      className={`brand-mark brand-mark-${t} ${className}`.trim()}
       aria-hidden
-    >
-      <circle cx="5" cy="12" r="4" fill="currentColor" />
-      <circle cx="35" cy="12" r="4" fill="currentColor" />
-      <path
-        d="M10 12 Q 20 3 30 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.25"
-        strokeLinecap="round"
-      />
-    </svg>
+      unoptimized
+    />
   );
 }
 
+/** Wave wordmark only — no “help” suffix (legal name stays NuraHelp in aria/copy). */
 export function BrandLockup({
   href = null,
-  tone = "paper",
-  showHelp = false,
+  tone = "color",
   className = "",
 }: BrandLockupProps) {
+  const t = resolveTone(tone);
   const inner = (
-    <span className={`brand-lockup brand-lockup-${tone} ${className}`.trim()}>
-      <BrandMark />
-      <span className="brand-lockup-text">
-        <span className="brand-lockup-word">nura</span>
-        {showHelp ? <span className="brand-lockup-help">help</span> : null}
-      </span>
+    <span className={`brand-lockup brand-lockup-${t} ${className}`.trim()}>
+      <Image
+        src={LOGO_SRC[t]}
+        alt=""
+        width={200}
+        height={45}
+        className={`brand-logo brand-logo-${t}`}
+        priority={t === "color" || t === "white"}
+        unoptimized
+      />
     </span>
   );
 
@@ -52,7 +88,7 @@ export function BrandLockup({
     <Link
       href={href}
       className="brand-lockup-link"
-      aria-label={href === "/admin" ? "Nura admin" : "NuraHelp home"}
+      aria-label={href === "/admin" ? "Nura admin" : `${BRAND_LEGAL} home`}
     >
       {inner}
     </Link>

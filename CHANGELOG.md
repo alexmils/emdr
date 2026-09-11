@@ -32,6 +32,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Create account**: `/app/create-account` + `POST /api/auth/register`; link from login footer and landing header; new users land on onboarding
 - **Stripe project `nurahelp`**: dedicated test sandbox (`acct_1UCsfAAiWsQlzMVG`, Dashboard name **Nura sandbox**); product NuraHelp AI with weekly €4.99 / monthly €14.99 / yearly €99; Customer Portal; webhook → `https://dev.nurahelp.com/api/webhooks/stripe`; claimed and verified Checkout branding
 - **Admin Stripe settings**: secret key, webhook secret, Price IDs, and display prices editable at `/admin/billing` (stored in `app_settings.stripe`); runtime no longer requires `STRIPE_*` env (optional one-time env bootstrap); **Sync from Stripe** pulls active week/month/year prices via `POST /api/admin/billing/sync`; support role cannot read live secrets; empty secret fields on save leave stored values unchanged; catalog vs webhook readiness shown separately
+- **Stripe demo / live mode**: Admin → Billing stores separate sandbox + live credential sets; **Demo mode** checkbox (default on) selects sandbox for Checkout; unchecked uses live keys for real charges; admin top banner shows demo vs live; webhook verifies against both secrets and routes by `livemode`; optional `STRIPE_LIVE_*` env bootstrap
 - **Help chat**: right-side drawer (“Need help?”) under `/app`; AI first reply with keyword RAG (`help_knowledge`) + allow/deny topics; admin inbox + email notify at `/admin/help`; settings stored in platform `help` block
 - **Guided intake phase (EMDR Phase 1)**: new `intake` protocol phase before grounding; conversational history-taking + safety screen; persistent `client_profiles` table (RLS); returning users get short re-evaluation opener; interpreter extracts intake fields; BLS disabled until after intake
 - **Free-session ads**: interstitial before BLS start for trial users only (`lib/ads.ts` + `AdInterstitial`); admin frequency controls (per session / every N minutes / every N sets); AdSense + placeholder + GAM seam; paying users never receive ad config from `/api/billing/status`
@@ -40,6 +41,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Password **show/hide eye** on shared `AuthField` (`app/components/AuthShell.tsx` + `.auth-field-eye` in `globals.css`) — login, create-account, reset, create-password
 - Brand system: `docs/brand.md`, SVG mark/lockup + favicon, `BrandLockup`, public pages `/emdr`, `/therapy`, `/resources`, `/therapists`
 - Cursor rule `.cursor/rules/nura-brand.mdc` (`alwaysApply`) — spoken Nura, legal NuraHelp, tokens, no “NuraHelp AI”
+- **Resources display ads**: in-page Sponsored unit on `/app/resources` library and article pages for trial users (`AdDisplayUnit`); optional `adsenseDisplaySlot` in platform ads (falls back to interstitial slot); paying users unchanged
+- Resources display ads review fixes: dedicated display slot only (no interstitial reuse); `adsReady` skeleton to limit CLS; `scheduleAdSensePush` waits for loader + Strict Mode safe; `parsePublicAdsConfig` client validation; cover/markdown URL allowlist; merged duplicate `.admin-toggle-row` CSS
+- **Admin Resources CMS**: Postgres `resources` table (seeded from static articles); `/admin/resources` editor (title, slug, kind, body, cover image, video embed, featured/published); app library + Learn teaser load published posts from `/api/resources`
+- **Immersive set fullscreen**: while a Free/Guided set is running, BLS controls and gear hide (canvas tap/Space still stops); Help FAB hidden via `body:has(.session-immersive)`; ball motion axis follows orientation — landscape left/right, portrait top/bottom (`lib/bls-motion.ts`) so travel stays edge-to-edge
+- **Desktop sidebar collapse**: X close + header PanelLeft toggle work on desktop too (same `sidebar-drawer-open` state as mobile); desktop defaults open, collapses the rail to full-width canvas when closed; thread/nav clicks use `closeSidebarDrawer` (mobile only) so desktop stays open unless X / PanelLeft
+
+- **Thread context menu**: right-click (desktop) or long-press (mobile) on a Recent session opens Rename / Delete; Delete is red and separated by a divider (`ThreadContextMenu`)
+- **Admin LLM usage & cost**: records prompt/completion tokens per AI call (`llm_usage_events`); estimated USD cost from provider list prices; shown on Overview, Billing → Usage (per user), and user detail
+- **Admin Email settings**: Delivery tab shows effective From / Reply-To / app URL, editable send-as + Reply-To, Brevo API key and Gmail OAuth fields (Billing-style: empty secret fields keep stored values; secrets never echoed), plus read-only `.env` fallback indicators; stored in `app_settings.email` via `GET/PUT /api/admin/email/settings`; runtime uses DB then env
+- **Admin user detail activity**: `/admin/users/[id]` shows Login history (audit `user.login` / `user.logout`), Subscription details (trial end, renew, Stripe mode/ids), and Billing / payments from new `billing_events` (Stripe checkout + invoice paid/failed via webhook); API `GET /api/admin/users/[id]` extended; heals `last_login_at` from login events when column was null
+- **/app header charge hint**: small muted top-right text (`Charges in N days` / `Renews in N days`) from `trialEndsAt` / `renewsAt` via `/api/billing/status`; links to `/app/billing`; hidden for legacy and when no date (`BillingChargeHint`, `lib/billing-charge-hint.ts`)
+- **Marketing Need help FAB**: desktop-only “Need help?” pill on public `FrontendShell` pages (reuses `HelpChatWidget`); hidden ≤768px; guests get Sign in CTA (help API stays auth-gated); `frontend-help.css` stacks back-to-top above the pill
+- **Branded 404**: global `app/not-found.tsx` — calm marketing shell (`.frontend-home`), large display “404”, “Page not found”, Home + Open app; `robots: noindex`
+- **Nura wave wordmark**: transparent PNG from reference (`public/brand/nura-wave-logo.png`); pixel-identical SVG wrapper (`nura-wave-logo.svg`); editable vector with S-curve ribbons (`nura-wave-logo-vector.svg` / `lockup.svg`); solid black/white PNGs; mark crops + favicon (`app/icon.svg`, `app/icon.png`, `app/apple-icon.png`); `BrandLockup` / `BrandMark` use color on light, white on dark, black on blog cards; footer marquee uses white wave lockup (not serif “NURA” text); marketing preloader: wave mark only, fills left→right from black to brand color (no percent text)
+- **Admin Finances**: `/admin/finance` ledger dashboard (Dashboard / Plans / Payments) — recurring MRR, collected charges, AI spend, plan mix, Stripe wallets, upcoming renewals; `GET /api/admin/finance`
+- **Admin Analytics**: `/admin/analytics` (Overview / Audience / Acquisition / Engagement / Conversions) — unique users, sessions, messages, engagement, paid conversion from first-party logs; `GET /api/admin/analytics`
+- **Admin top search**: sticky search in `/admin` canvas finds sections, pages, and tabs from `lib/admin-nav.ts` (`buildAdminSearchIndex`); Ctrl/⌘K focus; Cursor rule `.cursor/rules/admin-nav-search.mdc` — new admin routes must register in `ADMIN_NAV_SECTIONS` so sidebar + search stay in sync
 
 ### Changed
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)
@@ -87,6 +105,29 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Auth + session URLs moved under `/app` (`/app/login`, `/app/settings`, `/app/billing`); legacy paths 308-redirect; admin still `/admin` (blocked from `/app`); invite/reset emails and Stripe return URLs updated; `fetchJson` 401 only redirects from console paths
 - Spoken brand **Nura**, legal lockup **NuraHelp**; drop public “NuraHelp AI”; paper/gold/earth tokens and Fraunces + Source Sans 3 replace Inter and OpenAI green; landing hero “Support for therapy. Starting with EMDR.”
 - Brand follow-up: earth field borders (gold only on focus), leftover help copy remapped, footer links for Resources/Therapists, admin lockup stays in `/admin`, WebAuthn `rpName` via `chromeBrandName`
+- `/app/settings` layout: center the main panel column in the mint canvas (`.settings-panel-inner`, max-width ~42rem), more top padding via `clamp`, slightly wider form card — less top-left corner jam; mobile full-bleed unchanged
+- Onboarding: removed standalone Welcome step; first screen is **Start your free trial** (plan picker + limits note); product tips stay on post-checkout Quick start
+- Onboarding plan copy: cut “free trial” echo; title **Pick a plan**, lead **N days free · cancel anytime**, note uses **Free session time** (not Free mode next to trial), CTA **Start N-day trial**
+- Onboarding **How to start** (post-checkout): clearer step copy, numbered pills, sans step titles, smaller title; payment success folded into lead (no green banner clutter)
+- Cursor rule `.cursor/rules/redpen-copy.mdc` (`alwaysApply`) — use **redpen** for all user-facing copy
+- Cursor rule `.cursor/rules/page-copy-design-review.mdc` (`alwaysApply`) — after page/UI work, end with **/redpen** + **/writing-copy** + **/frontend-design**; propose and apply fixes if needed; wired into `verify-before-done`
+- Onboarding **How to start**: removed kicker + trial note; lead names the ball; CSS ball preview (reduced-motion safe); clearer Guided/Free/bottom-bar steps; plan note “We save your card now”
+- Onboarding post-checkout: dropped UI checklist; **You’re ready** + one next action (New chat) + ball preview + Guided/Free line; CTA **Open the app**
+- Onboarding ready line: “Free lets you run the ball yourself” (was unclear “Free is the moving ball alone”)
+- Onboarding ready screen: removed Guided/Free jargon line entirely — mode choice stays on in-app New chat picker
+- `/app/billing`: center **Your billing** card in the viewport (`.billing-page` / `.billing-page-stage`); **Upgrade for unlimited** plays a ~0.62s `rotateY` card flip then opens the upgrade modal (timeout fallback; `prefers-reduced-motion` skips flip)
+- Marketing header: **Dashboard** moved from beside the brand lockup into the signed-in avatar dropdown (and mobile account actions); still routes admins/support to `/admin`, others to `/app`; platform_admin/support dropdown is only **Dashboard** + **Sign out** (no Settings/Billing — those `/app` paths redirect to `/admin`)
+- Upgrade modal primary CTA: **Pay now** (was Upgrade now) — user already chose upgrade; this step opens checkout (`UpgradeModal.tsx`); sidebar/banner entry points stay Upgrade now
+- **Auth split layout**: login / create-account / forgot-password (shared `AuthShell`) — form left, pistachio “Free session” mockup right with CSS ball L↔R (`AuthSessionMockup`); visual pane from 960px up; mobile form-only
+- Auth mockup: drop “Free session” chrome label; black ball sweeps edge-to-edge of the device frame
+- Create account: centered method picker (Google + Continue with email → form); footer “Already have an account?” centered; AuthShell `align="center"` + horizontal center in left pane
+- Auth mockup: no caption/track line; flat black ball; soft pale-gold / pistachio radial wash (no rings or wave lines)
+- Auth header logo larger (~2.1rem); drop extra “help” after the wordmark on auth screens
+- Auth visual pane copy under mockup: “EMDR Support” / “A quiet rhythm — left, then right”
+- Auth mobile: logo centered above the title; desktop keeps top-left chrome + Home corner
+- Marketing footer mobile: contain logo marquee (`min-width: 0` + overflow), center CTA/actions, smaller wave logos so the slider doesn’t spill off-screen
+- Back-to-top: icon-only (removed “Top” label)
+- Auth review fixes: desktop form pane top padding so absolute logo/Home don’t overlap tall forms; create-account OAuth errors stay on methods + strip `?error=` from URL; focus title on step change; mockup copy not `aria-hidden`; Terms on email step; footer tagline wraps before mid widths; `lib/auth/create-account-ui.ts` + tests
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -147,6 +188,82 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Settings mobile chrome: Back stacks above **Settings** (not side-by-side); more header/tab padding; hide duplicate panel title under tabs
 - Toast notifications for Settings actions (photo upload/remove, save profile, voice/memory saves)
 - Upgrade modal: benefits block with checkmarks + clearer spacing; stacked full-width actions on small phones
+- End-user copy: drop the **BLS** acronym — status **Set running**; trial chips/billing/upgrade/onboarding use **Free** / **Free mode** / **Free session time**; help seeds remapped similarly
+- Cursor rule + `docs/brand.md`: **never say BLS to users** (always-on in `nura-brand.mdc`; code identifiers like `bls` allowed)
+- In-app Resources library copy: drop BLS / “NuraHelp AI”; use Nura + Free / moving ball; video thumb uses paper/earth tokens
+- Code-review hardening: Resources markdown images + body size on upsert; list APIs omit `body` (`hasBody`); Stripe admin GET never returns secret/webhook keys (write-only placeholders); upsert preserves featured/enabled/sortOrder; https-only covers/videos; confirm before leaving Demo mode; SessionWorkspace empty state uses Free mode wording
+- Stripe demo/live hardening: Portal/activate/status resolve client by `stripe_livemode` (or probe); Checkout never reuses cross-mode customers; Platform PUT ignores `stripe` and GET redacts secrets; price IDs can be cleared on Billing save; Stripe clients cached per secret key
+- Brand palette: **Pistachio** — mint `#A4EDA5`, sage `#84B067`, pistachio `#C6D67E`, olive `#948F4E`; tokens in `globals.css`, `lib/brand.ts`, SVG mark/lockup/favicon, emails, docs/rules
+- Home landing (`HomeLanding`): Curevo-style hero + steps + offer cards; Scalient-style marquee, stat counters, pricing grid, testimonials; scroll reveal + float animations; Unsplash photos; full-width `FrontendShell`
+- Fixed home landing sections invisible: `.fe-reveal` now observed for all blocks; progressive enhancement (visible without JS)
+- Home landing motion upgrade: **GSAP + ScrollTrigger + Lenis** (same stack as Curevo/Scalient Webflow); split-word hero, dual marquee, display typography, step tabs, testimonial track, parallax, scroll counters; `landing-motion.css` + `useLandingMotion.ts`
+- Marketing typography (Curevo WBS pattern): **Libre Caslon Condensed** + **BDOGrotesk** self-hosted in `public/fonts/`; **Roboto Mono** kickers; scoped on `.frontend-home`; guidelines in `nura-brand.mdc` + `docs/brand.md`
+- Curevo-style marketing header: frosted pill nav (`FrontendHeader`), centered links, animated CTA + arrow, mobile drawer; overlay on home landing
+- Home hero rebuilt to match Curevo: full-bleed portrait background, dark green overlay, kicker + serif headline left, description + info card + preview thumb right; dark glass header on hero
+- Marketing header nav cleaned up: center links only (Home/EMDR/Resources/Therapists); guests get Sign in + Get started on the right; signed-in users get Dashboard (left), avatar + name, dropdown Sign out
+- Marketing header: always **sticky**; blur animates on scroll (glass pill intensifies); landing hero tucks under header via negative margin
+- Removed **Therapists** route and nav; retired `/therapists` → `/therapy`; dropped “find a clinician” marketing copy (app-only AI guided support)
+- Marketing nav: **Home · Resources · About**; new `/about` page
+- Header polish: single glass pill (no nested nav bar); fixed overlay on landing removes mint strip above hero
+- Pricing section (Scalient-style): dark olive band, larger cards, Monthly/Yearly toggle, richer plan copy + feature lists, lime featured CTA
+- Curevo about block under hero: kicker + scroll-reveal body copy, image marquee placeholders, “More about Nura” CTA → `/about`
+- Pricing UX: removed confusing Monthly/Yearly toggle; three clear cycles (Weekly · Yearly featured · Monthly) with yearly “≈ €8.25/mo”
+- Novawell-style marketing footer (`FrontendFooter` + `frontend-footer.css`): dark band, Get started / Sign in pills, brand row + icon links, NURA marquee, newsletter → create-account
+- Cursor rule `.cursor/rules/reference-site-clone.mdc` — screenshot + site URL → auto-scrape CSS/JS and adapt to Nura
+- Home landing denser layout: taller section padding; **Inside the app** image+copy showcases; Novawell-style **How it works** (4 steps + large photo); atmosphere gallery; larger about marquee / offer images; testimonial avatars
+- About statement: larger/heavier BDOGrotesk (~3rem), fixed Curevo scroll-scrub word color (GSAP scrub + longer range, no CSS color fight)
+- Marketing chrome: dropped `/emdr` from footer/nav-style links (Therapy / About / Resources / session CTAs instead); `/emdr` page remains public
+- Home landing mint preloader: jumping % counter (random-ish steps to 100), then slide-up reveal (`FrontendPreloader`)
+- Fixed hero scroll bug: overlay no longer translates away (bottom dark filter stayed missing); soft fade into about; header switches to light glass only after leaving the hero
+- Marketing photos self-hosted under `public/marketing/landing/` (Unsplash remote was broken); richer gallery + how-it-works images
+- Removed Atmosphere gallery section from home landing
+- Dark centered CTA band before footer (Get started / Sign in); footer top duplicate CTAs removed so CTA + footer read as one dark block
+- Removed public `/therapy` page and Therapy marketing links; `/therapy` and `/therapists` redirect to `/resources`
+- Home testimonials rebuilt as dark Novawell-style Stories band: rating + nav arrows, mint-border cards, auto-scroll (pause on hover / arrows)
+- Home blog grid before CTA: 3 featured Resources cards (real `created_at`), Nura mark as author avatar, mint View resources CTA
+- CTA: mint pill Get started + outline Sign in; removed redundant wellness disclaimer under buttons
+- Marketing nav: How it works · Prices · Blog · FAQ (hash anchors + Lenis smooth scroll); new FAQ accordion before CTA
+- Footer pistachio cursor spotlight (radial mint/pistachio/sage gradient follows pointer)
+- Closing band unified: CTA + footer one component; cool green-black + mint pulse glow (no brown/sage); cursor spotlight stays pistachio
+- Footer glow: pulse only under cursor (black when idle); tagline one readable line above marquee
+- Marketing buttons: shared pistachio hover (`#C6D67E`) + smooth pulse (`frontend-buttons.css`); blog CTA pistachio outline
+- Marketing nav: **Home** before How it works (smooth scroll to hero `#home`)
+- Floating **Back to top** button (bottom-right, pistachio outline, appears after scroll)
+- Admin LLM formatters: move `formatTokenCount` / `formatUsdMicros` to `lib/admin-llm-format.ts` (fixes Turbopack client “is not a function” on stale `admin-format` HMR)
+- Admin pages use URL-synced tabs via `AdminTabs` + `useAdminTab` (`?tab=`): billing (overview/stripe/subscriptions/usage), platform (general/access/features/ads/agent), email (delivery/send/templates/log), AI, help, users (directory/invite), resources (library/editor)
+- Admin sidebar grouped into sections (Dashboard, People, Content, Billing, System) with nested sub-links matching page tabs (`lib/admin-nav.ts`)
+- Admin account menu: sidebar footer shows avatar + display name; dropdown with Settings (`/admin/settings` profile photo/name) and Logout
+- Admin Overview dashboard: KPI row with month deltas, 7-day stacked activity chart, AI cost mix bar, health gauge, paying-share progress, quick actions, activity feed (`lib/admin-stats` series + `AdminCharts`)
+- App sidebar **Upgrade to Pro** card for trial / unpaid users (dismissible, Zap icon, Upgrade now → upgrade modal); trial chip only if banner dismissed
+- Admin sidebar: keep dark olive rail; larger type (~16px), icon+label row, active pill + left bar, tree-style nested tabs, 280px width (`AdminShell`, `globals.css`)
+- `/app` no longer auto-opens the latest Recent thread on load; bare visits show the Home welcome screen until the user clicks New chat / a Recent item (or opens `?thread=<id>`); Home nav clears the active session
+- Onboarding **Welcome** (and plan/tutorial) restyled to marketing `frontend-home` rhythm: `OnboardingShell` + Libre Caslon / BDOGrotesk / Roboto Mono kickers; clearer benefit blocks (Guided or Free / trial / card); no AuthShell orphan card on `/app/onboarding`
+- Admin Help chat inbox layout: wrap in `admin-main` (like other admin pages); inbox uses `admin-main-wide` so the Conversations + thread split fills the canvas (`help-admin-grid` `width:100%` + `minmax(0,1fr)`); `.admin-page` flex column stretch so content is not jammed left
+- Admin Email → Templates: live preview now tracks draft Subject / HTML / Plain text (iframe `srcDoc` + subject chrome + plain strip; ~120ms debounce) instead of only saved template HTML
+- Admin sidebar: fixed viewport height (`100dvh` shell), no sidebar scrollbar; nav fits with tighter spacing; account foot stays pinned; only `.admin-canvas` scrolls
+- Admin Help Settings toggles: rows used bare `.settings-row` (no flex) so `AppleToggle` sat on top of labels; switched to `.settings-toggle-row`, removed panel `max-w-xl`, and hardened `.settings-row:has(.apple-toggle)` + full-width `.admin-toggle-row` (`display:flex` + `space-between`) for label left / switch right on Help, Platform, Billing, and Ads
+- Admin Billing → Stripe **Demo mode**: `AppleToggle` with label left / switch right (same `.admin-toggle-row` pattern); helper clarifies Demo mode vs Sandbox/Live credential editor tabs
+- Admin Stripe **Demo mode** uses `.admin-toggle-row-compact` (toggle beside label) so full-width `.admin-toggle-row` `space-between` stays for Platform / Ads / Help-style rows
+- Dev: silence “Webpack configured while Turbopack is not” — `turbopack.root` must be non-empty (`next.config.ts`); empty `turbopack: {}` is ignored by Next’s check
+- **Google Sign-In**: Continue with Google on `/app/login` and `/app/create-account` (OAuth code flow); `GET /api/auth/google` + `/callback`; new users → onboarding (`source: google_oauth`); existing email → session; env `GOOGLE_CLIENT_ID`/`SECRET` (falls back to Gmail OAuth client)
+- Google OAuth hardening: canonical-host redirect so CSRF cookie matches `redirect_uri`; store `users.google_sub`; block auto-link for unverified password accounts; unique-violation race retry; Secure cookies on HTTPS; prod requires `GOOGLE_CLIENT_*` (Gmail fallback only in non-prod)
+- Google OAuth: remove canonical 307 loop (localhost↔`APP_URL` tunnel); bind `redirect_uri` + cookies to request origin / `x-forwarded-*`, store `appBase` in signed state
+- Admin activity filters: `listAuditEvents` now applies action/search `WHERE` (was built but unused); admin user Last login heals from `user.login` audit events when `last_login_at` was null
+- Billing upgrade flip: hide the underlying **Your billing** card when UpgradeModal opens (fade out at end of `rotateY`); drop `preserve-3d` so no darkened ghost silhouette shows behind the modal
+- Code-review hardening: email template live preview iframe uses `sandbox=""` + `referrerPolicy="no-referrer"` (blocks same-origin XSS via `srcDoc`); Platform GET/PUT also redacts `gmailClientId`; billing flip conceals the whole perspective stage under UpgradeModal and resets flip state on close; `.admin-toggle-row-compact` uses compound selectors so Demo mode stays beside the label
+- Admin client bundle: `Can't resolve 'async_hooks'` — `admin-format` no longer re-exports payment labels from `billing-events` (db/rls); pure helpers live in `lib/billing-event-format.ts`
+- App sidebar account menu: in-flow foot stack **Upgrade → Settings/Billing/Logout (when open) → user row**; Upgrade stays visible above the menu (not hidden, not covered); click-outside + Escape (`Sidebar.tsx`, `.sidebar-foot`)
+- Admin Billing Stripe save: type PUT body as `StripeConfigPatch` (partial env sets) instead of `Partial<PlatformStripeConfig>`; empty secret fields still omitted so stored keys stay; register `settings.stripe_updated` / `settings.stripe_synced` audit actions
+- **/app/resources** article reading layout: blog-style centered column (`max-width: 42rem`) for title + body; library scroll also centered (`48rem`); larger body type/line-height on mobile; seed “What is EMDR?” copy no longer says bilateral stimulation (moving ball / Free·Guided); `rewriteRetiredBrandCopy` remaps old CMS phrasing
+- Marketing nav hash links from 404 / other non-home pages: stash section id + scroll after home mount (Lenis / native); skip mint preloader when a section hash is pending so overflow-lock no longer eats the scroll (`lib/landing-scroll.ts`, `FrontendHeader`, `HomeLanding`, `FrontendPreloader`)
+- Marketing preloader: full `nura-wave-logo` lockup (same as header), compact size, soft left→right fill — avoids wave-crop hard tip / pixel blow-up
+- Admin Users directory: screenshot table layout with search, Hide filters, plan chips, status pills, kebab **Actions** (View / Edit / Resend invite / Disable / Enable / Delete), list+grid, pagination; pending invite = no password and no Google
+- Marketing type pairing: **Fraunces + Source Sans 3** on `.frontend-home` (same as `/app`); retired Libre Caslon Condensed + BDOGrotesk; Roboto Mono kickers kept; UI/body scale ~+12–15% on marketing + product chrome (`globals.css`, landing-motion, header/footer, onboarding)
+- Project skill **`nura-ui-designer`** (`.cursor/skills/nura-ui-designer/`) + always-on rule — agents must load it for UI/UX; shipping checklist included
+- Billing/trial hardening (code review): Free session lease rejects `!canUseApp` (canceled users no longer get unlimited time); Checkout `session_id` sync won’t overwrite a newer live subscription; Stripe sync uses object timestamps + atomic event guard; Manage billing shown for trialing/past_due/unpaid/incomplete; Upgrade modal activates current plan only (no fake plan switch); canceled users redirected from onboarding to billing; Plan label shows **None** when canceled
+- Marketing header nav: bolder links (`font-weight: 600`) and wider gaps (`clamp(1.1–2rem)`) so Home · How it works · Prices · Blog · FAQ are less cramped
+- Marketing display type: Fraunces soft/wonky axes enabled; `.fe-section-title` weight 500, looser line-height — clearer vs retired Caslon
+- Brand lockup: removed “help” suffix everywhere (`BrandLockup` / header / onboarding) — wave **nura** wordmark only
 
 ---
 

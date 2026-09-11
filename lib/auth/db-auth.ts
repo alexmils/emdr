@@ -77,6 +77,57 @@ export async function ensureAuthFunctions(client?: SqlClient) {
       UPDATE users SET password_hash = p_password_hash, email_verified = TRUE, updated_at = NOW()
       WHERE id = p_id;
     $$;
+
+    CREATE OR REPLACE FUNCTION auth_mark_email_verified(
+      p_id TEXT,
+      p_name TEXT DEFAULT NULL
+    )
+    RETURNS SETOF users
+    LANGUAGE sql
+    SECURITY DEFINER
+    SET search_path = public
+    AS $$
+      UPDATE users SET
+        email_verified = TRUE,
+        name = CASE
+          WHEN users.name IS NULL OR TRIM(users.name) = '' THEN NULLIF(TRIM(p_name), '')
+          ELSE users.name
+        END,
+        updated_at = NOW()
+      WHERE id = p_id
+      RETURNING *;
+    $$;
+
+    CREATE OR REPLACE FUNCTION auth_get_user_by_google_sub(p_sub TEXT)
+    RETURNS SETOF users
+    LANGUAGE sql
+    SECURITY DEFINER
+    SET search_path = public
+    AS $$
+      SELECT * FROM users WHERE google_sub = p_sub LIMIT 1;
+    $$;
+
+    CREATE OR REPLACE FUNCTION auth_link_google(
+      p_id TEXT,
+      p_sub TEXT,
+      p_name TEXT DEFAULT NULL
+    )
+    RETURNS SETOF users
+    LANGUAGE sql
+    SECURITY DEFINER
+    SET search_path = public
+    AS $$
+      UPDATE users SET
+        google_sub = p_sub,
+        email_verified = TRUE,
+        name = CASE
+          WHEN users.name IS NULL OR TRIM(users.name) = '' THEN NULLIF(TRIM(p_name), '')
+          ELSE users.name
+        END,
+        updated_at = NOW()
+      WHERE id = p_id
+      RETURNING *;
+    $$;
   `);
 }
 

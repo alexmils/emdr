@@ -8,6 +8,14 @@ const BLOCKING_STATUSES = new Set([
   "incomplete",
 ]);
 
+const PORTAL_STATUSES = new Set([
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "incomplete",
+]);
+
 export function hasBlockingStripeSubscription(input: {
   stripeSubscriptionId?: string | null;
   status?: string | null;
@@ -17,6 +25,27 @@ export function hasBlockingStripeSubscription(input: {
       input.status &&
       BLOCKING_STATUSES.has(input.status)
   );
+}
+
+export function shouldOfferBillingPortal(input: {
+  status?: string | null;
+}): boolean {
+  return Boolean(input.status && PORTAL_STATUSES.has(input.status));
+}
+
+/**
+ * Prevent an old Checkout success URL from overwriting a newer live subscription.
+ */
+export function shouldApplyCheckoutSessionSync(input: {
+  existingSubscriptionId?: string | null;
+  existingStatus?: string | null;
+  incomingSubscriptionId: string;
+}): boolean {
+  if (!input.existingSubscriptionId) return true;
+  if (input.existingSubscriptionId === input.incomingSubscriptionId) return true;
+  const live =
+    input.existingStatus === "active" || input.existingStatus === "trialing";
+  return !live;
 }
 
 export function shouldIncludeCheckoutTrial(input: {

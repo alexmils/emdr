@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { Fraunces, Roboto_Mono, Source_Sans_3 } from "next/font/google";
 import {
   BRAND_DESCRIPTION,
   BRAND_LEGAL,
@@ -13,12 +13,22 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-fraunces",
+  // Soft/wonky axes — organic like the wave; distinct from condensed Caslon
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-source-sans",
+});
+
+/** Labels / kickers on `.frontend-home` (mono; does not compete with wave lockup). */
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+  variable: "--font-fe-alt",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +43,7 @@ export const metadata: Metadata = {
     description: BRAND_DESCRIPTION,
     siteName: BRAND_LEGAL,
     type: "website",
-    images: [{ url: "/brand/lockup.svg" }],
+    images: [{ url: "/brand/lockup.png" }],
   },
 };
 
@@ -43,7 +53,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sourceSans.variable} ${fraunces.variable}`}>
+    <html
+      lang="en"
+      className={`${sourceSans.variable} ${fraunces.variable} ${robotoMono.variable}`}
+    >
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

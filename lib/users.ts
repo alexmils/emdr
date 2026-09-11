@@ -10,6 +10,7 @@ export type User = {
   avatarUrl: string | null;
   passwordHash: string | null;
   emailVerified: boolean;
+  googleSub: string | null;
   role: UserRole;
   status: UserStatus;
   lastLoginAt: string | null;
@@ -31,6 +32,7 @@ function rowToUser(row: Record<string, unknown>): User {
     avatarUrl: (row.avatar_url as string) ?? null,
     passwordHash: (row.password_hash as string) ?? null,
     emailVerified: Boolean(row.email_verified),
+    googleSub: (row.google_sub as string) ?? null,
     role: normalizeRole(row.role),
     status: row.status === "disabled" ? "disabled" : "active",
     lastLoginAt: row.last_login_at
@@ -149,6 +151,42 @@ export async function setUserPassword(userId: string, passwordHash: string) {
     userId,
     passwordHash,
   ]);
+}
+
+/** Mark email verified (Google OAuth); fill empty name from provider. */
+export async function markEmailVerified(
+  userId: string,
+  name?: string | null
+): Promise<User | null> {
+  await ensureSchemaReady();
+  const { rows } = await getPool().query(
+    "SELECT * FROM auth_mark_email_verified($1, $2)",
+    [userId, name?.trim() || null]
+  );
+  return rows[0] ? rowToUser(rows[0]) : null;
+}
+
+export async function getUserByGoogleSub(sub: string): Promise<User | null> {
+  await ensureSchemaReady();
+  const { rows } = await getPool().query(
+    "SELECT * FROM auth_get_user_by_google_sub($1)",
+    [sub]
+  );
+  return rows[0] ? rowToUser(rows[0]) : null;
+}
+
+/** Link Google subject, verify email, fill empty name. */
+export async function linkGoogleAccount(
+  userId: string,
+  googleSub: string,
+  name?: string | null
+): Promise<User | null> {
+  await ensureSchemaReady();
+  const { rows } = await getPool().query(
+    "SELECT * FROM auth_link_google($1, $2, $3)",
+    [userId, googleSub, name?.trim() || null]
+  );
+  return rows[0] ? rowToUser(rows[0]) : null;
 }
 
 export async function upsertPlatformAdmin(

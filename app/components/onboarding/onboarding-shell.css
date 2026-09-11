@@ -1,0 +1,206 @@
+/* Onboarding — marketing rhythm (scoped under .frontend-home.ob-shell) */
+
+.ob-shell {
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem
+    max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.ob-shell-inner {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ob-shell-header {
+  text-align: center;
+}
+
+.ob-shell-brand {
+  margin: 0 0 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.ob-shell-brand .brand-logo {
+  height: 1.55rem;
+  max-width: 12rem;
+}
+
+.ob-kicker {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-alt);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fe-muted);
+}
+
+.ob-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 8vw, 3rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fe-fg);
+}
+
+/* Tutorial: shorter title so steps stay the focus */
+.ob-shell:has(.ob-tutorial) .ob-title {
+  font-size: clamp(1.75rem, 6vw, 2.25rem);
+}
+
+.ob-shell:has(.ob-tutorial) .ob-lead {
+  max-width: 20rem;
+  font-size: 1rem;
+}
+
+.ob-lead {
+  margin: 0.85rem auto 0;
+  max-width: 22rem;
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--fe-muted);
+}
+
+.ob-panel {
+  padding: 1.35rem 1.25rem 1.4rem;
+  border: 1px solid var(--fe-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, #fff 72%, var(--fe-bg));
+}
+
+.ob-cta {
+  display: flex;
+  width: 100%;
+  margin-top: 1.35rem;
+  min-height: 2.75rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.ob-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  animation: none;
+  transform: none;
+}
+
+.ob-note {
+  margin: 1rem 0 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--fe-muted);
+  text-align: center;
+}
+
+.ob-tutorial .ob-cta {
+  margin-top: 0.25rem;
+}
+
+/* Signature: quiet moving-ball preview (Nura, not generic checklist) */
+.ob-ball-preview {
+  margin: 0 0 1.15rem;
+}
+
+.ob-ball-track {
+  position: relative;
+  height: 2.75rem;
+  margin: 0 auto;
+  max-width: 14rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fe-fg) 6%, #fff);
+  border: 1px solid var(--fe-line);
+  overflow: hidden;
+}
+
+.ob-ball-dot {
+  position: absolute;
+  top: 50%;
+  left: 0.55rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: -0.575rem;
+  border-radius: 50%;
+  background: var(--fe-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fe-accent) 22%, transparent);
+  animation: ob-ball-travel 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes ob-ball-travel {
+  from {
+    left: 0.55rem;
+  }
+  to {
+    left: calc(100% - 1.7rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-ball-dot {
+    animation: none;
+    left: 50%;
+    margin-left: -0.575rem;
+  }
+}
+
+.ob-shell-footer {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  color: var(--fe-muted);
+}
+
+.ob-shell-footer a {
+  color: var(--fe-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.ob-shell-footer a:hover {
+  color: var(--fe-fg);
+}
+
+/* Plan cards inside marketing shell — keep product plan picker usable */
+.ob-shell .upgrade-plan-list {
+  gap: 0.65rem;
+}
+
+.ob-shell .upgrade-plan-card {
+  border-color: var(--fe-line);
+  background: color-mix(in srgb, #fff 50%, var(--fe-bg));
+}
+
+.ob-shell .upgrade-plan-card--selected {
+  border-color: var(--fe-accent);
+  box-shadow: 0 0 0 1px var(--fe-accent);
+}
+
+@media (min-width: 640px) {
+  .ob-shell {
+    align-items: center;
+    padding: 2.75rem 1.5rem;
+  }
+
+  .ob-shell-inner {
+    gap: 1.75rem;
+  }
+
+  .ob-panel {
+    padding: 1.6rem 1.5rem 1.65rem;
+  }
+}

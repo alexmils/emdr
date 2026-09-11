@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -15,6 +16,8 @@ type SidebarNavState = {
   open: boolean;
   openSidebar: () => void;
   closeSidebar: () => void;
+  /** Close only on the mobile drawer — desktop rail stays open after nav/thread clicks. */
+  closeSidebarDrawer: () => void;
   toggleSidebar: () => void;
 };
 
@@ -28,7 +31,14 @@ export function SidebarNavProvider({
   /** e.g. BLS immersive — keep drawer shut */
   forceClosed?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+
+  useLayoutEffect(() => {
+    // Mobile drawer starts closed; desktop rail starts open (no collapse flash).
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setOpen(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (forceClosed) setOpen(false);
@@ -45,11 +55,22 @@ export function SidebarNavProvider({
 
   const openSidebar = useCallback(() => setOpen(true), []);
   const closeSidebar = useCallback(() => setOpen(false), []);
+  const closeSidebarDrawer = useCallback(() => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setOpen(false);
+    }
+  }, []);
   const toggleSidebar = useCallback(() => setOpen((v) => !v), []);
 
   const value = useMemo(
-    () => ({ open, openSidebar, closeSidebar, toggleSidebar }),
-    [open, openSidebar, closeSidebar, toggleSidebar]
+    () => ({
+      open,
+      openSidebar,
+      closeSidebar,
+      closeSidebarDrawer,
+      toggleSidebar,
+    }),
+    [open, openSidebar, closeSidebar, closeSidebarDrawer, toggleSidebar]
   );
 
   return (
@@ -80,9 +101,9 @@ export function WorkspaceMenuButton() {
     <button
       type="button"
       className="workspace-menu-btn"
-      aria-label="Open sidebar"
+      aria-label={nav.open ? "Close sidebar" : "Open sidebar"}
       aria-expanded={nav.open}
-      onClick={nav.openSidebar}
+      onClick={nav.toggleSidebar}
     >
       <PanelLeft size={20} strokeWidth={2} />
     </button>

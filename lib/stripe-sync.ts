@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import type { PlatformStripeConfig } from "@/lib/platform-settings";
+import type { StripeCredentialSet } from "@/lib/stripe-config";
 
 export type StripePriceInterval = "week" | "month" | "year";
 
@@ -150,10 +150,10 @@ export function pickPlanPricesFromStripeList(
   };
 }
 
-export function applyCatalogSyncToStripeConfig(
-  current: PlatformStripeConfig,
+export function applyCatalogSyncToCredentials(
+  current: import("@/lib/stripe-config").StripeCredentialSet,
   sync: StripeCatalogSyncResult
-): PlatformStripeConfig {
+): import("@/lib/stripe-config").StripeCredentialSet {
   return {
     ...current,
     priceIdWeekly: sync.weekly?.priceId ?? current.priceIdWeekly,
@@ -166,4 +166,12 @@ export function applyCatalogSyncToStripeConfig(
     displayPriceYearly:
       sync.yearly?.displayPrice || current.displayPriceYearly,
   };
+}
+
+/** @deprecated use applyCatalogSyncToCredentials */
+export function applyCatalogSyncToStripeConfig(
+  current: import("@/lib/stripe-config").StripeCredentialSet,
+  sync: StripeCatalogSyncResult
+) {
+  return applyCatalogSyncToCredentials(current, sync);
 }

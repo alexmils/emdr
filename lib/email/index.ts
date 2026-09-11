@@ -1,6 +1,7 @@
 import { sendViaBrevo } from "./brevo";
-import { isGmailConfigured, sendViaGmail } from "./gmail";
+import { isGmailReady, sendViaGmail } from "./gmail";
 import { logEmailEvent } from "@/lib/email-events";
+import { getResolvedBrevoApiKey } from "./status";
 import {
   isQuotaError,
   type SendEmailInput,
@@ -23,8 +24,8 @@ export {
 export async function sendEmail(
   input: SendEmailInput
 ): Promise<SendEmailResult> {
-  const brevoKey = process.env.BREVO_API_KEY;
-  const gmailReady = isGmailConfigured();
+  const brevoKey = await getResolvedBrevoApiKey();
+  const gmailReady = await isGmailReady();
 
   try {
     let result: SendEmailResult;
@@ -48,7 +49,7 @@ export async function sendEmail(
       result = await sendViaGmail(input);
     } else {
       throw new Error(
-        "No email provider configured. Set BREVO_API_KEY (preferred) or Gmail API credentials."
+        "No email provider configured. Set Brevo API key (preferred) or Gmail API credentials in Admin → Email."
       );
     }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAuthContext } from "@/lib/api-auth";
-import { getStripe } from "@/lib/stripe";
+import { resolveStripeClient } from "@/lib/stripe";
 import {
   getSubscriptionByUserId,
   mapStripeSubscriptionWithConfig,
@@ -18,14 +18,6 @@ import {
 export async function POST() {
   const auth = await requireAuth();
   if (!isAuthContext(auth)) return auth;
-
-  const stripe = await getStripe();
-  if (!stripe) {
-    return NextResponse.json(
-      { error: "Stripe is not configured" },
-      { status: 503 }
-    );
-  }
 
   const sub = await getSubscriptionByUserId(auth.user.id);
   if (!sub?.stripe_subscription_id) {
@@ -55,15 +47,36 @@ export async function POST() {
     );
   }
 
+  const resolved = await resolveStripeClient({
+    livemode: sub.stripe_livemode,
+    objectId: sub.stripe_subscription_id,
+  });
+  if (!resolved) {
+    return NextResponse.json(
+      { error: "Stripe is not configured for this subscription" },
+      { status: 503 }
+    );
+  }
+
   try {
-    const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
-      trial_end: "now",
-    });
-    const mapped = await mapStripeSubscriptionWithConfig(updated);
+    const updated = await resolved.stripe.subscriptions.update(
+      sub.stripe_subscription_id,
+      { trial_end: "now" }
+    );
+    const mapped = await mapStripeSubscriptionWithConfig(
+      updated,
+      resolved.livemode
+    );
+    const created =
+      typeof (updated as { created?: number }).created === "number"
+        ? (updated as { created: number }).created
+        : undefined;
     await syncSubscriptionFromStripe({
       userId: auth.user.id,
       ...mapped,
-      eventCreatedAt: Math.floor(Date.now() / 1000),
+      stripeLivemode: resolved.livemode,
+      // Prefer Stripe object time; omit rather than Date.now() so webhooks stay authoritative.
+      eventCreatedAt: created,
     });
     const entitlement = await getEntitlementForUser({
       userId: auth.user.id,

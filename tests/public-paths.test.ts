@@ -13,10 +13,11 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/"), true);
     assert.equal(isFrontendPublicPath("/privacy"), true);
     assert.equal(isFrontendPublicPath("/terms"), true);
+    assert.equal(isFrontendPublicPath("/about"), true);
     assert.equal(isFrontendPublicPath("/emdr"), true);
-    assert.equal(isFrontendPublicPath("/therapy"), true);
     assert.equal(isFrontendPublicPath("/resources"), true);
-    assert.equal(isFrontendPublicPath("/therapists"), true);
+    assert.equal(isFrontendPublicPath("/therapy"), false);
+    assert.equal(isFrontendPublicPath("/therapists"), false);
   });
 
   it("does not treat /app as frontend", () => {
@@ -53,6 +54,14 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     );
     assert.equal(isUnauthenticatedPublicPath("/api/webhooks/stripe"), true);
   });
+
+  it("allows Google OAuth start and callback", () => {
+    assert.equal(isUnauthenticatedPublicPath("/api/auth/google"), true);
+    assert.equal(
+      isUnauthenticatedPublicPath("/api/auth/google/callback"),
+      true
+    );
+  });
 });
 
 describe("shouldRedirectToLoginOn401", () => {
@@ -62,9 +71,7 @@ describe("shouldRedirectToLoginOn401", () => {
     assert.equal(shouldRedirectToLoginOn401("/"), false);
     assert.equal(shouldRedirectToLoginOn401("/privacy"), false);
     assert.equal(shouldRedirectToLoginOn401("/emdr"), false);
-    assert.equal(shouldRedirectToLoginOn401("/therapy"), false);
     assert.equal(shouldRedirectToLoginOn401("/resources"), false);
-    assert.equal(shouldRedirectToLoginOn401("/therapists"), false);
     assert.equal(shouldRedirectToLoginOn401("/app/login"), false);
     assert.equal(shouldRedirectToLoginOn401("/apple"), false);
   });

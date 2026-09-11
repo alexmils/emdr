@@ -1,0 +1,10 @@
+/**
+ * Marketing type faces load via next/font in app/layout.tsx:
+ *   Fraunces → --font-fraunces (display)
+ *   Source Sans 3 → --font-source-sans (body / UI)
+ *   Roboto Mono → --font-fe-alt (kickers)
+ *
+ * Scoped on `.frontend-home` in app/globals.css.
+ * Libre Caslon Condensed + BDOGrotesk (Curevo clone) retired — they echoed
+ * the rounded wave wordmark and split marketing from /app.
+ */

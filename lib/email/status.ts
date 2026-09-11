@@ -1,4 +1,11 @@
-import { isGmailConfigured } from "./gmail";
+import {
+  resolveBrevoApiKey,
+  resolveGmailCredentials,
+  isBrevoConfigured,
+  isGmailCredentialsConfigured,
+  type PlatformEmailConfig,
+} from "@/lib/email-config";
+import { getPlatformSettings } from "@/lib/platform-settings";
 
 export type EmailProviderStatus = {
   gmailConfigured: boolean;
@@ -11,6 +18,36 @@ export type EmailProviderStatus = {
   primaryProvider: "gmail" | "brevo" | "none";
 };
 
+export async function getEmailConfig(): Promise<PlatformEmailConfig> {
+  const settings = await getPlatformSettings();
+  return settings.email;
+}
+
+export async function getEmailProviderStatus(): Promise<
+  Pick<
+    EmailProviderStatus,
+    | "gmailConfigured"
+    | "brevoConfigured"
+    | "gmailFallbackConfigured"
+    | "primaryProvider"
+  >
+> {
+  const email = await getEmailConfig();
+  const gmailConfigured = isGmailCredentialsConfigured(email);
+  const brevoConfigured = isBrevoConfigured(email);
+  return {
+    gmailConfigured,
+    brevoConfigured,
+    gmailFallbackConfigured: gmailConfigured,
+    primaryProvider: brevoConfigured
+      ? "brevo"
+      : gmailConfigured
+        ? "gmail"
+        : "none",
+  };
+}
+
+/** @deprecated use getEmailProviderStatus — sync env-only check */
 export function getEmailProviderEnvStatus(): Pick<
   EmailProviderStatus,
   | "gmailConfigured"
@@ -18,7 +55,11 @@ export function getEmailProviderEnvStatus(): Pick<
   | "gmailFallbackConfigured"
   | "primaryProvider"
 > {
-  const gmailConfigured = isGmailConfigured();
+  const gmailConfigured = Boolean(
+    process.env.GMAIL_CLIENT_ID?.trim() &&
+      process.env.GMAIL_CLIENT_SECRET?.trim() &&
+      process.env.GMAIL_REFRESH_TOKEN?.trim()
+  );
   const brevoConfigured = Boolean(process.env.BREVO_API_KEY?.trim());
   return {
     gmailConfigured,
@@ -30,4 +71,16 @@ export function getEmailProviderEnvStatus(): Pick<
         ? "gmail"
         : "none",
   };
+}
+
+export async function getResolvedBrevoApiKey(): Promise<string | null> {
+  return resolveBrevoApiKey(await getEmailConfig());
+}
+
+export async function getResolvedGmailCredentials(): Promise<{
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+} | null> {
+  return resolveGmailCredentials(await getEmailConfig());
 }

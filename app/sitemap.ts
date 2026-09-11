@@ -3,10 +3,9 @@ import { brandMetadataBase } from "@/lib/brand";
 
 const PUBLIC_PATHS = [
   "/",
+  "/about",
   "/emdr",
-  "/therapy",
   "/resources",
-  "/therapists",
   "/privacy",
   "/terms",
 ] as const;

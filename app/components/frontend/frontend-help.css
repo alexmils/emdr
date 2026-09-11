@@ -1,0 +1,31 @@
+/* Marketing “Need help?” FAB — desktop only (matches in-app help pill) */
+
+.frontend-home .help-fab {
+  background: #fff;
+  border: 1px solid rgba(42, 48, 32, 0.1);
+  color: #2a3020;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(42, 48, 32, 0.12);
+}
+
+.frontend-home .help-fab:hover {
+  border-color: var(--fe-btn-pistachio, #c6d67e);
+  color: #2a3020;
+  background: #fff;
+}
+
+/* Stack back-to-top above the help pill on desktop */
+@media (min-width: 769px) {
+  .frontend-home .fe-back-top {
+    bottom: calc(max(1.25rem, env(safe-area-inset-bottom, 0px)) + 3.75rem);
+  }
+}
+
+/* Hide on mobile / narrow viewports — pill crowds the shell */
+@media (max-width: 768px) {
+  .frontend-home .help-fab {
+    display: none !important;
+  }
+}

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, ChevronDown, Home, Plus, X } from "lucide-react";
+import { BookOpen, ChevronDown, Home, Plus, X, Zap } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { ThreadEditMenu } from "./ThreadEditMenu";
+import { ThreadContextMenu } from "./ThreadContextMenu";
 import { Avatar } from "./Avatar";
 import { BrandLockup } from "./BrandLockup";
 import { displayNameFor, useCurrentUser } from "./useCurrentUser";
@@ -17,6 +18,15 @@ const SIDEBAR_NAV = [
   { href: appPath("/resources"), label: "Resources", icon: BookOpen, exact: false },
 ] as const;
 
+const LONG_PRESS_MS = 480;
+const UPGRADE_DISMISS_KEY = "nura-sidebar-upgrade-dismissed";
+
+type CtxMenu = { threadId: string; x: number; y: number };
+
+function upgradeDismissStorageKey(userId: string | undefined) {
+  return `${UPGRADE_DISMISS_KEY}:${userId ?? "anon"}`;
+}
+
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -24,14 +34,77 @@ export function Sidebar() {
     threads,
     activeThreadId,
     selectThread,
+    clearActiveThread,
     createThread,
+    deleteThread,
     entitlement,
     openUpgradeModal,
   } = useApp();
   const { user } = useCurrentUser();
-  const { closeSidebar } = useSidebarNav();
+  const { closeSidebar, closeSidebarDrawer } = useSidebarNav();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [upgradeDismissed, setUpgradeDismissed] = useState(false);
   const [editThreadId, setEditThreadId] = useState<string | null>(null);
+  const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
+  const accountFootRef = useRef<HTMLDivElement>(null);
+  const suppressClickRef = useRef(false);
+  const longPressRef = useRef<{
+    timer: ReturnType<typeof setTimeout>;
+    threadId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(upgradeDismissStorageKey(user?.id));
+      setUpgradeDismissed(raw === "1");
+    } catch {
+      setUpgradeDismissed(false);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onPointer = (e: MouseEvent) => {
+      if (!accountFootRef.current?.contains(e.target as Node)) {
+        setAccountOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAccountOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [accountOpen]);
+
+  useEffect(() => {
+    setAccountOpen(false);
+  }, [pathname]);
+
+  const dismissUpgrade = () => {
+    setUpgradeDismissed(true);
+    try {
+      localStorage.setItem(upgradeDismissStorageKey(user?.id), "1");
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const showUpgradeBanner =
+    !upgradeDismissed &&
+    Boolean(
+      entitlement &&
+        (entitlement.isTrialLimited || entitlement.needsPayment)
+    );
+
+  const upgradeBannerBody = entitlement?.isTrialLimited
+    ? `Unlimited guided sessions and Free mode. Trial left: ${Math.max(0, entitlement.guidedRemaining)} guided · ${Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m free.`
+    : "Unlock unlimited guided sessions and Free mode with a paid plan.";
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -41,20 +114,58 @@ export function Sidebar() {
 
   const label = displayNameFor(user);
 
+  const clearLongPress = useCallback(() => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current.timer);
+      longPressRef.current = null;
+    }
+  }, []);
+
+  const openCtxMenu = useCallback((threadId: string, x: number, y: number) => {
+    setAccountOpen(false);
+    setCtxMenu({ threadId, x, y });
+  }, []);
+
   const onSelectThread = (id: string) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
     void selectThread(id);
-    closeSidebar();
+    closeSidebarDrawer();
   };
 
   const onNewChat = () => {
     void createThread();
-    closeSidebar();
+    closeSidebarDrawer();
+  };
+
+  const onThreadPointerDown = (
+    e: ReactPointerEvent<HTMLButtonElement>,
+    threadId: string
+  ) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    clearLongPress();
+    const x = e.clientX;
+    const y = e.clientY;
+    longPressRef.current = {
+      threadId,
+      x,
+      y,
+      timer: setTimeout(() => {
+        const cur = longPressRef.current;
+        longPressRef.current = null;
+        if (!cur) return;
+        suppressClickRef.current = true;
+        openCtxMenu(cur.threadId, cur.x, cur.y);
+      }, LONG_PRESS_MS),
+    };
   };
 
   return (
-    <aside className="app-sidebar flex h-full w-[260px] shrink-0 flex-col">
+    <aside className="app-sidebar flex h-full shrink-0 flex-col">
       <div className="app-sidebar-top">
-        <BrandLockup href={null} tone="inverse" />
+        <BrandLockup href={null} tone="white" />
         <button
           type="button"
           className="app-sidebar-close"
@@ -74,35 +185,41 @@ export function Sidebar() {
           <Plus size={15} strokeWidth={2} />
           New chat
         </button>
-        {entitlement?.isTrialLimited && (
+        {entitlement?.isTrialLimited && !showUpgradeBanner && (
           <button
             type="button"
             className="sidebar-trial-chip mt-2 w-full text-left"
             onClick={() => {
               openUpgradeModal("generic");
-              closeSidebar();
+              closeSidebarDrawer();
             }}
           >
             Trial · {Math.max(0, entitlement.guidedRemaining)} guided ·{" "}
-            {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m BLS
+            {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m free
           </button>
         )}
       </div>
 
       <nav className="sidebar-primary-nav px-2 pb-1" aria-label="Main">
-        {SIDEBAR_NAV.map(({ href, label, icon: Icon, exact }) => {
-          const active = exact
-            ? pathname === href
-            : pathname === href || pathname.startsWith(`${href}/`);
+        {SIDEBAR_NAV.map(({ href, label: navLabel, icon: Icon, exact }) => {
+          const isHome = href === APP_BASE;
+          const active = isHome
+            ? pathname === href && !activeThreadId
+            : exact
+              ? pathname === href
+              : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
               href={href}
-              onClick={closeSidebar}
+              onClick={() => {
+                if (isHome) clearActiveThread();
+                closeSidebarDrawer();
+              }}
               className={`sidebar-nav-link ${active ? "sidebar-nav-link-active" : ""}`}
             >
               <Icon size={16} strokeWidth={2} aria-hidden="true" />
-              {label}
+              {navLabel}
             </Link>
           );
         })}
@@ -123,7 +240,21 @@ export function Sidebar() {
             onClick={() => onSelectThread(t.id)}
             onContextMenu={(e) => {
               e.preventDefault();
-              setEditThreadId(t.id);
+              clearLongPress();
+              openCtxMenu(t.id, e.clientX, e.clientY);
+            }}
+            onPointerDown={(e) => onThreadPointerDown(e, t.id)}
+            onPointerUp={clearLongPress}
+            onPointerCancel={clearLongPress}
+            onPointerLeave={clearLongPress}
+            onPointerMove={(e) => {
+              const cur = longPressRef.current;
+              if (!cur) return;
+              const dx = e.clientX - cur.x;
+              const dy = e.clientY - cur.y;
+              if (dx * dx + dy * dy > 64) {
+                clearLongPress();
+              }
             }}
             className={`sidebar-row ${activeThreadId === t.id ? "sidebar-row-active" : ""}`}
           >
@@ -132,11 +263,89 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="relative border-t border-[var(--sidebar-border)] p-2">
+      <div className="sidebar-foot" ref={accountFootRef}>
+        {showUpgradeBanner ? (
+          <div className="sidebar-upgrade-banner">
+            <div className="sidebar-upgrade-banner-top">
+              <span className="sidebar-upgrade-icon" aria-hidden>
+                <Zap size={14} strokeWidth={2.25} />
+              </span>
+              <button
+                type="button"
+                className="sidebar-upgrade-close"
+                aria-label="Dismiss upgrade offer"
+                onClick={dismissUpgrade}
+              >
+                <X size={14} strokeWidth={2} />
+              </button>
+            </div>
+            <p className="sidebar-upgrade-title">Upgrade to Pro!</p>
+            <p className="sidebar-upgrade-body">{upgradeBannerBody}</p>
+            <button
+              type="button"
+              className="sidebar-upgrade-cta"
+              onClick={() => {
+                openUpgradeModal("generic");
+                closeSidebarDrawer();
+              }}
+            >
+              Upgrade now
+            </button>
+          </div>
+        ) : null}
+        {accountOpen ? (
+          <div className="sidebar-account-menu" role="menu">
+            {(user?.role === "platform_admin" || user?.role === "support") && (
+              <Link
+                href="/admin"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => {
+                  setAccountOpen(false);
+                  closeSidebarDrawer();
+                }}
+              >
+                Admin dashboard
+              </Link>
+            )}
+            <Link
+              href="/app/settings?tab=profile"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                setAccountOpen(false);
+                closeSidebarDrawer();
+              }}
+            >
+              Settings
+            </Link>
+            <Link
+              href="/app/billing"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                setAccountOpen(false);
+                closeSidebarDrawer();
+              }}
+            >
+              Billing
+            </Link>
+            <button
+              type="button"
+              className="dropdown-item w-full text-left text-[var(--destructive)]"
+              role="menuitem"
+              onClick={() => void logout()}
+            >
+              Logout
+            </button>
+          </div>
+        ) : null}
         <button
           type="button"
           onClick={() => setAccountOpen((o) => !o)}
           className="sidebar-account-btn"
+          aria-expanded={accountOpen}
+          aria-haspopup="menu"
         >
           <span className="sidebar-account-identity">
             <Avatar
@@ -158,43 +367,37 @@ export function Sidebar() {
           <ChevronDown
             size={14}
             className={`shrink-0 opacity-60 transition ${accountOpen ? "rotate-180" : ""}`}
+            aria-hidden
           />
         </button>
-        {accountOpen && (
-          <div className="dropdown-menu absolute bottom-full left-2 right-2 mb-1 py-1">
-            {(user?.role === "platform_admin" || user?.role === "support") && (
-              <Link
-                href="/admin"
-                className="dropdown-item"
-                onClick={closeSidebar}
-              >
-                Admin dashboard
-              </Link>
-            )}
-            <Link
-              href="/app/settings?tab=profile"
-              className="dropdown-item"
-              onClick={closeSidebar}
-            >
-              Settings
-            </Link>
-            <Link
-              href="/app/billing"
-              className="dropdown-item"
-              onClick={closeSidebar}
-            >
-              Billing
-            </Link>
-            <button
-              type="button"
-              className="dropdown-item w-full text-left text-[var(--destructive)]"
-              onClick={() => void logout()}
-            >
-              Logout
-            </button>
-          </div>
-        )}
       </div>
+
+      {ctxMenu && (
+        <ThreadContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onClose={() => setCtxMenu(null)}
+          onRename={() => {
+            const id = ctxMenu.threadId;
+            setCtxMenu(null);
+            setEditThreadId(id);
+          }}
+          onDelete={() => {
+            const id = ctxMenu.threadId;
+            const title =
+              threads.find((t) => t.id === id)?.title ?? "this session";
+            setCtxMenu(null);
+            if (
+              !window.confirm(
+                `Delete “${title}”? This cannot be undone.`
+              )
+            ) {
+              return;
+            }
+            void deleteThread(id);
+          }}
+        />
+      )}
 
       {editThreadId && (
         <ThreadEditMenu

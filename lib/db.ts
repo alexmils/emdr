@@ -191,6 +191,7 @@ async function runSchemaMigrations(db: PoolClient) {
     ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS access_tier TEXT NOT NULL DEFAULT 'none';
     ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_price_id TEXT;
     ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS last_stripe_event_at TIMESTAMPTZ;
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_livemode BOOLEAN;
   `);
 
   await db.query(`
@@ -221,6 +222,41 @@ async function runSchemaMigrations(db: PoolClient) {
       event_type TEXT NOT NULL,
       processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS billing_events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      stripe_event_id TEXT UNIQUE,
+      event_type TEXT NOT NULL,
+      status TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL DEFAULT 0,
+      currency TEXT NOT NULL DEFAULT 'EUR',
+      description TEXT,
+      invoice_id TEXT,
+      subscription_id TEXT,
+      livemode BOOLEAN,
+      occurred_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_billing_events_user_occurred
+      ON billing_events(user_id, occurred_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_audit_events_actor_created
+      ON audit_events(actor_user_id, created_at DESC);
+    CREATE TABLE IF NOT EXISTS llm_usage_events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL,
+      model TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      prompt_tokens INTEGER NOT NULL DEFAULT 0,
+      completion_tokens INTEGER NOT NULL DEFAULT 0,
+      total_tokens INTEGER NOT NULL DEFAULT 0,
+      cost_usd_micros BIGINT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_llm_usage_user_created
+      ON llm_usage_events(user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_llm_usage_created
+      ON llm_usage_events(created_at DESC);
   `);
 
   // One-time only — never re-run on every boot (that falsely marked new
@@ -354,6 +390,7 @@ async function runSchemaMigrations(db: PoolClient) {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT;
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'guided';
     ALTER TABLE threads ADD COLUMN IF NOT EXISTS description TEXT;
@@ -366,6 +403,8 @@ async function runSchemaMigrations(db: PoolClient) {
     CREATE INDEX IF NOT EXISTS idx_threads_user ON threads(user_id);
     CREATE INDEX IF NOT EXISTS idx_memories_user ON memories(user_id);
     CREATE INDEX IF NOT EXISTS idx_memory_sets_user ON memory_sets(user_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+      ON users(google_sub) WHERE google_sub IS NOT NULL;
   `);
 
   const { rows } = await db.query<{ json: unknown }>(

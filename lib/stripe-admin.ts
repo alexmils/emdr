@@ -17,6 +17,8 @@ export type SyncSubscriptionInput = {
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
   stripePriceId?: string | null;
+  /** true = live Stripe account; false = test/sandbox. */
+  stripeLivemode?: boolean | null;
   eventCreatedAt?: number | null;
 };
 
@@ -35,25 +37,53 @@ export async function syncSubscriptionFromStripe(input: SyncSubscriptionInput) {
     ? new Date(input.eventCreatedAt * 1000).toISOString()
     : null;
 
-  // Out-of-order protection: skip if we already applied a newer Stripe event.
-  if (eventAt && input.stripeSubscriptionId) {
-    const { rows } = await getPool().query<{ last_stripe_event_at: string | null }>(
-      `SELECT last_stripe_event_at FROM subscriptions
-       WHERE user_id = $1 AND stripe_subscription_id = $2`,
-      [input.userId, input.stripeSubscriptionId]
+  // Refuse to clobber a live subscription with a different (often older) sub id.
+  {
+    const { rows } = await getPool().query<{
+      stripe_subscription_id: string | null;
+      status: string;
+      last_stripe_event_at: string | null;
+    }>(
+      `SELECT stripe_subscription_id, status, last_stripe_event_at
+       FROM subscriptions WHERE user_id = $1`,
+      [input.userId]
     );
-    const last = rows[0]?.last_stripe_event_at;
-    if (last && new Date(last).getTime() > new Date(eventAt).getTime()) {
-      return { skipped: true as const };
+    const current = rows[0];
+    if (current) {
+      const sameSub =
+        !input.stripeSubscriptionId ||
+        !current.stripe_subscription_id ||
+        current.stripe_subscription_id === input.stripeSubscriptionId;
+      const live =
+        current.status === "active" || current.status === "trialing";
+      if (
+        !sameSub &&
+        live &&
+        (input.status === "canceled" ||
+          input.status === "incomplete" ||
+          input.status === "none" ||
+          input.status === "unpaid")
+      ) {
+        return { skipped: true as const };
+      }
+      if (
+        sameSub &&
+        eventAt &&
+        current.last_stripe_event_at &&
+        new Date(current.last_stripe_event_at).getTime() >
+          new Date(eventAt).getTime()
+      ) {
+        return { skipped: true as const };
+      }
     }
   }
 
-  await getPool().query(
+  const { rowCount } = await getPool().query(
     `INSERT INTO subscriptions (
        user_id, plan, status, amount_cents, currency, renews_at, trial_ends_at,
        access_tier, stripe_customer_id, stripe_subscription_id, stripe_price_id,
-       last_stripe_event_at, created_at, updated_at
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),NOW())
+       stripe_livemode, last_stripe_event_at, created_at, updated_at
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),NOW())
      ON CONFLICT (user_id) DO UPDATE SET
        plan = EXCLUDED.plan,
        status = EXCLUDED.status,
@@ -62,11 +92,32 @@ export async function syncSubscriptionFromStripe(input: SyncSubscriptionInput) {
        renews_at = EXCLUDED.renews_at,
        trial_ends_at = EXCLUDED.trial_ends_at,
        access_tier = EXCLUDED.access_tier,
-       stripe_customer_id = COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id),
-       stripe_subscription_id = COALESCE(EXCLUDED.stripe_subscription_id, subscriptions.stripe_subscription_id),
-       stripe_price_id = COALESCE(EXCLUDED.stripe_price_id, subscriptions.stripe_price_id),
+       stripe_customer_id = CASE
+         WHEN EXCLUDED.stripe_livemode IS DISTINCT FROM subscriptions.stripe_livemode
+           AND EXCLUDED.stripe_livemode IS NOT NULL
+           AND EXCLUDED.stripe_customer_id IS NOT NULL
+         THEN EXCLUDED.stripe_customer_id
+         ELSE COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id)
+       END,
+       stripe_subscription_id = CASE
+         WHEN EXCLUDED.stripe_livemode IS DISTINCT FROM subscriptions.stripe_livemode
+           AND EXCLUDED.stripe_livemode IS NOT NULL
+         THEN EXCLUDED.stripe_subscription_id
+         ELSE COALESCE(EXCLUDED.stripe_subscription_id, subscriptions.stripe_subscription_id)
+       END,
+       stripe_price_id = CASE
+         WHEN EXCLUDED.stripe_livemode IS DISTINCT FROM subscriptions.stripe_livemode
+           AND EXCLUDED.stripe_livemode IS NOT NULL
+         THEN EXCLUDED.stripe_price_id
+         ELSE COALESCE(EXCLUDED.stripe_price_id, subscriptions.stripe_price_id)
+       END,
+       stripe_livemode = COALESCE(EXCLUDED.stripe_livemode, subscriptions.stripe_livemode),
        last_stripe_event_at = COALESCE(EXCLUDED.last_stripe_event_at, subscriptions.last_stripe_event_at),
-       updated_at = NOW()`,
+       updated_at = NOW()
+     WHERE
+       EXCLUDED.last_stripe_event_at IS NULL
+       OR subscriptions.last_stripe_event_at IS NULL
+       OR subscriptions.last_stripe_event_at <= EXCLUDED.last_stripe_event_at`,
     [
       input.userId,
       input.plan,
@@ -79,10 +130,11 @@ export async function syncSubscriptionFromStripe(input: SyncSubscriptionInput) {
       input.stripeCustomerId ?? null,
       input.stripeSubscriptionId ?? null,
       input.stripePriceId ?? null,
+      typeof input.stripeLivemode === "boolean" ? input.stripeLivemode : null,
       eventAt,
     ]
   );
-  return { skipped: false as const };
+  return { skipped: (rowCount ?? 0) === 0 ? (true as const) : (false as const) };
 }
 
 export async function markStripeEventProcessed(
@@ -121,6 +173,7 @@ export async function getSubscriptionByUserId(userId: string) {
     stripe_customer_id: string | null;
     stripe_subscription_id: string | null;
     stripe_price_id: string | null;
+    stripe_livemode: boolean | null;
   }>(`SELECT * FROM subscriptions WHERE user_id = $1`, [userId]);
   return rows[0] ?? null;
 }
@@ -186,10 +239,20 @@ export function mapStripeSubscription(
 }
 
 export async function mapStripeSubscriptionWithConfig(
-  sub: Parameters<typeof mapStripeSubscription>[0]
+  sub: Parameters<typeof mapStripeSubscription>[0],
+  livemode?: boolean | null
 ) {
   const cfg = await getStripeConfig();
-  return mapStripeSubscription(sub, stripePriceIdsFromConfig(cfg));
+  const creds =
+    typeof livemode === "boolean"
+      ? livemode
+        ? cfg.live
+        : cfg.sandbox
+      : undefined;
+  return mapStripeSubscription(
+    sub,
+    creds ? stripePriceIdsFromConfig(creds) : stripePriceIdsFromConfig(cfg)
+  );
 }
 
 export type AdminBillingRow = {

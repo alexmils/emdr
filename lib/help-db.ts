@@ -101,18 +101,18 @@ export async function ensureHelpSchema(): Promise<void> {
     const seeds: { title: string; body: string; tags: string[] }[] = [
       {
         title: "What Nura is",
-        body: "Nura (NuraHelp) is a self-help wellness tool with guided sessions and bilateral stimulation (BLS). It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
+        body: "Nura (NuraHelp) is a self-help wellness tool with guided sessions and a moving ball for visual sets. It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
         tags: ["product", "safety"],
       },
       {
         title: "Billing and trial",
-        body: "New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of free BLS. After the trial, the chosen weekly, monthly, or yearly plan renews. Manage or cancel from Billing → Manage billing (Stripe Customer Portal).",
+        body: "New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of Free mode. After the trial, the chosen weekly, monthly, or yearly plan renews. Manage or cancel from Billing → Manage billing (Stripe Customer Portal).",
         tags: ["billing", "trial"],
       },
       {
         title: "Session modes",
-        body: "Guided mode uses an AI guide through wellness phases with check-ins. Free mode is BLS-only controls. Start a session with New chat, then choose Guided or Free.",
-        tags: ["sessions", "bls"],
+        body: "Guided mode uses an AI guide through wellness phases with check-ins. Free mode is the moving ball only — you control start, stop, and adjustments. Start a session with New chat, then choose Guided or Free.",
+        tags: ["sessions"],
       },
       {
         title: "Crisis redirect",

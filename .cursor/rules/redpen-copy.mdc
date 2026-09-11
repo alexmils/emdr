@@ -1,0 +1,33 @@
+---
+description: Use redpen for all user-facing copy (UI, marketing, email, onboarding)
+alwaysApply: true
+---
+
+# EMDR — redpen for copy
+
+Whenever you **write, rewrite, critique, or polish user-facing text**, use the **redpen** skill first (`~/.agents/skills/redpen/SKILL.md` or invoke `/redpen`).
+
+## When this applies
+
+- Marketing / landing / about / pricing
+- Onboarding, auth, billing, upgrade modals, empty states
+- Buttons, labels, errors, help, emails, in-app microcopy
+- Admin copy that end users might see
+
+## Do
+
+1. Load and follow **redpen** (truth ledger → reader moment → territories → preference loop → finishing gates).
+2. Still obey **nura-brand** (Nura / NuraHelp, no BLS jargon, pistachio voice, sentence case).
+3. Ship finished copy into the product files — do not leave only a chat draft when the task is to change UI.
+
+## Page / screen changes
+
+After creating or editing a **page or UI surface**, also run the full end review in `.cursor/rules/page-copy-design-review.mdc` (**redpen** + **writing-copy** + **frontend-design**). If anything fails, propose and apply fixes in the same turn.
+
+## Do not
+
+- Draft marketing or UI copy from generic SaaS templates without redpen
+- Echo the same phrase in kicker + title + lead + CTA
+- Invent metrics, testimonials, or clinical claims
+
+Skip redpen only for pure code/config comments, commit messages, or changelog bullets that are not user-facing.

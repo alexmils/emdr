@@ -1,25 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
+import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
 import { formatDateTime } from "@/lib/admin-format";
 import type { EmailEvent } from "@/lib/email-events";
 import type { EmailTemplateId } from "@/lib/email/templates";
-import type { PlatformSettings } from "@/lib/platform-settings";
+import type { EmailAdminView } from "@/lib/email-admin-settings";
+import type { EmailAdminStatus } from "@/lib/email-admin-settings";
 import { fetchJson } from "@/lib/fetch-json";
 import { BroadcastForm, TemplateEditor } from "@/app/components/admin/EmailTools";
 
-type Tab = "settings" | "templates" | "log";
-
-type HealthStatus = {
-  gmailConfigured?: boolean;
-  brevoConfigured: boolean;
-  gmailFallbackConfigured?: boolean;
-  primaryProvider?: "gmail" | "brevo" | "none";
-  appUrl: string;
-  fromAddress: string | null;
-  fromName: string | null;
-};
+const TABS = ["delivery", "send", "templates", "log"] as const;
+type Tab = (typeof TABS)[number];
+const TAB_ITEMS = [
+  { id: "delivery", label: "Delivery" },
+  { id: "send", label: "Send" },
+  { id: "templates", label: "Templates" },
+  { id: "log", label: "Log" },
+] as const;
 
 const TEMPLATE_IDS: EmailTemplateId[] = [
   "password_reset",
@@ -28,10 +27,19 @@ const TEMPLATE_IDS: EmailTemplateId[] = [
   "welcome",
 ];
 
-export default function AdminEmailPage() {
-  const [tab, setTab] = useState<Tab>("settings");
-  const [health, setHealth] = useState<HealthStatus | null>(null);
-  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+type EmailFormState = EmailAdminView;
+
+function sourceLabel(source: "stored" | "env" | "none"): string {
+  if (source === "stored") return "saved in admin";
+  if (source === "env") return "from .env";
+  return "not set";
+}
+
+function AdminEmailPageInner() {
+  const [tab, setTab] = useAdminTab(TABS, "delivery");
+  const [status, setStatus] = useState<EmailAdminStatus | null>(null);
+  const [form, setForm] = useState<EmailFormState | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
   const [templates, setTemplates] = useState<
     {
       id: EmailTemplateId;
@@ -44,7 +52,6 @@ export default function AdminEmailPage() {
   const [events, setEvents] = useState<EmailEvent[]>([]);
   const [selectedTemplate, setSelectedTemplate] =
     useState<EmailTemplateId>("welcome");
-  const [previewHtml, setPreviewHtml] = useState("");
   const [testTo, setTestTo] = useState("");
   const [testTemplate, setTestTemplate] =
     useState<EmailTemplateId>("welcome");
@@ -54,9 +61,12 @@ export default function AdminEmailPage() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [healthRes, platformRes, templatesRes] = await Promise.all([
-      fetchJson<{ status: HealthStatus }>("/api/admin/email/status"),
-      fetchJson<{ settings: PlatformSettings }>("/api/admin/platform"),
+    const [settingsRes, templatesRes] = await Promise.all([
+      fetchJson<{
+        status: EmailAdminStatus;
+        email: EmailAdminView;
+        canEdit: boolean;
+      }>("/api/admin/email/settings"),
       fetchJson<{
         templates: {
           id: EmailTemplateId;
@@ -67,14 +77,14 @@ export default function AdminEmailPage() {
         }[];
       }>("/api/admin/email/templates"),
     ]);
-    setHealth(healthRes.status);
-    setSettings(platformRes.settings);
+    setStatus(settingsRes.status);
+    setForm(settingsRes.email);
+    setCanEdit(settingsRes.canEdit);
     setTemplates(templatesRes.templates ?? []);
     const current =
       templatesRes.templates?.find((t) => t.id === selectedTemplate) ??
       templatesRes.templates?.[0];
     if (current) {
-      setPreviewHtml(current.html);
       setSelectedTemplate(current.id);
     }
   }, [selectedTemplate]);
@@ -99,28 +109,44 @@ export default function AdminEmailPage() {
     })();
   }, [load, loadLog]);
 
-  useEffect(() => {
-    const t = templates.find((x) => x.id === selectedTemplate);
-    if (t) setPreviewHtml(t.html);
-  }, [selectedTemplate, templates]);
+  const patchForm = (patch: Partial<EmailFormState>) => {
+    setForm((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
 
-  const saveSender = async (e: React.FormEvent) => {
+  const saveDelivery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!settings) return;
+    if (!form || !canEdit) return;
     setBusy(true);
     setMsg("");
     try {
-      await fetchJson("/api/admin/platform", {
+      const emailPatch: Record<string, string> = {
+        replyTo: form.replyTo,
+      };
+      if (form.brevoApiKey.trim()) emailPatch.brevoApiKey = form.brevoApiKey.trim();
+      if (form.gmailClientId.trim())
+        emailPatch.gmailClientId = form.gmailClientId.trim();
+      if (form.gmailClientSecret.trim())
+        emailPatch.gmailClientSecret = form.gmailClientSecret.trim();
+      if (form.gmailRefreshToken.trim())
+        emailPatch.gmailRefreshToken = form.gmailRefreshToken.trim();
+
+      const res = await fetchJson<{
+        status: EmailAdminStatus;
+        email: EmailAdminView;
+        canEdit: boolean;
+      }>("/api/admin/email/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...settings,
-          fromName: settings.fromName,
-          fromAddress: settings.fromAddress,
+          fromName: form.fromName,
+          fromAddress: form.fromAddress,
+          email: emailPatch,
         }),
       });
-      setMsg("Send-as settings saved.");
-      await load();
+      setStatus(res.status);
+      setForm(res.email);
+      setCanEdit(res.canEdit);
+      setMsg("Email settings saved.");
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -162,94 +188,290 @@ export default function AdminEmailPage() {
         subtitle="Delivery status, sender identity, templates, and send log."
       />
       <main className="admin-main">
-        <div className="admin-tabs">
-          {(["settings", "templates", "log"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={`admin-tab ${tab === t ? "admin-tab-active" : ""}`}
-              onClick={() => setTab(t)}
-            >
-              {t === "settings" ? "Settings" : t === "templates" ? "Templates" : "Log"}
-            </button>
-          ))}
-        </div>
+        <AdminTabs
+          tabs={TAB_ITEMS}
+          value={tab}
+          onChange={(id) => setTab(id as Tab)}
+        />
 
-        {tab === "settings" && health && settings && (
+        {tab === "delivery" && status && form && (
           <>
             <section className="admin-panel">
-              <h2 className="admin-panel-title">Delivery</h2>
+              <h2 className="admin-panel-title">Delivery status</h2>
               <div className="admin-health-chips">
                 <span
                   className={`admin-health-chip ${
-                    health.brevoConfigured ? "admin-health-ok" : "admin-health-warn"
+                    status.brevoConfigured
+                      ? "admin-health-ok"
+                      : "admin-health-warn"
                   }`}
                 >
                   Brevo{" "}
-                  {health.brevoConfigured
-                    ? health.primaryProvider === "brevo"
+                  {status.brevoConfigured
+                    ? status.primaryProvider === "brevo"
                       ? "primary"
                       : "ready"
-                    : "not configured"}
+                    : "missing"}
                 </span>
                 <span
                   className={`admin-health-chip ${
-                    health.gmailConfigured || health.gmailFallbackConfigured
+                    status.gmailConfigured
                       ? "admin-health-ok"
                       : "admin-health-warn"
                   }`}
                 >
                   Gmail fallback{" "}
-                  {health.gmailConfigured || health.gmailFallbackConfigured
-                    ? health.primaryProvider === "gmail"
+                  {status.gmailConfigured
+                    ? status.primaryProvider === "gmail"
                       ? "primary"
                       : "ready"
-                    : "not configured"}
+                    : "missing"}
                 </span>
               </div>
               <p className="admin-panel-sub">
                 Brevo is the primary sender. Gmail API is the fallback on quota.
-                OAuth keys stay in .env; send-as address below is used for Gmail
-                (and as the Brevo From when set).
+                Secrets can be saved here (preferred) or left in{" "}
+                <code className="admin-code">.env</code>
+                {canEdit
+                  ? " — leave secret fields blank to keep the saved value."
+                  : " — view only (secrets hidden; platform admin can edit)."}
               </p>
+              <dl className="admin-kv-list">
+                <div className="admin-kv-row">
+                  <dt>Effective From</dt>
+                  <dd>
+                    {status.fromName && status.fromAddress
+                      ? `${status.fromName} <${status.fromAddress}>`
+                      : "Not configured"}
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>Reply-To</dt>
+                  <dd>{status.replyTo ?? "— (same as From)"}</dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>App URL (links in mail)</dt>
+                  <dd>
+                    <code className="admin-code">{status.appUrl}</code>
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>Brevo key</dt>
+                  <dd>{sourceLabel(form.brevoSource)}</dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>Gmail OAuth</dt>
+                  <dd>{sourceLabel(form.gmailSource)}</dd>
+                </div>
+              </dl>
             </section>
+
+            <form
+              className="admin-form-stack admin-panel"
+              onSubmit={(e) => void saveDelivery(e)}
+            >
+              <h2 className="admin-panel-title">Send as</h2>
+              <p className="admin-panel-sub">
+                Outgoing From name and address. Default:{" "}
+                <code className="admin-code">hi@contact.nurahelp.com</code>
+              </p>
+              <label className="admin-field-label">
+                From name
+                <input
+                  type="text"
+                  value={form.fromName}
+                  disabled={!canEdit}
+                  onChange={(e) => patchForm({ fromName: e.target.value })}
+                  className="field"
+                  placeholder="Nura"
+                />
+              </label>
+              <label className="admin-field-label">
+                Send-as address
+                <input
+                  type="email"
+                  value={form.fromAddress}
+                  disabled={!canEdit}
+                  onChange={(e) => patchForm({ fromAddress: e.target.value })}
+                  className="field"
+                  placeholder="hi@contact.nurahelp.com"
+                />
+              </label>
+              <label className="admin-field-label">
+                Reply-To (optional)
+                <input
+                  type="email"
+                  value={form.replyTo}
+                  disabled={!canEdit}
+                  onChange={(e) => patchForm({ replyTo: e.target.value })}
+                  className="field"
+                  placeholder="Leave blank to use From"
+                />
+              </label>
+
+              <h2 className="admin-panel-title" style={{ marginTop: "1rem" }}>
+                Brevo (primary)
+              </h2>
+              <label className="admin-field-label">
+                API key
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={form.brevoApiKey}
+                  disabled={!canEdit}
+                  onChange={(e) => patchForm({ brevoApiKey: e.target.value })}
+                  className="field"
+                  placeholder={
+                    form.hasBrevoApiKey
+                      ? "•••• saved — paste to replace"
+                      : status.env.brevoApiKey
+                        ? "Using .env — paste to store in admin"
+                        : "xkeysib-…"
+                  }
+                />
+              </label>
+
+              <h2 className="admin-panel-title" style={{ marginTop: "1rem" }}>
+                Gmail API (fallback)
+              </h2>
+              <label className="admin-field-label">
+                Client ID
+                <input
+                  type="text"
+                  autoComplete="off"
+                  value={form.gmailClientId}
+                  disabled={!canEdit}
+                  onChange={(e) => patchForm({ gmailClientId: e.target.value })}
+                  className="field"
+                  placeholder={
+                    form.hasGmailClientId
+                      ? "•••• saved — paste to replace"
+                      : status.env.gmailOauth
+                        ? "Using .env — paste to store in admin"
+                        : "….apps.googleusercontent.com"
+                  }
+                />
+              </label>
+              <label className="admin-field-label">
+                Client secret
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={form.gmailClientSecret}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    patchForm({ gmailClientSecret: e.target.value })
+                  }
+                  className="field"
+                  placeholder={
+                    form.hasGmailClientSecret
+                      ? "•••• saved — paste to replace"
+                      : "GOCSPX-…"
+                  }
+                />
+              </label>
+              <label className="admin-field-label">
+                Refresh token
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={form.gmailRefreshToken}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    patchForm({ gmailRefreshToken: e.target.value })
+                  }
+                  className="field"
+                  placeholder={
+                    form.hasGmailRefreshToken
+                      ? "•••• saved — paste to replace"
+                      : "1//…"
+                  }
+                />
+              </label>
+
+              {canEdit && (
+                <button type="submit" disabled={busy} className="btn-primary w-fit">
+                  {busy ? "Saving…" : "Save email settings"}
+                </button>
+              )}
+            </form>
 
             <section className="admin-panel">
-              <h2 className="admin-panel-title">Send as</h2>
-              <p className="admin-panel-sub mb-3">
-                Outgoing From name and address. Default: hi@contact.nurahelp.com
+              <h2 className="admin-panel-title">Environment fallbacks</h2>
+              <p className="admin-panel-sub">
+                Read-only. Used when a value is not saved in admin yet.
               </p>
-              <form className="admin-form-stack" onSubmit={(e) => void saveSender(e)}>
-                <label className="admin-field-label">
-                  From name
-                  <input
-                    type="text"
-                    value={settings.fromName}
-                    onChange={(e) =>
-                      setSettings({ ...settings, fromName: e.target.value })
-                    }
-                    className="field"
-                    placeholder="Nura"
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Send-as address
-                  <input
-                    type="email"
-                    value={settings.fromAddress}
-                    onChange={(e) =>
-                      setSettings({ ...settings, fromAddress: e.target.value })
-                    }
-                    className="field"
-                    placeholder="hi@contact.nurahelp.com"
-                  />
-                </label>
-                <button type="submit" disabled={busy} className="btn-primary w-fit">
-                  {busy ? "Saving…" : "Save send-as"}
-                </button>
-              </form>
+              <dl className="admin-kv-list">
+                <div className="admin-kv-row">
+                  <dt>
+                    <code className="admin-code">BREVO_API_KEY</code>
+                  </dt>
+                  <dd>{status.env.brevoApiKey ? "set in .env" : "not in .env"}</dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>
+                    <code className="admin-code">GMAIL_CLIENT_*</code>
+                  </dt>
+                  <dd>
+                    {status.env.gmailOauth ? "OAuth set in .env" : "not in .env"}
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>
+                    <code className="admin-code">EMAIL_FROM_ADDRESS</code>
+                  </dt>
+                  <dd>
+                    {status.env.emailFromAddress
+                      ? "set in .env"
+                      : "not in .env"}
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>
+                    <code className="admin-code">EMAIL_FROM_NAME</code>
+                  </dt>
+                  <dd>
+                    {status.env.emailFromName ? "set in .env" : "not in .env"}
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>
+                    <code className="admin-code">GMAIL_SENDER</code>
+                  </dt>
+                  <dd>
+                    {status.env.gmailSender ? "set in .env" : "not in .env"}
+                  </dd>
+                </div>
+              </dl>
             </section>
+          </>
+        )}
 
+        {tab === "send" && status && (
+          <>
+            <section className="admin-panel">
+              <h2 className="admin-panel-title">Current sender</h2>
+              <dl className="admin-kv-list">
+                <div className="admin-kv-row">
+                  <dt>From</dt>
+                  <dd>
+                    {status.fromName && status.fromAddress
+                      ? `${status.fromName} <${status.fromAddress}>`
+                      : "Not configured — set on Delivery"}
+                  </dd>
+                </div>
+                <div className="admin-kv-row">
+                  <dt>Primary provider</dt>
+                  <dd>
+                    {status.primaryProvider === "none"
+                      ? "None ready"
+                      : status.primaryProvider === "brevo"
+                        ? "Brevo"
+                        : "Gmail"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
             <section className="admin-panel">
               <h2 className="admin-panel-title">Test send</h2>
               <form className="admin-invite-form" onSubmit={(e) => void sendTest(e)}>
@@ -318,11 +540,6 @@ export default function AdminEmailPage() {
                 }}
               />
             )}
-            <iframe
-              title="Email preview"
-              className="admin-email-preview"
-              srcDoc={previewHtml}
-            />
           </section>
         )}
 
@@ -389,5 +606,19 @@ export default function AdminEmailPage() {
         {msg && <p className="admin-invite-msg">{msg}</p>}
       </main>
     </div>
+  );
+}
+
+export default function AdminEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="admin-page flex min-h-screen items-center justify-center">
+          <p className="text-[var(--text-secondary)]">Loading…</p>
+        </div>
+      }
+    >
+      <AdminEmailPageInner />
+    </Suspense>
   );
 }

@@ -1,5 +1,5 @@
----
-description: Nura / NuraHelp brand — name, tokens, type, voice. Always apply.
+﻿---
+description: Nura brand — spoken name, pistachio tokens, type, copy rules (always apply)
 alwaysApply: true
 ---
 
@@ -24,27 +24,60 @@ Full spec: [`docs/brand.md`](docs/brand.md). Constants: [`lib/brand.ts`](lib/bra
 
 // ✅ GOOD
 import { BRAND_SPOKEN, BRAND_LEGAL } from "@/lib/brand";
-chromeBrandName(raw)          // maps leftover "NuraHelp AI" → Nura
+chromeBrandName(raw) // maps leftover "NuraHelp AI" → Nura
 rewriteRetiredBrandCopy(text) // stored help/knowledge copy
 ```
 
-Never lead with “AI” in titles, hero, or the wordmark. Do not invent a new logo — use `BrandLockup` (`href` defaults to `null`; wrap in `Link` or pass `href`). Admin lockup → `/admin`.
+Never lead with “AI” in titles, hero, or the wordmark. Do not invent a new logo — use `BrandLockup` with the wave wordmark (`tone="color" | "black" | "white"`; `href` defaults to `null`; wrap in `Link` or pass `href`). Admin lockup → `/admin`. Assets: `public/brand/nura-wave-logo*.png`, mark/favicon under `public/brand/` + `app/icon.svg`.
 
 ## Position
 
-Calm therapy support — EMDR now, resources and real clinicians later. Not an AI therapist, EHR, or emergency care. Marketing disclaimer: self-help, not a licensed therapist.
+Calm guided therapy support — EMDR and resources in the app. Not an AI therapist, EHR, or emergency care. Marketing disclaimer: self-help, not a licensed therapist. No “find a therapist” / human matching — product is app-only.
 
 Hero: **Support for therapy. Starting with EMDR.**
 
 ## Visual
 
-- Paper `#F8F2D2` · Earth `#785135` (buttons, wordmark) · Ink `#2A2118` (body) · Gold `#D3BC84` **focus/hover only, never body or default field borders** · Sidebar `#1C1814`
+- Pistachio palette: Paper/mint `#A4EDA5` · Sage `#84B067` (buttons, wordmark) · Ink `#2A3020` (body) · Pistachio `#C6D67E` **focus/hover only, never body or default field borders** · Olive `#948F4E` (muted) · Sidebar `#3D4129`
 - Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
-- Type: Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
+- **Product type** (`/app`, `/admin`): Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
+- **Marketing type** (`.frontend-home`, public pages): **same pair** as product — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it)
 - Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
+
+## Frontend typography (aligned with product)
+
+Loaded via `next/font` in `app/layout.tsx`. Scoped on `.frontend-home` in `app/globals.css`.
+
+| Role | Font | CSS var | Where |
+|---|---|---|---|
+| Headings (h1–h6, hero, pricing titles) | **Fraunces** (400; italic for emphasis) | `--font-display` on `.frontend-home` → `--font-fraunces` | Hero headline, section titles, display words, card headings |
+| Body / UI | **Source Sans 3** | `--font-sans` on `.frontend-home` → `--font-source-sans` | Paragraphs, nav, buttons, intro lead |
+| Labels / kickers | **Roboto Mono** (400) | `--font-alt` → `--font-fe-alt` | `.fe-eyebrow`, `.fe-section-kicker`, marquee, offer kickers — uppercase, ~0.9375rem |
+
+**Rules:**
+- Heading weight **400** by default; medium (500) only for emphasis or buttons
+- Heading/body **line-height 1.2** on marketing; long paragraphs may use ~1.5
+- Kickers: mono, uppercase, muted color — never bold sans competing with the lockup
+- Marketing and product share one voice; do **not** use Inter or soft rounded grotesks (retired: Libre Caslon Condensed, BDOGrotesk)
+- Scale (desktop): h1 ~4rem, h2 ~3rem, h3 ~2.5rem, body lead ~1.25rem, body sm ~1–1.1rem, xs ~0.9375rem (readable chrome floor ~12px)
+
+**Header (pill nav):** floating `frontend-header-pill` — logo | center nav **Home · How it works · Prices · Blog · FAQ** (hash links on `/`) | guests: **Sign in** + **Get started** pill; signed-in: name + avatar dropdown. No auth links in center nav. Styles: `frontend-header.css`.
 
 ## Copy
 
 English, sentence case, short. No hype (“revolutionary”, “blockchain”, “neural networks”).
 
-Public routes (must stay in `lib/public-paths.ts` + `app/robots.ts` + `app/sitemap.ts`): `/` `/emdr` `/therapy` `/resources` `/therapists` `/privacy` `/terms`. Hub is `/therapy`; guides are `/resources`.
+### Never say BLS to users
+
+**BLS** (bilateral stimulation) is internal jargon. Do **not** put it in UI, emails, help, onboarding, billing, upgrade modals, status chips, marketing, or admin copy that users might see.
+
+| Instead of | Write |
+|---|---|
+| BLS / free BLS / BLS minutes | **Free** / **Free mode** / **Free session time** |
+| BLS running | **Set running** |
+| BLS bar / BLS controls | **Controls bar** / **Session controls** / **moving ball** |
+| BLS preview | **Free session time** (or “live preview” for the gear sheet) |
+
+Code/CSS identifiers may stay (`bls`, `TRIAL_BLS_SECONDS`, `.bls-dock`) — that is not user-facing. Prefer **Guided** vs **Free** (session modes already in the product). Extend `rewriteRetiredBrandCopy` if remapping stored help text.
+
+Public routes (must stay in `lib/public-paths.ts` + `app/robots.ts` + `app/sitemap.ts`): `/` `/about` `/emdr` `/resources` `/privacy` `/terms`. Nav: **Home · How it works · Prices · Blog · FAQ** (hash links on `/` with Lenis smooth scroll). Retired: `/therapy` and `/therapists` redirect to `/resources`.

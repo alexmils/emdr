@@ -13,13 +13,13 @@ Agents: follow `.cursor/rules/nura-brand.mdc` (always on). Code constants live i
 | Lockup / legal | NuraHelp | Logo, Terms, copyright, App Store, Stripe legal |
 | Domain | nurahelp.com | Keep. Do not buy nura.com. |
 | Current product | Nura · EMDR Support | Feature, not the company name |
-| Never in public | NuraHelp AI | Sounds like a ChatGPT clone; ages out when live therapists ship |
+| Never in public | NuraHelp AI | Sounds like a ChatGPT clone |
 
 Do not lead with “AI” in titles, hero copy, or the wordmark.
 
 ## Position
 
-Nura is a calm place for therapy support — guided EMDR today, resources and real clinicians as you grow.
+Nura is a calm place for guided therapy support — EMDR sessions and resources in the app.
 
 Not an AI therapist. Not an EHR. Not emergency care.
 
@@ -29,35 +29,57 @@ Disclaimer (always visible on marketing): self-help tool, not a licensed therapi
 
 ## Color
 
+**Pistachio** palette — mint, sage, and olive (modern, calm green).
+
 | Token | Hex | Use |
 |---|---|---|
-| Paper | `#F8F2D2` | Marketing, auth, page background |
-| Gold | `#D3BC84` | Accent only (mark highlight, focus, hover). Never body text. |
-| Earth | `#785135` | Wordmark, icons, primary buttons |
-| Ink | `#2A2118` | Body text |
-| Sidebar | `#1C1814` | App / admin sidebar |
+| Paper (mint) | `#A4EDA5` | Highlights, canvas tint, light surfaces |
+| Pistachio | `#C6D67E` | Focus, hover, selection — never body text or default borders |
+| Sage (earth) | `#84B067` | Wordmark, icons, primary buttons |
+| Olive | `#948F4E` | Muted text, secondary chrome |
+| Ink | `#2A3020` | Body text |
+| Sidebar | `#3D4129` | App / admin sidebar (dark olive) |
+
+Page background uses a softened mint (`#EDF9ED`). Constants: `lib/brand.ts` → `BRAND_COLORS`.
 
 Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital blue.
 
 ## Type
 
-- Display (hero, lockup): **Fraunces** via `next/font/google` (`--font-display`)
+### Product (`/app`, `/admin`)
+
+- Display: **Fraunces** via `next/font/google` (`--font-display`)
 - UI: **Source Sans 3** (`--font-sans`)
-- Do not use Inter.
+
+### Marketing (`.frontend-home`)
+
+Same pair as product — contrasts the rounded wave wordmark (do not echo it with soft grotesks):
+
+| Role | Font | Notes |
+|---|---|---|
+| Headings | **Fraunces** | h1–h6, hero, pricing; weight 400; italic for emphasis |
+| Body / UI | **Source Sans 3** | Nav, buttons, paragraphs |
+| Labels | **Roboto Mono** | Kickers, marquee, uppercase ~0.9375rem |
+
+Loaded via `next/font` in `app/layout.tsx` (`--font-fraunces`, `--font-source-sans`, `--font-fe-alt`). Scoped on `.frontend-home` in `app/globals.css`.
+
+Do not use Inter on any surface. Avoid rounded soft grotesks (Nunito, Manrope, retired BDOGrotesk) next to the wave lockup.
 
 ## Logo
 
-- Mark: two dots joined by a gentle arc (BLS path; also “two sides of care”).
-- Wordmark: lowercase **nura** in Fraunces; **help** in Source Sans 3, smaller.
-- On Paper: Earth. On sidebar: Paper / Gold on `#1C1814`.
-- Favicon: mark only (`app/icon.svg`, `public/brand/mark.svg`).
-- Never: brain, lotus, chat bubble, cross, heart.
+- **Wordmark**: wave ribbon flowing into lowercase **nura** (green→gold gradient). UI chrome shows the wave wordmark only — no “help” suffix next to the logo (legal name remains NuraHelp in copy/aria).
+- **Mark**: wave ribbon only (cropped from the lockup).
+- On light surfaces: **color** (or **black** mono). On dark chrome (sidebar, admin, hero overlay, footer): **white**.
+- Favicon: wave on mint rounded square (`app/icon.svg`, `app/icon.png`, `public/brand/favicon.png`).
+- Never: brain, lotus, chat bubble, cross, heart, or the retired two-dots arc.
 
-Files: `public/brand/mark.svg`, `public/brand/lockup.svg`. Component: `app/components/BrandLockup.tsx`.
+Files: `public/brand/nura-wave-logo.png` (+ `-black` / `-white`), `mark.png`, `lockup.png` / `lockup.svg`, `mark.svg`. Component: `app/components/BrandLockup.tsx` (`tone="color" | "black" | "white"`).
 
 ## Voice
 
 English, sentence case, short sentences. No hype (“revolutionary”, “neural networks”, “blockchain”). Clinic-quiet, not a startup pitch.
+
+**Never say BLS to users.** Prefer **Free** / **Free mode** / **Set running** / **moving ball**. Internal code names (`bls`, `TRIAL_BLS_SECONDS`) are fine. See `.cursor/rules/nura-brand.mdc`.
 
 ## SEO
 
@@ -66,9 +88,10 @@ The brand name does not need to contain “EMDR”. Pages do.
 | URL | Intent |
 |---|---|
 | `/` | Brand + EMDR primary CTA |
-| `/emdr` | What EMDR is, BLS, how a session works |
-| `/therapy` | Hub for future modalities |
+| `/about` | Who Nura is, what the app offers, disclaimers |
+| `/emdr` | What EMDR is, visual sets / moving ball, how a session works |
 | `/resources` | Guides |
-| `/therapists` | Find a therapist (coming) |
+
+Retired: `/therapy`, `/therapists` → redirect to `/resources`.
 
 Default document title: `Nura — guided EMDR, therapy resources, and support`.

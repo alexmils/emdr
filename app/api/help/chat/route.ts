@@ -89,7 +89,12 @@ export async function POST(request: Request) {
         })),
         latestUserMessage: text,
       });
-      const reply = (await chatCompletion(llm, messages)).trim();
+      const reply = (
+        await chatCompletion(llm, messages, {
+          userId: auth.user.id,
+          purpose: "help",
+        })
+      ).trim();
       if (reply) {
         assistantMsg = await addHelpMessage({
           threadId: thread.id,

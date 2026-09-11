@@ -1,5 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 24" fill="none" aria-hidden="true">
-  <circle cx="5" cy="12" r="4" fill="#785135"/>
-  <circle cx="35" cy="12" r="4" fill="#785135"/>
-  <path d="M10 12 Q 20 3 30 12" stroke="#785135" stroke-width="2.25" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48" fill="none" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="nuraMarkGrad" x1="4" y1="24" x2="116" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#76C39A"/>
+      <stop offset="45%" stop-color="#A4D6A0"/>
+      <stop offset="100%" stop-color="#C6B57E"/>
+    </linearGradient>
+    <linearGradient id="nuraMarkSoft" x1="8" y1="24" x2="110" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C5E9C8"/>
+      <stop offset="100%" stop-color="#D8CFA0"/>
+    </linearGradient>
+  </defs>
+  <!-- Soft ribbon -->
+  <path
+    fill="url(#nuraMarkSoft)"
+    d="M6 36 C18 26 30 12 46 8 C58 5 68 10 78 20 C88 30 98 32 110 22 C100 32 90 40 78 42 C66 44 56 38 46 28 C36 18 24 16 6 36 Z"
+  />
+  <!-- Main S-curve wave mark -->
+  <path
+    fill="url(#nuraMarkGrad)"
+    d="M2 38 C14 26 28 10 46 6 C60 3 70 10 80 22 C90 34 102 36 116 24 C116 24 116 24 116 30 C104 40 92 44 80 44 C68 44 58 38 48 28 C38 18 26 14 2 38 Z"
+  />
 </svg>

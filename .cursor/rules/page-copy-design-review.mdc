@@ -1,0 +1,39 @@
+---
+description: End of page/UI work — always run redpen, writing-copy, and frontend-design review
+alwaysApply: true
+---
+
+# EMDR — page finish: redpen + writing-copy + frontend-design
+
+Whenever you **create or change a page / screen / layout / user-facing UI** (marketing, `/app`, onboarding, auth, billing, modals, empty states), do **not** end the turn until you run this review.
+
+**First:** load `.cursor/skills/nura-ui-designer/SKILL.md` for visual/system decisions (`/nura-ui-designer`).
+
+## Required end review (in order)
+
+1. **/redpen** (`~/.agents/skills/redpen/SKILL.md`) — truth, reader moment, no echo, no dead template lines; rewrite material defects.
+2. **/writing-copy** (`~/.cursor/skills/writing-copy/SKILL.md`) — clarity over cleverness; one idea per block; CTA says what happens; microcopy is actionable.
+3. **/frontend-design** (`~/.agents/skills/frontend-design/SKILL.md`) — hierarchy, type scale, spacing, contrast; not a generic SaaS card; brand still reads as Nura (see `nura-brand`).
+
+Also obey **nura-brand** (spoken Nura, no BLS jargon, pistachio tokens, marketing vs product type).
+
+## If anything fails the review
+
+- **Propose** the concrete copy/layout changes (short redlines).
+- **Apply** them in the same turn when you are shipping the page — do not leave only chat advice.
+- Re-check the three skills after edits (light pass is enough).
+
+## Pass criteria (quick)
+
+- [ ] No repeated phrase across kicker / title / lead / CTA
+- [ ] A new user understands what to do in ~2 seconds
+- [ ] Type and spacing are readable on mobile (~390×844)
+- [ ] One clear primary action; secondary chrome does not compete
+- [ ] Screen could not be mistaken for a random SaaS template after removing the lockup (or you have a deliberate Nura signature)
+
+## Skip only when
+
+- Pure API / DB / scripts / tests with **no** user-visible strings or layout
+- Commit messages, changelog bullets, code comments
+
+When writing copy outside a full page change, still use **redpen** (this rule + prior redpen-copy habit).

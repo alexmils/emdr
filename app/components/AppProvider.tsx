@@ -24,6 +24,7 @@ import type { SessionMode } from "@/lib/protocol";
 import { fetchJson } from "@/lib/fetch-json";
 import { shouldBootstrapAgent } from "@/lib/session-mode";
 import {
+  parsePublicAdsConfig,
   resolveAdDecision,
   type AdDecisionState,
   type AdGateResult,
@@ -40,6 +41,8 @@ export type EntitlementPublic = {
   needsPayment: boolean;
   plan: string;
   status: string;
+  trialEndsAt?: string | null;
+  renewsAt?: string | null;
   guidedUsed: number;
   guidedLimit: number;
   guidedRemaining: number;
@@ -107,6 +110,8 @@ interface AppState {
   refreshThreads: () => Promise<void>;
   refreshEntitlement: () => Promise<EntitlementPublic | null>;
   selectThread: (id: string) => Promise<void>;
+  /** Clear selection and show the Home welcome screen (no thread open). */
+  clearActiveThread: () => void;
   createThread: () => Promise<void>;
   updateThreadLocal: (id: string, patch: Partial<Thread>) => Promise<void>;
   chooseSessionMode: (kind: Exclude<SessionKind, "pending">) => Promise<boolean>;
@@ -125,6 +130,10 @@ interface AppState {
   maybeShowAd: () => Promise<AdGateResult>;
   /** Call after a free BLS set completes (for every_n_sets frequency). */
   noteAdSetCompleted: () => void;
+  /** Trial ads config from billing status (in-page Resources display, etc.). */
+  adsConfig: PublicAdsConfig;
+  /** True after the first billing/ads fetch attempt (success or fail). */
+  adsReady: boolean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -145,6 +154,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [adsConfig, setAdsConfig] = useState<PublicAdsConfig>({
     adsActive: false,
   });
+  const [adsReady, setAdsReady] = useState(false);
   const [adUserId, setAdUserId] = useState<string | null>(null);
   const [adFreq, setAdFreq] = useState<AdDecisionState>(() =>
     loadAdFreqState(null)
@@ -165,14 +175,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshEntitlement = useCallback(async () => {
     try {
-      const data = await fetchJson<EntitlementPublic & { ads?: PublicAdsConfig }>(
+      const data = await fetchJson<EntitlementPublic & { ads?: unknown }>(
         "/api/billing/status"
       );
       setEntitlement(data);
-      setAdsConfig(data.ads ?? { adsActive: false });
+      setAdsConfig(parsePublicAdsConfig(data.ads));
+      setAdsReady(true);
       return data;
     } catch (err) {
       console.error("refreshEntitlement failed:", err);
+      setAdsConfig({ adsActive: false });
+      setAdsReady(true);
       return null;
     }
   }, []);
@@ -255,6 +268,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error("selectThread failed:", err);
     }
+  }, []);
+
+  const clearActiveThread = useCallback(() => {
+    setActiveThreadId(null);
+    setMessages([]);
+    setThreadMemorySets([]);
+    setSessionMode("idle");
   }, []);
 
   const createThread = useCallback(async () => {
@@ -561,11 +581,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
+  // Deep-link only: open a thread when ?thread=<id> is present. Do not
+  // auto-select the latest Recent item on a bare /app visit.
   useEffect(() => {
-    if (threads.length && !activeThreadId) {
-      void selectThread(threads[0].id);
-    }
-  }, [threads, activeThreadId, selectThread]);
+    if (typeof window === "undefined") return;
+    const id = new URLSearchParams(window.location.search).get("thread");
+    if (id) void selectThread(id);
+  }, [selectThread]);
 
   useEffect(() => {
     const thread = threads.find((t) => t.id === activeThreadId);
@@ -594,6 +616,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       refreshThreads,
       refreshEntitlement,
       selectThread,
+      clearActiveThread,
       createThread,
       updateThreadLocal,
       chooseSessionMode,
@@ -610,6 +633,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       leaseBlsSeconds,
       maybeShowAd,
       noteAdSetCompleted,
+      adsConfig,
+      adsReady,
     }),
     [
       threads,
@@ -625,6 +650,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       refreshThreads,
       refreshEntitlement,
       selectThread,
+      clearActiveThread,
       createThread,
       updateThreadLocal,
       chooseSessionMode,
@@ -641,6 +667,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       leaseBlsSeconds,
       maybeShowAd,
       noteAdSetCompleted,
+      adsConfig,
+      adsReady,
     ]
   );
 

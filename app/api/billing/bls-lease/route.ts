@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAuthContext } from "@/lib/api-auth";
-import { consumeBlsSeconds, TrialLimitError } from "@/lib/trial-usage";
+import {
+  consumeBlsSeconds,
+  PaymentRequiredError,
+  TrialLimitError,
+} from "@/lib/trial-usage";
 import { publicEntitlement } from "@/lib/entitlements";
 
 export async function POST(request: Request) {
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
       entitlement: publicEntitlement(result.entitlement),
     });
   } catch (err) {
-    if (err instanceof TrialLimitError) {
+    if (err instanceof PaymentRequiredError || err instanceof TrialLimitError) {
       return NextResponse.json(
         {
           error: err.message,
@@ -38,6 +42,6 @@ export async function POST(request: Request) {
       );
     }
     console.error("[billing/bls-lease]", err);
-    return NextResponse.json({ error: "BLS lease failed" }, { status: 500 });
+    return NextResponse.json({ error: "Free session time lease failed" }, { status: 500 });
   }
 }

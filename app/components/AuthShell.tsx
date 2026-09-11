@@ -4,14 +4,19 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { BrandLockup } from "@/app/components/BrandLockup";
+import { AuthSessionMockup } from "@/app/components/AuthSessionMockup";
 
 type AuthShellProps = {
   title: string;
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
-  /** Hide “Back to home” — useful for in-app flows like onboarding. */
+  /** Hide “Home” — useful for in-app flows like onboarding. */
   hideHomeLink?: boolean;
+  /** Hide the right-pane ball mockup (rare). */
+  hideVisual?: boolean;
+  /** Center title, body, and footer (method-picker screens). */
+  align?: "start" | "center";
 };
 
 export function AuthShell({
@@ -20,27 +25,54 @@ export function AuthShell({
   children,
   footer,
   hideHomeLink = false,
+  hideVisual = false,
+  align = "start",
 }: AuthShellProps) {
+  const alignClass =
+    align === "center" ? " auth-shell-main--center" : "";
+
   return (
-    <div className="auth-shell">
-      <div className="auth-shell-inner">
-        <header className="auth-shell-header">
-          <p className="auth-shell-brand">
-            <BrandLockup href="/" showHelp />
-          </p>
-          <h1 className="auth-shell-title">{title}</h1>
-          {subtitle ? <p className="auth-shell-subtitle">{subtitle}</p> : null}
-          {!hideHomeLink ? (
-            <p className="auth-shell-home">
-              <Link href="/">← Back to home</Link>
-            </p>
-          ) : null}
-        </header>
+    <div className={`auth-shell${hideVisual ? " auth-shell--solo" : ""}`}>
+      <div className="auth-shell-pane auth-shell-pane--form">
+        {!hideHomeLink ? (
+          <Link href="/" className="auth-shell-home-link">
+            Home
+          </Link>
+        ) : null}
 
-        <div className="auth-shell-card">{children}</div>
+        <div className={`auth-shell-main${alignClass}`}>
+          <div className="auth-shell-body">
+            <div className="auth-shell-brand">
+              <BrandLockup href="/" tone="color" />
+            </div>
 
-        {footer ? <div className="auth-shell-footer">{footer}</div> : null}
+            <div className="auth-shell-intro">
+              <h1
+                id="auth-shell-title"
+                className="auth-shell-title"
+                tabIndex={-1}
+              >
+                {title}
+              </h1>
+              {subtitle ? (
+                <p className="auth-shell-subtitle">{subtitle}</p>
+              ) : null}
+            </div>
+
+            <div className="auth-shell-card">{children}</div>
+
+            {footer ? (
+              <div className="auth-shell-footer">{footer}</div>
+            ) : null}
+          </div>
+        </div>
       </div>
+
+      {!hideVisual ? (
+        <aside className="auth-shell-pane auth-shell-pane--visual">
+          <AuthSessionMockup />
+        </aside>
+      ) : null}
     </div>
   );
 }
@@ -71,7 +103,7 @@ export function AuthField({
   const inputType = isPassword && visible ? "text" : type;
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 text-left">
       <label htmlFor={id} className="text-footnote mb-1.5 block font-medium">
         {label}
       </label>
@@ -109,7 +141,7 @@ export function AuthField({
 export function AuthError({ message }: { message: string }) {
   return (
     <p
-      className="mb-4 rounded-[var(--radius-control)] bg-[rgba(255,59,48,0.1)] px-3 py-2 text-footnote text-[var(--destructive)]"
+      className="mb-4 rounded-[var(--radius-control)] bg-[rgba(255,59,48,0.1)] px-3 py-2 text-left text-footnote text-[var(--destructive)]"
       role="alert"
     >
       {message}
@@ -120,7 +152,7 @@ export function AuthError({ message }: { message: string }) {
 export function AuthSuccess({ message }: { message: string }) {
   return (
     <p
-      className="mb-4 rounded-[var(--radius-control)] bg-[rgba(52,199,89,0.12)] px-3 py-2 text-footnote text-[#248a3d]"
+      className="mb-4 rounded-[var(--radius-control)] bg-[rgba(52,199,89,0.12)] px-3 py-2 text-left text-footnote text-[#248a3d]"
       role="status"
     >
       {message}

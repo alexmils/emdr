@@ -1,12 +1,37 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
 import { appPath } from "@/lib/app-base";
-import { getFeaturedResources } from "@/lib/resources-content";
+import type { ResourceItem } from "@/lib/resources";
 
 export function LearnTeaser() {
-  const featured = getFeaturedResources(3);
+  const [featured, setFeatured] = useState<ResourceItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/resources?featured=1&limit=3");
+        const data = await res.json();
+        if (!cancelled && res.ok) {
+          setFeatured(
+            ((data.resources as ResourceItem[]) ?? []).filter(
+              (r) => r.kind === "article" || r.kind === "safety"
+            )
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (featured.length === 0) return null;
 
   return (
     <section className="learn-teaser" aria-labelledby="learn-teaser-title">

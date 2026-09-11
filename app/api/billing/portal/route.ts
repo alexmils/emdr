@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAuthContext } from "@/lib/api-auth";
 import { getPublicAppUrl } from "@/lib/platform-settings";
-import { getStripe } from "@/lib/stripe";
+import { resolveStripeClient } from "@/lib/stripe";
 import { getSubscriptionByUserId } from "@/lib/stripe-admin";
 
 export async function POST() {
   const auth = await requireAuth();
   if (!isAuthContext(auth)) return auth;
-
-  const stripe = await getStripe();
-  if (!stripe) {
-    return NextResponse.json(
-      { error: "Stripe is not configured" },
-      { status: 503 }
-    );
-  }
 
   const sub = await getSubscriptionByUserId(auth.user.id);
   if (!sub?.stripe_customer_id) {
@@ -24,9 +16,20 @@ export async function POST() {
     );
   }
 
+  const resolved = await resolveStripeClient({
+    livemode: sub.stripe_livemode,
+    objectId: sub.stripe_customer_id,
+  });
+  if (!resolved) {
+    return NextResponse.json(
+      { error: "Stripe is not configured for this customer" },
+      { status: 503 }
+    );
+  }
+
   try {
     const baseUrl = await getPublicAppUrl();
-    const portal = await stripe.billingPortal.sessions.create({
+    const portal = await resolved.stripe.billingPortal.sessions.create({
       customer: sub.stripe_customer_id,
       return_url: `${baseUrl}/app/billing`,
     });

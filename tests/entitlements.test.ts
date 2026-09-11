@@ -135,6 +135,24 @@ describe("buildEntitlementSnapshot", () => {
     assert.equal(snap.needsOnboarding, true);
     assert.equal(snap.canUseApp, false);
   });
+
+  it("blocks canceled subscriptions and requires payment", () => {
+    const snap = buildEntitlementSnapshot({
+      role: "user",
+      onboardingCompletedAt: new Date().toISOString(),
+      plan: "free",
+      status: "canceled",
+      accessTier: "none",
+      trialEndsAt: null,
+      renewsAt: null,
+      guidedUsed: 1,
+      blsSecondsUsed: 30,
+    });
+    assert.equal(snap.accessTier, "blocked");
+    assert.equal(snap.canUseApp, false);
+    assert.equal(snap.needsPayment, true);
+    assert.equal(snap.isTrialLimited, false);
+  });
 });
 
 describe("billing plan helpers", () => {

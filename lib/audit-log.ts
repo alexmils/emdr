@@ -11,6 +11,9 @@ export type AuditAction =
   | "user.disabled"
   | "user.enabled"
   | "settings.platform_updated"
+  | "settings.email_updated"
+  | "settings.stripe_updated"
+  | "settings.stripe_synced"
   | "email.test_sent"
   | "email.broadcast_sent";
 
@@ -97,6 +100,7 @@ export async function listAuditEvents(options?: {
      FROM audit_events e
      LEFT JOIN users ea ON ea.id = e.actor_user_id
      LEFT JOIN users et ON et.id = e.target_user_id
+     ${where}
      ORDER BY e.created_at DESC
      LIMIT $${idx} OFFSET $${idx + 1}`,
     params
@@ -127,6 +131,80 @@ export async function recordUserLogin(userId: string, ip?: string | null) {
     action: "user.login",
     ip,
   });
+}
+
+export type UserAuthEvent = {
+  id: string;
+  action: "user.login" | "user.logout";
+  ip: string | null;
+  createdAt: string;
+};
+
+/** Resolve displayed last login from column and/or audit login events. */
+export function resolveLastLoginAt(
+  storedLastLoginAt: string | null,
+  latestLoginEventAt: string | null
+): string | null {
+  if (!storedLastLoginAt) return latestLoginEventAt;
+  if (!latestLoginEventAt) return storedLastLoginAt;
+  return new Date(latestLoginEventAt).getTime() > new Date(storedLastLoginAt).getTime()
+    ? latestLoginEventAt
+    : storedLastLoginAt;
+}
+
+export async function listUserAuthEvents(
+  userId: string,
+  limit = 50
+): Promise<UserAuthEvent[]> {
+  await ensureAuditSchema();
+  const capped = Math.min(100, Math.max(1, limit));
+  const { rows } = await getPool().query<{
+    id: string;
+    action: string;
+    ip: string | null;
+    created_at: string;
+  }>(
+    `SELECT id, action, ip, created_at
+     FROM audit_events
+     WHERE actor_user_id = $1
+       AND action IN ('user.login', 'user.logout')
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [userId, capped]
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    action: r.action as "user.login" | "user.logout",
+    ip: r.ip,
+    createdAt: new Date(r.created_at).toISOString(),
+  }));
+}
+
+/** If last_login_at is null but login events exist, heal the column. */
+export async function healLastLoginFromEvents(userId: string): Promise<string | null> {
+  await ensureAuditSchema();
+  const { rows } = await getPool().query<{ created_at: string }>(
+    `SELECT created_at FROM audit_events
+     WHERE actor_user_id = $1 AND action = 'user.login'
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [userId]
+  );
+  const latest = rows[0]?.created_at
+    ? new Date(rows[0].created_at).toISOString()
+    : null;
+  if (!latest) return null;
+
+  await getPool().query(
+    `UPDATE users
+     SET last_login_at = GREATEST(COALESCE(last_login_at, '-infinity'::timestamptz), $2::timestamptz),
+         updated_at = NOW()
+     WHERE id = $1
+       AND (last_login_at IS NULL OR last_login_at < $2::timestamptz)`,
+    [userId, latest]
+  );
+  return latest;
 }
 
 export function clientIp(request: Request): string | null {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   BILLING_PLANS,
@@ -9,7 +9,10 @@ import {
   type BillingPlanId,
   type BillingPlanMeta,
 } from "@/lib/billing-constants";
+import { shouldOfferBillingPortal } from "@/lib/checkout-rules";
 import { UpgradeModal } from "@/app/components/UpgradeModal";
+
+const BILLING_FLIP_MS = 620;
 
 type Status = {
   accessTier: string;
@@ -31,6 +34,15 @@ type Status = {
   plans?: Record<BillingPlanId, BillingPlanMeta>;
 };
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
+
 function BillingPageInner() {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
@@ -40,6 +52,9 @@ function BillingPageInner() {
   const [busy, setBusy] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [plan, setPlan] = useState<BillingPlanId>("yearly");
+  const [cardFlipping, setCardFlipping] = useState(false);
+  const flipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   const refresh = useCallback(async () => {
     const qs = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
@@ -52,7 +67,59 @@ function BillingPageInner() {
     void refresh();
     if (checkout === "success") setMsg("Subscription updated.");
     if (checkout === "canceled") setMsg("Checkout canceled.");
-  }, [refresh, checkout]);
+    // Drop session_id from the URL after the first status sync so refreshes
+    // cannot re-apply an old Checkout session over a newer subscription.
+    if (sessionId && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("session_id")) {
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+    }
+  }, [refresh, checkout, sessionId]);
+
+  useEffect(() => {
+    return () => {
+      if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
+    };
+  }, []);
+
+  const openUpgrade = useCallback(() => {
+    setCardFlipping(false);
+    setUpgradeOpen(true);
+  }, []);
+
+  const onUpgradeClick = useCallback(() => {
+    if (cardFlipping || upgradeOpen) return;
+
+    if (prefersReducedMotion()) {
+      openUpgrade();
+      return;
+    }
+
+    setCardFlipping(true);
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (flipTimerRef.current) {
+        clearTimeout(flipTimerRef.current);
+        flipTimerRef.current = null;
+      }
+      const el = cardRef.current;
+      if (el) el.removeEventListener("animationend", onAnimEnd);
+      openUpgrade();
+    };
+    const onAnimEnd = (e: AnimationEvent) => {
+      if (e.target !== cardRef.current) return;
+      finish();
+    };
+
+    const el = cardRef.current;
+    if (el) el.addEventListener("animationend", onAnimEnd);
+    // Fallback so upgrade never blocks if animationend is missed
+    flipTimerRef.current = setTimeout(finish, BILLING_FLIP_MS + 80);
+  }, [cardFlipping, upgradeOpen, openUpgrade]);
 
   const checkoutStart = async () => {
     setBusy(true);
@@ -65,6 +132,10 @@ function BillingPageInner() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === "use_portal") {
+          setMsg(data.error ?? "Open Manage billing to continue.");
+          return;
+        }
         setMsg(data.error ?? "Checkout unavailable");
         return;
       }
@@ -95,70 +166,82 @@ function BillingPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:p-10">
-      <div className="mx-auto max-w-lg">
-        <Link
-          href="/app"
-          className="text-[13px] font-medium text-[var(--accent)] hover:underline"
+    <div className="billing-page">
+      <Link href="/app" className="billing-back">
+        ← Back to session
+      </Link>
+
+      <div className="billing-page-stage">
+        <div
+          className={`billing-card-perspective${
+            upgradeOpen ? " billing-card-perspective--concealed" : ""
+          }`}
+          aria-hidden={upgradeOpen || undefined}
         >
-          ← Back to session
-        </Link>
-        <div className="admin-panel mt-5">
-          <h1 className="admin-page-title">Your billing</h1>
-          <p className="admin-panel-sub mt-2">
-            Manage your plan, trial usage, and payment method.
-          </p>
+          <div
+            ref={cardRef}
+            className={`admin-panel billing-card${
+              cardFlipping ? " billing-card--flip" : ""
+            }${upgradeOpen ? " billing-card--concealed" : ""}`}
+          >
+            <h1 className="admin-page-title">Your billing</h1>
+            <p className="admin-panel-sub mt-2">
+              Manage your plan, trial usage, and payment method.
+            </p>
 
-          {status && (
-            <div className="settings-group mt-4">
-              <div className="settings-row settings-kv">
-                <span>Plan</span>
-                <strong className="capitalize">{status.plan}</strong>
-              </div>
-              <div className="settings-row settings-kv">
-                <span>Status</span>
-                <strong className="capitalize">
-                  {status.status.replace(/_/g, " ")}
-                </strong>
-              </div>
-              {status.trialEndsAt && (
+            {status && (
+              <div className="settings-group mt-4">
                 <div className="settings-row settings-kv">
-                  <span>Trial ends</span>
-                  <strong>
-                    {new Date(status.trialEndsAt).toLocaleDateString()}
+                  <span>Plan</span>
+                  <strong className="capitalize">
+                    {status.status === "canceled" || status.plan === "free"
+                      ? "None"
+                      : status.plan}
                   </strong>
                 </div>
-              )}
-              {status.renewsAt && (
                 <div className="settings-row settings-kv">
-                  <span>Renews</span>
-                  <strong>
-                    {new Date(status.renewsAt).toLocaleDateString()}
+                  <span>Status</span>
+                  <strong className="capitalize">
+                    {status.status.replace(/_/g, " ")}
                   </strong>
                 </div>
-              )}
-              {status.isTrialLimited && (
-                <>
+                {status.trialEndsAt && (
                   <div className="settings-row settings-kv">
-                    <span>Guided sessions</span>
+                    <span>Trial ends</span>
                     <strong>
-                      {status.guidedUsed} / {status.guidedLimit}
+                      {new Date(status.trialEndsAt).toLocaleDateString()}
                     </strong>
                   </div>
+                )}
+                {status.renewsAt && (
                   <div className="settings-row settings-kv">
-                    <span>Free BLS</span>
+                    <span>Renews</span>
                     <strong>
-                      {Math.floor(status.blsSecondsUsed / 60)} /{" "}
-                      {Math.floor(status.blsSecondsLimit / 60)} min
+                      {new Date(status.renewsAt).toLocaleDateString()}
                     </strong>
                   </div>
-                </>
-              )}
-            </div>
-          )}
+                )}
+                {status.isTrialLimited && (
+                  <>
+                    <div className="settings-row settings-kv">
+                      <span>Guided sessions</span>
+                      <strong>
+                        {status.guidedUsed} / {status.guidedLimit}
+                      </strong>
+                    </div>
+                    <div className="settings-row settings-kv">
+                      <span>Free session time</span>
+                      <strong>
+                        {Math.floor(status.blsSecondsUsed / 60)} /{" "}
+                        {Math.floor(status.blsSecondsLimit / 60)} min
+                      </strong>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
-          {status?.needsPayment && (
-            <>
+            {status?.needsPayment && (
               <div className="upgrade-plan-list mt-4">
                 {orderedBillingPlans(status.plans ?? BILLING_PLANS).map((p) => {
                   const id = p.id;
@@ -181,63 +264,60 @@ function BillingPageInner() {
                   );
                 })}
               </div>
-            </>
-          )}
+            )}
 
-          {(status?.needsPayment ||
-            status?.isTrialLimited ||
-            status?.accessTier === "active" ||
-            status?.accessTier === "trialing" ||
-            status?.status === "past_due" ||
-            status?.needsOnboarding ||
-            msg) && (
-            <div className="billing-actions">
-              {status?.needsPayment && (
-                <button
-                  type="button"
-                  disabled={busy || !status.stripeConfigured}
-                  onClick={() => void checkoutStart()}
-                  className="btn-primary"
-                >
-                  {busy ? "Loading…" : "Subscribe"}
-                </button>
-              )}
+            {(status?.needsPayment ||
+              status?.isTrialLimited ||
+              shouldOfferBillingPortal({ status: status?.status }) ||
+              status?.needsOnboarding ||
+              msg) && (
+              <div className="billing-actions">
+                {status?.needsPayment && (
+                  <button
+                    type="button"
+                    disabled={busy || !status.stripeConfigured}
+                    onClick={() => void checkoutStart()}
+                    className="btn-primary"
+                  >
+                    {busy ? "Loading…" : "Subscribe"}
+                  </button>
+                )}
 
-              {status?.isTrialLimited && (
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => setUpgradeOpen(true)}
-                >
-                  Upgrade for unlimited
-                </button>
-              )}
+                {status?.isTrialLimited && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={cardFlipping}
+                    onClick={onUpgradeClick}
+                  >
+                    Upgrade for unlimited
+                  </button>
+                )}
 
-              {(status?.accessTier === "active" ||
-                status?.accessTier === "trialing" ||
-                status?.status === "past_due") && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void openPortal()}
-                  className="btn-secondary"
-                >
-                  Manage billing
-                </button>
-              )}
+                {shouldOfferBillingPortal({ status: status?.status }) && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void openPortal()}
+                    className="btn-secondary"
+                  >
+                    Manage billing
+                  </button>
+                )}
 
-              {status?.needsOnboarding && (
-                <Link
-                  href="/app/onboarding"
-                  className="btn-secondary inline-flex"
-                >
-                  Continue onboarding
-                </Link>
-              )}
+                {status?.needsOnboarding && (
+                  <Link
+                    href="/app/onboarding"
+                    className="btn-secondary inline-flex"
+                  >
+                    Continue onboarding
+                  </Link>
+                )}
 
-              {msg && <p className="admin-invite-msg">{msg}</p>}
-            </div>
-          )}
+                {msg && <p className="admin-invite-msg">{msg}</p>}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -248,7 +328,10 @@ function BillingPageInner() {
         guidedLimit={status?.guidedLimit}
         blsSecondsUsed={status?.blsSecondsUsed}
         blsSecondsLimit={status?.blsSecondsLimit}
-        onClose={() => setUpgradeOpen(false)}
+        onClose={() => {
+          setCardFlipping(false);
+          setUpgradeOpen(false);
+        }}
       />
     </div>
   );

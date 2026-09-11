@@ -24,6 +24,19 @@ export class TrialLimitError extends Error {
   }
 }
 
+export class PaymentRequiredError extends Error {
+  code = "needs_payment" as const;
+  entitlement: EntitlementSnapshot;
+
+  constructor(
+    entitlement: EntitlementSnapshot,
+    message = "Payment required to use Free session time"
+  ) {
+    super(message);
+    this.entitlement = entitlement;
+  }
+}
+
 async function ensureUsageRow(userId: string) {
   await getPool().query(
     `INSERT INTO trial_usage (user_id, guided_sessions_used, bls_seconds_used, updated_at)
@@ -141,6 +154,9 @@ export async function consumeBlsSeconds(input: {
     onboardingCompletedAt: input.onboardingCompletedAt,
   });
 
+  if (!entitlement.canUseApp) {
+    throw new PaymentRequiredError(entitlement);
+  }
   if (!entitlement.isTrialLimited) {
     return { granted: seconds, entitlement };
   }
@@ -170,7 +186,7 @@ export async function consumeBlsSeconds(input: {
       throw new TrialLimitError(
         "bls_limit_reached",
         entitlement,
-        "Trial BLS time limit reached"
+        "Trial Free session time limit reached"
       );
     }
     granted = Math.min(seconds, remaining);

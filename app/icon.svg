@@ -1,6 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#F8F2D2"/>
-  <circle cx="8" cy="16" r="3.4" fill="#785135"/>
-  <circle cx="24" cy="16" r="3.4" fill="#785135"/>
-  <path d="M12 16 Q 16 9 20 16" fill="none" stroke="#785135" stroke-width="2.2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Nura">
+  <rect width="32" height="32" rx="7" fill="#A4EDA5"/>
+  <defs>
+    <linearGradient id="icoWave" x1="4" y1="16" x2="28" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#76C39A"/>
+      <stop offset="55%" stop-color="#84B067"/>
+      <stop offset="100%" stop-color="#A89858"/>
+    </linearGradient>
+  </defs>
+  <path
+    fill="url(#icoWave)"
+    d="M4 20.5 C7.5 15.5 11 10.5 16 9.2 C19.2 8.4 21.5 10.5 23.5 14 C25.5 17.5 27.2 18.2 29 15.5 C29 15.5 29 15.5 29 17.2 C26.2 20.2 23.5 21.5 20.8 21.5 C18 21.5 15.8 19.6 13.8 16.8 C11.8 14 8.8 12.8 4 20.5 Z"
+  />
 </svg>

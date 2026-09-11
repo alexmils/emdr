@@ -16,6 +16,9 @@ const ACTION_OPTIONS = [
   { value: "user.disabled", label: "Disabled" },
   { value: "user.enabled", label: "Enabled" },
   { value: "settings.platform_updated", label: "Platform settings" },
+  { value: "settings.email_updated", label: "Email settings" },
+  { value: "settings.stripe_updated", label: "Stripe settings" },
+  { value: "settings.stripe_synced", label: "Stripe sync" },
   { value: "email.test_sent", label: "Test email" },
   { value: "email.broadcast_sent", label: "Broadcast" },
 ];

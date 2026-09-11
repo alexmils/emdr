@@ -1,0 +1,13 @@
+---
+description: Force agents to load nura-ui-designer for any UI/UX work
+alwaysApply: true
+---
+
+# EMDR — use nura-ui-designer for UI/UX
+
+When the task touches **UI, UX, layout, visual design, typography, spacing, components, pages, modals, empty states, marketing sections, onboarding, auth chrome, sidebar, header, or admin visuals**:
+
+1. **Read and follow** `.cursor/skills/nura-ui-designer/SKILL.md` before designing or coding UI.
+2. Explicit invoke: `/nura-ui-designer` or “nura-ui-designer”.
+3. Still obey `nura-brand`, `product-ui`, `page-copy-design-review`, and `verify-before-done`.
+4. Do **not** use the retired `apple-ui` skill or Apple HIG / Inter / `#007AFF` for Nura product work.

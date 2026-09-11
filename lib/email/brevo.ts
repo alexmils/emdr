@@ -1,9 +1,11 @@
 import {
   EmailQuotaError,
   getFromAddress,
+  getReplyToAddress,
   type SendEmailInput,
   type SendEmailResult,
 } from "./types";
+import { getResolvedBrevoApiKey } from "./status";
 
 function isBrevoQuotaResponse(status: number, body: string): boolean {
   if (status === 429) return true;
@@ -19,12 +21,26 @@ function isBrevoQuotaResponse(status: number, body: string): boolean {
 export async function sendViaBrevo(
   input: SendEmailInput
 ): Promise<SendEmailResult> {
-  const apiKey = process.env.BREVO_API_KEY;
+  const apiKey = await getResolvedBrevoApiKey();
   if (!apiKey) {
-    throw new Error("BREVO_API_KEY is not set");
+    throw new Error(
+      "Brevo API key is not set. Add it in Admin → Email or BREVO_API_KEY."
+    );
   }
 
   const from = await getFromAddress();
+  const replyTo = await getReplyToAddress();
+  const payload: Record<string, unknown> = {
+    sender: { name: from.name, email: from.email },
+    to: [{ email: input.to }],
+    subject: input.subject,
+    htmlContent: input.html,
+    textContent: input.text,
+  };
+  if (replyTo) {
+    payload.replyTo = { email: replyTo };
+  }
+
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
@@ -32,13 +48,7 @@ export async function sendViaBrevo(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({
-      sender: { name: from.name, email: from.email },
-      to: [{ email: input.to }],
-      subject: input.subject,
-      htmlContent: input.html,
-      textContent: input.text,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const body = await res.text();

@@ -39,29 +39,34 @@ async function runInterpreter(opts: {
   threadSummary: string;
   recentMessages: { role: string; content: string }[];
   userMessage: string;
+  userId: string;
 }): Promise<SessionInterpretation | null> {
   try {
-    const raw = await chatCompletion(opts.settings, [
-      {
-        role: "system",
-        content: interpreterSystemPrompt(
-          opts.phase as Parameters<typeof interpreterSystemPrompt>[0]
-        ),
-      },
-      {
-        role: "user",
-        content: [
-          `Thread state:\n${opts.threadSummary}`,
-          "",
-          "Recent messages:",
-          ...opts.recentMessages.map(
-            (m) => `${m.role === "agent" ? "assistant" : "user"}: ${m.content}`
+    const raw = await chatCompletion(
+      opts.settings,
+      [
+        {
+          role: "system",
+          content: interpreterSystemPrompt(
+            opts.phase as Parameters<typeof interpreterSystemPrompt>[0]
           ),
-          "",
-          `Latest user message: ${opts.userMessage}`,
-        ].join("\n"),
-      },
-    ]);
+        },
+        {
+          role: "user",
+          content: [
+            `Thread state:\n${opts.threadSummary}`,
+            "",
+            "Recent messages:",
+            ...opts.recentMessages.map(
+              (m) => `${m.role === "agent" ? "assistant" : "user"}: ${m.content}`
+            ),
+            "",
+            `Latest user message: ${opts.userMessage}`,
+          ].join("\n"),
+        },
+      ],
+      { userId: opts.userId, purpose: "interpreter" }
+    );
     return parseSessionInterpretation(extractJsonObject(raw));
   } catch (err) {
     console.warn("[chat] interpreter failed:", err);
@@ -140,6 +145,7 @@ export async function POST(request: Request) {
         ].join("\n"),
         recentMessages: recent,
         userMessage,
+        userId,
       });
 
       if (interpretation) {
@@ -250,7 +256,10 @@ export async function POST(request: Request) {
     ];
 
     try {
-      const reply = await chatCompletion(settings, messages);
+      const reply = await chatCompletion(settings, messages, {
+        userId,
+        purpose: "guided_chat",
+      });
       const text = reply.trim();
       if (!text) {
         throw new Error("Empty LLM reply");

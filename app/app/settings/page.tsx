@@ -212,272 +212,275 @@ function SettingsPageContent() {
       </aside>
 
       <main className="settings-panel">
-        <h2 className="settings-panel-title">{panelTitle}</h2>
+        <div className="settings-panel-inner">
+          <h2 className="settings-panel-title">{panelTitle}</h2>
 
-        {tab === "profile" && (
-          <div className="settings-group">
-            <div className="settings-row flex flex-wrap items-center gap-4">
-              <Avatar
-                src={user?.avatarUrl}
-                alt={label}
-                fallback={label}
-                className="avatar-lg"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium">Profile photo</p>
-                <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
-                  Shown in chat and the sidebar. JPG, PNG, or WebP.
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={(e) =>
-                      void onAvatarFile(e.target.files?.[0] ?? null)
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={avatarBusy}
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    {avatarBusy ? "Uploading…" : "Upload photo"}
-                  </button>
-                  {user?.avatarUrl && (
+          {tab === "profile" && (
+            <div className="settings-group">
+              <div className="settings-row flex flex-wrap items-center gap-4">
+                <Avatar
+                  src={user?.avatarUrl}
+                  alt={label}
+                  fallback={label}
+                  className="avatar-lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-medium">Profile photo</p>
+                  <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                    Shown in chat and the sidebar. JPG, PNG, or WebP.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={(e) =>
+                        void onAvatarFile(e.target.files?.[0] ?? null)
+                      }
+                    />
                     <button
                       type="button"
-                      className="btn-ghost"
+                      className="btn-secondary"
                       disabled={avatarBusy}
-                      onClick={() => void removeAvatar()}
+                      onClick={() => fileRef.current?.click()}
                     >
-                      Remove
+                      {avatarBusy ? "Uploading…" : "Upload photo"}
                     </button>
-                  )}
+                    {user?.avatarUrl && (
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        disabled={avatarBusy}
+                        onClick={() => void removeAvatar()}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            <label className="settings-row block">
-              <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
-                Display name
-              </span>
-              <input
-                className="field"
-                value={profileName}
-                placeholder="Your name"
-                maxLength={80}
-                onChange={(e) => setProfileName(e.target.value)}
-              />
-            </label>
-            <div className="settings-row flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="min-w-0 break-all text-[12px] text-[var(--text-muted)]">
-                {user?.email}
-              </p>
-              <button
-                type="button"
-                className="btn-primary w-full sm:w-auto"
-                disabled={profileSaving}
-                onClick={() => void saveProfile()}
-              >
-                {profileSaving ? "Saving…" : "Save profile"}
-              </button>
-            </div>
-            {profileError && (
-              <p className="settings-row text-[13px] text-[var(--destructive)]">
-                {profileError}
-              </p>
-            )}
-          </div>
-        )}
-
-        {tab === "voice" && (
-          <div className="settings-group">
-            <div className="settings-row settings-toggle-row">
-              <div className="min-w-0 flex-1">
-                <span className="text-[13px] font-medium">Auto voice</span>
-                <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-secondary)]">
-                  Automatically read each agent line aloud (not during BLS).
-                  Use the speaker icon on each message when off. Voice provider
-                  is configured by the platform admin.
+              <label className="settings-row block">
+                <span className="mb-2 block text-[12px] font-medium text-[var(--text-secondary)]">
+                  Display name
+                </span>
+                <input
+                  className="field"
+                  value={profileName}
+                  placeholder="Your name"
+                  maxLength={80}
+                  onChange={(e) => setProfileName(e.target.value)}
+                />
+              </label>
+              <div className="settings-row flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="min-w-0 break-all text-[12px] text-[var(--text-muted)]">
+                  {user?.email}
                 </p>
+                <button
+                  type="button"
+                  className="btn-primary w-full sm:w-auto"
+                  disabled={profileSaving}
+                  onClick={() => void saveProfile()}
+                >
+                  {profileSaving ? "Saving…" : "Save profile"}
+                </button>
               </div>
-              <AppleToggle
-                label="Auto voice"
-                checked={settings.autoVoice}
-                onChange={(autoVoice) => void save({ ...settings, autoVoice })}
-              />
+              {profileError && (
+                <p className="settings-row text-[13px] text-[var(--destructive)]">
+                  {profileError}
+                </p>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {tab === "memory" && (
-          <div className="settings-group">
-            <div className="settings-row space-y-2">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <input
-                  placeholder="Memory title"
-                  className="field"
-                  value={newMemTitle}
-                  onChange={(e) => setNewMemTitle(e.target.value)}
+          {tab === "voice" && (
+            <div className="settings-group">
+              <div className="settings-row settings-toggle-row">
+                <div className="min-w-0 flex-1">
+                  <span className="text-[13px] font-medium">Auto voice</span>
+                  <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                    Automatically read each agent line aloud (not while a set is
+                    running).
+                    Use the speaker icon on each message when off. Voice provider
+                    is configured by the platform admin.
+                  </p>
+                </div>
+                <AppleToggle
+                  label="Auto voice"
+                  checked={settings.autoVoice}
+                  onChange={(autoVoice) => void save({ ...settings, autoVoice })}
                 />
+              </div>
+            </div>
+          )}
+
+          {tab === "memory" && (
+            <div className="settings-group">
+              <div className="settings-row space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input
+                    placeholder="Memory title"
+                    className="field"
+                    value={newMemTitle}
+                    onChange={(e) => setNewMemTitle(e.target.value)}
+                  />
+                  <input
+                    placeholder="Memory text"
+                    className="field"
+                    value={newMemBody}
+                    onChange={(e) => setNewMemBody(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn-primary w-full sm:w-auto"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/settings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          action: "create_memory",
+                          title: newMemTitle,
+                          body: newMemBody,
+                        }),
+                      });
+                      if (!res.ok) throw new Error("Could not create memory");
+                      setNewMemTitle("");
+                      setNewMemBody("");
+                      void load();
+                      toast("Memory created");
+                    } catch (err) {
+                      toast(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not create memory",
+                        "error"
+                      );
+                    }
+                  }}
+                >
+                  New memory
+                </button>
+              </div>
+              <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 <input
-                  placeholder="Memory text"
-                  className="field"
-                  value={newMemBody}
-                  onChange={(e) => setNewMemBody(e.target.value)}
+                  placeholder="New set name"
+                  className="field min-w-0 flex-1"
+                  value={newSetName}
+                  onChange={(e) => setNewSetName(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="btn-secondary w-full sm:w-auto"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/settings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          action: "create_set",
+                          name: newSetName,
+                        }),
+                      });
+                      if (!res.ok) throw new Error("Could not create set");
+                      setNewSetName("");
+                      void load();
+                      toast("Memory set created");
+                    } catch (err) {
+                      toast(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not create set",
+                        "error"
+                      );
+                    }
+                  }}
+                >
+                  New set
+                </button>
               </div>
-              <button
-                type="button"
-                className="btn-primary w-full sm:w-auto"
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/settings", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "create_memory",
-                        title: newMemTitle,
-                        body: newMemBody,
-                      }),
-                    });
-                    if (!res.ok) throw new Error("Could not create memory");
-                    setNewMemTitle("");
-                    setNewMemBody("");
-                    void load();
-                    toast("Memory created");
-                  } catch (err) {
-                    toast(
-                      err instanceof Error
-                        ? err.message
-                        : "Could not create memory",
-                      "error"
-                    );
-                  }
-                }}
-              >
-                New memory
-              </button>
-            </div>
-            <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <input
-                placeholder="New set name"
-                className="field min-w-0 flex-1"
-                value={newSetName}
-                onChange={(e) => setNewSetName(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn-secondary w-full sm:w-auto"
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/settings", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "create_set",
-                        name: newSetName,
-                      }),
-                    });
-                    if (!res.ok) throw new Error("Could not create set");
-                    setNewSetName("");
-                    void load();
-                    toast("Memory set created");
-                  } catch (err) {
-                    toast(
-                      err instanceof Error
-                        ? err.message
-                        : "Could not create set",
-                      "error"
-                    );
-                  }
-                }}
-              >
-                New set
-              </button>
-            </div>
-            <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <select
-                className="field settings-select"
-                value={addToSetId}
-                onChange={(e) => setAddToSetId(e.target.value)}
-              >
-                <option value="">Set…</option>
-                {memorySets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="field settings-select"
-                value={addMemId}
-                onChange={(e) => setAddMemId(e.target.value)}
-              >
-                <option value="">Memory…</option>
-                {memories.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="btn-primary w-full sm:w-auto"
-                disabled={!addToSetId || !addMemId}
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/settings", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "add_to_set",
-                        setId: addToSetId,
-                        memoryId: addMemId,
-                      }),
-                    });
-                    if (!res.ok) throw new Error("Could not add to set");
-                    void load();
-                    toast("Added to set");
-                  } catch (err) {
-                    toast(
-                      err instanceof Error
-                        ? err.message
-                        : "Could not add to set",
-                      "error"
-                    );
-                  }
-                }}
-              >
-                Add to set
-              </button>
-            </div>
-            {memorySets.map((set) => (
-              <div key={set.id} className="settings-row">
-                <p className="text-[13px] font-semibold">{set.name}</p>
-                <ul className="mt-1 space-y-0.5 text-[12px] text-[var(--text-secondary)]">
-                  {set.memoryIds.map((mid) => {
-                    const m = memories.find((x) => x.id === mid);
-                    return m ? <li key={mid}>{m.title}</li> : null;
-                  })}
-                </ul>
+              <div className="settings-row flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <select
+                  className="field settings-select"
+                  value={addToSetId}
+                  onChange={(e) => setAddToSetId(e.target.value)}
+                >
+                  <option value="">Set…</option>
+                  {memorySets.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="field settings-select"
+                  value={addMemId}
+                  onChange={(e) => setAddMemId(e.target.value)}
+                >
+                  <option value="">Memory…</option>
+                  {memories.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn-primary w-full sm:w-auto"
+                  disabled={!addToSetId || !addMemId}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/settings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          action: "add_to_set",
+                          setId: addToSetId,
+                          memoryId: addMemId,
+                        }),
+                      });
+                      if (!res.ok) throw new Error("Could not add to set");
+                      void load();
+                      toast("Added to set");
+                    } catch (err) {
+                      toast(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not add to set",
+                        "error"
+                      );
+                    }
+                  }}
+                >
+                  Add to set
+                </button>
               </div>
-            ))}
-          </div>
-        )}
+              {memorySets.map((set) => (
+                <div key={set.id} className="settings-row">
+                  <p className="text-[13px] font-semibold">{set.name}</p>
+                  <ul className="mt-1 space-y-0.5 text-[12px] text-[var(--text-secondary)]">
+                    {set.memoryIds.map((mid) => {
+                      const m = memories.find((x) => x.id === mid);
+                      return m ? <li key={mid}>{m.title}</li> : null;
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
 
-        {tab === "security" && <PasskeySettings />}
+          {tab === "security" && <PasskeySettings />}
 
-        {tab === "coming-soon" && (
-          <div className="apple-card border-dashed p-5 opacity-80">
-            <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
-              Additional personalization options will be added in a future
-              release.
-            </p>
-          </div>
-        )}
+          {tab === "coming-soon" && (
+            <div className="apple-card border-dashed p-5 opacity-80">
+              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                Additional personalization options will be added in a future
+                release.
+              </p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

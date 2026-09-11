@@ -5,10 +5,9 @@ const FRONTEND_EXACT = new Set(["/", ""]);
 const FRONTEND_PREFIXES = [
   "/privacy",
   "/terms",
+  "/about",
   "/emdr",
-  "/therapy",
   "/resources",
-  "/therapists",
 ] as const;
 
 const AUTH_PUBLIC_PREFIXES = [
@@ -27,6 +26,7 @@ const API_PUBLIC_PREFIXES = [
   "/api/auth/reset-password",
   "/api/auth/create-password",
   "/api/auth/register",
+  "/api/auth/google",
   "/api/auth/passkey/login",
   "/api/webhooks/stripe",
 ] as const;

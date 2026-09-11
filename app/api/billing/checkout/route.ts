@@ -7,10 +7,12 @@ import {
   type BillingPlanId,
 } from "@/lib/billing-constants";
 import {
+  activeStripeLivemode,
   getStripe,
   getStripeConfig,
   priceIdForPlan,
   resolveBillingPlans,
+  resolveStripeClient,
 } from "@/lib/stripe";
 import { getSubscriptionByUserId } from "@/lib/stripe-admin";
 import { getEntitlementForUser } from "@/lib/entitlements";
@@ -65,16 +67,22 @@ export async function POST(request: Request) {
   }
 
   const plans = resolveBillingPlans(await getStripeConfig());
-
+  const activeLivemode = await activeStripeLivemode();
   const existing = await getSubscriptionByUserId(auth.user.id);
-  if (
+  const storedLivemode = existing?.stripe_livemode ?? null;
+  const blockingOnActiveEnv =
+    existing?.stripe_subscription_id &&
+    (storedLivemode === null || storedLivemode === activeLivemode) &&
     hasBlockingStripeSubscription({
-      stripeSubscriptionId: existing?.stripe_subscription_id,
-      status: existing?.status,
-    })
-  ) {
+      stripeSubscriptionId: existing.stripe_subscription_id,
+      status: existing.status,
+    });
+  if (blockingOnActiveEnv) {
     const needsPortal =
-      existing?.status === "past_due" || existing?.status === "unpaid";
+      existing?.status === "past_due" ||
+      existing?.status === "unpaid" ||
+      existing?.status === "incomplete" ||
+      existing?.status === "trialing";
     return NextResponse.json(
       {
         error: needsPortal
@@ -102,7 +110,27 @@ export async function POST(request: Request) {
 
   try {
     const baseUrl = await getPublicAppUrl();
-    let customerId = existing?.stripe_customer_id ?? undefined;
+    let customerId: string | undefined;
+
+    if (existing?.stripe_customer_id) {
+      if (
+        typeof storedLivemode === "boolean" &&
+        storedLivemode !== activeLivemode
+      ) {
+        // Opposite Stripe account — create a new customer below.
+        customerId = undefined;
+      } else if (typeof storedLivemode === "boolean") {
+        customerId = existing.stripe_customer_id;
+      } else {
+        // Legacy row without livemode: only reuse if the id exists on active env.
+        const resolved = await resolveStripeClient({
+          objectId: existing.stripe_customer_id,
+        });
+        if (resolved && resolved.livemode === activeLivemode) {
+          customerId = existing.stripe_customer_id;
+        }
+      }
+    }
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -120,7 +148,11 @@ export async function POST(request: Request) {
         currency: existing?.currency ?? "EUR",
         accessTier: existing?.access_tier ?? "none",
         stripeCustomerId: customerId,
-        stripeSubscriptionId: existing?.stripe_subscription_id,
+        stripeSubscriptionId:
+          storedLivemode === activeLivemode
+            ? existing?.stripe_subscription_id
+            : null,
+        stripeLivemode: activeLivemode,
         trialEndsAt: existing?.trial_ends_at
           ? new Date(existing.trial_ends_at).toISOString()
           : null,

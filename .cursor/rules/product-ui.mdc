@@ -1,5 +1,5 @@
 ---
-description: Product UI — Nura paper/earth tokens (not Apple HIG, not ChatGPT green)
+description: Product UI — Nura pistachio tokens (not Apple HIG, not ChatGPT green)
 globs: app/app/**/*.tsx,app/admin/**/*.tsx,app/components/*.tsx,app/components/admin/**/*.tsx,app/globals.css
 alwaysApply: false
 ---
@@ -9,12 +9,14 @@ alwaysApply: false
 When editing **app chrome** (`/app`, `/admin`, shared components except `frontend/`):
 
 1. **Do not** follow Apple HIG, frosted glass, or iOS blue (`#007AFF`). The `apple-design-ui` rule is retired.
-2. Follow `.cursor/rules/nura-brand.mdc` for name, color, type, and voice. Do not reintroduce Inter or `#10a37f`.
+2. Follow `.cursor/rules/nura-brand.mdc` for name, color, type, and voice. Do not reintroduce Inter, `#10a37f`, or the **BLS** acronym in user-facing copy (use Free / Set running / moving ball).
 
-3. **Layout**: dark sidebar (`#1C1814`), paper canvas (`#F8F2D2`); flat surfaces, 1px borders, 6–8px radius.
-   - Accent: `#785135` primary; gold `#D3BC84` focus only
+3. **Layout**: dark sidebar (`#3D4129`), mint canvas (`#EDF9ED` / `#A4EDA5` tint); flat surfaces, 1px borders, 6–8px radius.
+   - Accent: `#84B067` primary; pistachio `#C6D67E` focus only
    - Sentence case labels
 
-4. **Tokens**: CSS variables in `app/globals.css`. **Typography**: Source Sans 3 + Fraunces.
+4. **Tokens**: CSS variables in `app/globals.css`. **Typography**: Source Sans 3 + Fraunces (product only).
 
-5. **Exclude frontend site**: `app/components/frontend/**`, `app/page.tsx`, `app/privacy/**`, `app/terms/**`, `app/emdr/**`, `app/therapy/**`, `app/resources/**`, `app/therapists/**` — those use `.frontend-home` (still Nura brand, not this layout).
+5. **Exclude frontend site**: `app/components/frontend/**`, `app/page.tsx`, `app/privacy/**`, `app/terms/**`, `app/emdr/**`, `app/resources/**` — those use `.frontend-home` with the same **Fraunces + Source Sans 3 + Roboto Mono** kickers as product (see `nura-brand.mdc` → Frontend typography).
+
+6. **UI/UX work**: load `.cursor/skills/nura-ui-designer/SKILL.md` (`/nura-ui-designer`) before restyling or shipping visual changes.

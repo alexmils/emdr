@@ -16,12 +16,14 @@ export const BRAND_DESCRIPTION =
 
 export const BRAND_TITLE = "Nura — guided EMDR, therapy resources, and support";
 
+/** Pistachio palette — see docs/brand.md */
 export const BRAND_COLORS = {
-  paper: "#F8F2D2",
-  gold: "#D3BC84",
-  earth: "#785135",
-  ink: "#2A2118",
-  sidebar: "#1C1814",
+  paper: "#A4EDA5",
+  gold: "#C6D67E",
+  earth: "#84B067",
+  olive: "#948F4E",
+  ink: "#2A3020",
+  sidebar: "#3D4129",
 } as const;
 
 const LEGACY_CHROME_NAMES = new Set([
@@ -48,7 +50,43 @@ export function rewriteRetiredBrandCopy(text: string): string {
     .replaceAll("Nura Help AI", BRAND_SPOKEN)
     .replaceAll("NuraHelp assistant", "Nura assistant")
     .replaceAll("NuraHelp product", "Nura product")
-    .replaceAll("What NuraHelp is", "What Nura is");
+    .replaceAll("What NuraHelp is", "What Nura is")
+    .replaceAll(
+      "guided sessions and bilateral stimulation (BLS)",
+      "guided sessions and a moving ball for visual sets"
+    )
+    .replaceAll(
+      "overview of bilateral stimulation and how guided sessions",
+      "overview of the moving ball and how Guided sessions"
+    )
+    .replaceAll(
+      "many people use **bilateral stimulation** — rhythmically tracking something left and right",
+      "many people follow **a moving target left and right** — like the ball in Free or Guided mode"
+    )
+    .replaceAll(
+      "**bilateral stimulation** — rhythmically tracking something left and right",
+      "**a moving target left and right** — like the ball in Free or Guided mode"
+    )
+    .replaceAll(
+      "bilateral stimulation — rhythmically tracking something left and right",
+      "a moving target left and right — like the ball in Free or Guided mode"
+    )
+    .replaceAll("bilateral stimulation", "left-and-right eye tracking")
+    .replaceAll(
+      "many people use **a moving target left and right**",
+      "many people follow **a moving target left and right**"
+    )
+    .replaceAll(
+      "use **a moving target left and right**",
+      "follow **a moving target left and right**"
+    )
+    .replaceAll("10 minutes of free BLS", "10 minutes of Free mode")
+    .replaceAll("free BLS minutes", "Free mode minutes")
+    .replaceAll("free BLS", "Free mode")
+    .replaceAll("Free mode is BLS-only controls", "Free mode is the moving ball only")
+    .replaceAll("free BLS-only", "Free mode (ball only)")
+    .replaceAll("BLS-only", "the moving ball only")
+    .replaceAll("BLS controls", "Session controls");
 }
 
 export function brandMetadataBase(): URL {

@@ -24,7 +24,7 @@ const CHOICES: {
     id: "free",
     title: "Free session",
     description:
-      "Just bilateral stimulation. You start, stop, and adjust the ball yourself.",
+      "Just the moving ball. You start, stop, and adjust it yourself.",
     keyHint: "2",
   },
 ];
@@ -103,7 +103,7 @@ export function SessionStartScreen() {
           <p className="session-start-trial">
             Trial: {Math.max(0, entitlement.guidedRemaining)} guided left ·{" "}
             {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)} min
-            BLS left
+            Free left
             {(guidedBlocked || blsBlocked) && (
               <>
                 {" "}
@@ -150,7 +150,7 @@ export function SessionStartScreen() {
                   {blocked
                     ? c.id === "guided"
                       ? "Trial guided sessions used — upgrade to continue."
-                      : "Trial BLS time used — upgrade to continue."
+                      : "Trial Free session time used — upgrade to continue."
                     : c.description}
                 </span>
               </button>

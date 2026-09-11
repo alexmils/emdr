@@ -18,8 +18,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
-      100,
-      Math.max(1, Number(searchParams.get("limit") ?? 50))
+      200,
+      Math.max(1, Number(searchParams.get("limit") ?? 200))
     );
     const users = await listAdminUsers(limit);
     return NextResponse.json({ users });

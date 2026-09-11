@@ -16,7 +16,32 @@ export async function GET() {
 
   try {
     const settings = await getPlatformSettings();
-    return NextResponse.json({ settings });
+    // Stripe / email secrets are edited on dedicated admin pages — never send to Platform UI.
+    return NextResponse.json({
+      settings: {
+        ...settings,
+        stripe: {
+          demoMode: settings.stripe.demoMode,
+          sandbox: {
+            ...settings.stripe.sandbox,
+            secretKey: "",
+            webhookSecret: "",
+          },
+          live: {
+            ...settings.stripe.live,
+            secretKey: "",
+            webhookSecret: "",
+          },
+        },
+        email: {
+          ...settings.email,
+          brevoApiKey: "",
+          gmailClientId: "",
+          gmailClientSecret: "",
+          gmailRefreshToken: "",
+        },
+      },
+    });
   } catch (err) {
     console.error("[admin/platform GET]", err);
     return NextResponse.json({ error: "Failed to load settings" }, { status: 500 });
@@ -62,6 +87,7 @@ export async function PUT(request: Request) {
       }
     }
 
+    // Stripe / email credentials are managed on dedicated admin routes.
     const next = await savePlatformSettings({
       ...current,
       ...body,
@@ -75,10 +101,8 @@ export async function PUT(request: Request) {
           ...body.ai?.voice,
         },
       },
-      stripe: {
-        ...current.stripe,
-        ...body.stripe,
-      },
+      stripe: current.stripe,
+      email: current.email,
     });
 
     await writeAuditEvent({
@@ -92,7 +116,31 @@ export async function PUT(request: Request) {
       ip: clientIp(request),
     });
 
-    return NextResponse.json({ settings: next });
+    return NextResponse.json({
+      settings: {
+        ...next,
+        stripe: {
+          demoMode: next.stripe.demoMode,
+          sandbox: {
+            ...next.stripe.sandbox,
+            secretKey: "",
+            webhookSecret: "",
+          },
+          live: {
+            ...next.stripe.live,
+            secretKey: "",
+            webhookSecret: "",
+          },
+        },
+        email: {
+          ...next.email,
+          brevoApiKey: "",
+          gmailClientId: "",
+          gmailClientSecret: "",
+          gmailRefreshToken: "",
+        },
+      },
+    });
   } catch (err) {
     console.error("[admin/platform PUT]", err);
     return NextResponse.json({ error: "Failed to save settings" }, { status: 500 });

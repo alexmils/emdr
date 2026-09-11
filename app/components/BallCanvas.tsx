@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import type { AnimationMode, SoundMode, VibrationMode } from "@/lib/types";
 import { BlsAudioEngine } from "@/lib/bls-audio";
 import { rumble } from "@/lib/gamepad";
+import {
+  motionAxisFromSize,
+  type BlsMotionAxis,
+} from "@/lib/bls-motion";
 
 interface BallCanvasProps {
   running: boolean;
@@ -22,6 +26,37 @@ interface BallCanvasProps {
   idleHint?: "default" | "guided_wait" | "check_in" | "intake";
 }
 
+function useBlsMotionAxis(): BlsMotionAxis {
+  const [axis, setAxis] = useState<BlsMotionAxis>("horizontal");
+
+  useEffect(() => {
+    const update = () => {
+      setAxis(motionAxisFromSize(window.innerWidth, window.innerHeight));
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    const mq = window.matchMedia("(orientation: landscape)");
+    const onMq = () => update();
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onMq);
+    } else {
+      mq.addListener(onMq);
+    }
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      if (typeof mq.removeEventListener === "function") {
+        mq.removeEventListener("change", onMq);
+      } else {
+        mq.removeListener(onMq);
+      }
+    };
+  }, []);
+
+  return axis;
+}
+
 export function BallCanvas({
   running,
   speedHz,
@@ -38,6 +73,7 @@ export function BallCanvas({
   idleHint = "default",
 }: BallCanvasProps) {
   const [pos, setPos] = useState(0.5);
+  const axis = useBlsMotionAxis();
   const audioRef = useRef<BlsAudioEngine | null>(null);
   const posRef = useRef(0.5);
   const dirRef = useRef(1);
@@ -114,7 +150,8 @@ export function BallCanvas({
     return () => cancelAnimationFrame(rafRef.current);
   }, [running, repeats, setLengthSec]);
 
-  const leftPct = pos * 100;
+  const posPct = pos * 100;
+  const horizontal = axis === "horizontal";
 
   return (
     <div
@@ -129,8 +166,9 @@ export function BallCanvas({
       }}
       className="workspace-canvas relative h-full min-h-0 flex-1 overflow-hidden outline-none"
       style={{ background }}
+      data-bls-axis={axis}
     >
-      {animation === "flash" && running && (
+      {animation === "flash" && running && horizontal && (
         <>
           <div
             className="absolute inset-y-0 left-0 w-1/2 transition-opacity duration-75"
@@ -148,15 +186,42 @@ export function BallCanvas({
           />
         </>
       )}
+      {animation === "flash" && running && !horizontal && (
+        <>
+          <div
+            className="absolute inset-x-0 top-0 h-1/2 transition-opacity duration-75"
+            style={{
+              background: "rgba(0,0,0,0.06)",
+              opacity: pos < 0.5 ? 1 : 0.15,
+            }}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/2 transition-opacity duration-75"
+            style={{
+              background: "rgba(0,0,0,0.06)",
+              opacity: pos >= 0.5 ? 1 : 0.15,
+            }}
+          />
+        </>
+      )}
       {animation === "dot" && running && (
         <div
-          className="absolute top-1/2 rounded-full shadow-md"
+          className="absolute rounded-full shadow-md"
           style={{
             width: ballSize,
             height: ballSize,
             background: ballColor,
-            left: `calc(${leftPct}% - ${ballSize / 2}px)`,
-            transform: "translateY(-50%)",
+            ...(horizontal
+              ? {
+                  left: `calc(${posPct}% - ${ballSize / 2}px)`,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }
+              : {
+                  top: `calc(${posPct}% - ${ballSize / 2}px)`,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                }),
           }}
         />
       )}

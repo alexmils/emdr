@@ -30,6 +30,7 @@ import {
 import { shouldBeginBlsAfterAd } from "@/lib/ads";
 import { WorkspaceMenuButton } from "./SidebarNavContext";
 import { LearnTeaser } from "./LearnTeaser";
+import { BillingChargeHint } from "./BillingChargeHint";
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -385,10 +386,14 @@ export function SessionWorkspace() {
   }, [toolbarVisible]);
 
   useEffect(() => {
+    if (running) setGearOpen(false);
+  }, [running]);
+
+  useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
 
-    if (!toolbarVisible) {
+    if (!toolbarVisible || running) {
       stage.style.setProperty("--bls-dock-height", "0px");
       return;
     }
@@ -404,7 +409,7 @@ export function SessionWorkspace() {
     const observer = new ResizeObserver(syncDockHeight);
     observer.observe(dock);
     return () => observer.disconnect();
-  }, [toolbarVisible, toolbarCollapsed, gamepadConnected, thread?.mode]);
+  }, [toolbarVisible, toolbarCollapsed, gamepadConnected, thread?.mode, running]);
 
   const handleReply = useCallback(
     async (text: string) => {
@@ -426,6 +431,7 @@ export function SessionWorkspace() {
                 <h1 className="workspace-title">Nura</h1>
               </div>
             </div>
+            <BillingChargeHint />
           </div>
         </header>
         <div className="workspace-home-empty flex flex-1 flex-col items-center justify-center gap-6 px-6 py-8">
@@ -434,7 +440,7 @@ export function SessionWorkspace() {
               Start a session
             </h2>
             <p className="max-w-sm text-[13px] leading-relaxed text-[var(--text-secondary)]">
-              Open a new chat to choose guided or free bilateral stimulation.
+              Open a new chat to choose Guided or Free mode.
             </p>
             <button
               type="button"
@@ -464,6 +470,7 @@ export function SessionWorkspace() {
                 <p className="workspace-hint">Choose a session type to begin</p>
               </div>
             </div>
+            <BillingChargeHint />
           </div>
         </header>
         <SessionStartScreen />
@@ -488,15 +495,18 @@ export function SessionWorkspace() {
               />
             </div>
           </div>
-          {guided && (
-            <SessionStatusBar
-              phase={thread.phase}
-              mode={sessionMode}
-              suds={thread.suds}
-              voc={thread.voc}
-              target={thread.target}
-            />
-          )}
+          <div className="workspace-header-trail">
+            <BillingChargeHint />
+            {guided ? (
+              <SessionStatusBar
+                phase={thread.phase}
+                mode={sessionMode}
+                suds={thread.suds}
+                voc={thread.voc}
+                target={thread.target}
+              />
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -557,7 +567,7 @@ export function SessionWorkspace() {
           />
         )}
 
-        {toolbarVisible && (
+        {toolbarVisible && !running && (
           <BlsToolbar
             ref={blsDockRef}
             bls={bls}
@@ -571,7 +581,7 @@ export function SessionWorkspace() {
         )}
       </div>
 
-      {gearOpen && toolbarVisible && (
+      {gearOpen && toolbarVisible && !running && (
         <GearPanel
           bls={bls}
           onChange={setBls}

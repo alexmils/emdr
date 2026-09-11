@@ -8,13 +8,13 @@ import { listAdminBilling } from "@/lib/stripe-admin";
 import {
   getPlatformSettings,
   savePlatformSettings,
-  type PlatformStripeConfig,
 } from "@/lib/platform-settings";
 import { resetStripeClient } from "@/lib/stripe";
 import {
   mergeStripeConfigPatch,
   stripeAdminStatus,
   toStripeAdminView,
+  type StripeConfigPatch,
 } from "@/lib/stripe-admin-settings";
 import { clientIp, writeAuditEvent } from "@/lib/audit-log";
 
@@ -34,6 +34,8 @@ export async function GET() {
       stripeConfigured: status.stripeConfigured,
       catalogReady: status.catalogReady,
       webhookReady: status.webhookReady,
+      demoMode: status.demoMode,
+      activeEnv: status.activeEnv,
       stripe: toStripeAdminView(settings.stripe, canEdit),
       canEdit,
     });
@@ -48,7 +50,7 @@ export async function PUT(request: Request) {
   if (!isAuthContext(auth)) return auth;
 
   try {
-    const body = (await request.json()) as { stripe?: Partial<PlatformStripeConfig> };
+    const body = (await request.json()) as { stripe?: StripeConfigPatch };
     if (!body.stripe || typeof body.stripe !== "object") {
       return NextResponse.json({ error: "Missing stripe settings" }, { status: 400 });
     }
@@ -64,11 +66,19 @@ export async function PUT(request: Request) {
       actorUserId: auth.user.id,
       action: "settings.stripe_updated",
       detail: {
-        hasSecretKey: Boolean(next.stripe.secretKey),
-        hasWebhookSecret: Boolean(next.stripe.webhookSecret),
-        priceIdWeekly: next.stripe.priceIdWeekly || null,
-        priceIdMonthly: next.stripe.priceIdMonthly || null,
-        priceIdYearly: next.stripe.priceIdYearly || null,
+        demoMode: next.stripe.demoMode,
+        sandboxHasSecret: Boolean(next.stripe.sandbox.secretKey),
+        liveHasSecret: Boolean(next.stripe.live.secretKey),
+        sandboxPrices: {
+          weekly: next.stripe.sandbox.priceIdWeekly || null,
+          monthly: next.stripe.sandbox.priceIdMonthly || null,
+          yearly: next.stripe.sandbox.priceIdYearly || null,
+        },
+        livePrices: {
+          weekly: next.stripe.live.priceIdWeekly || null,
+          monthly: next.stripe.live.priceIdMonthly || null,
+          yearly: next.stripe.live.priceIdYearly || null,
+        },
       },
       ip: clientIp(request),
     });
@@ -79,6 +89,8 @@ export async function PUT(request: Request) {
       stripeConfigured: status.stripeConfigured,
       catalogReady: status.catalogReady,
       webhookReady: status.webhookReady,
+      demoMode: status.demoMode,
+      activeEnv: status.activeEnv,
     });
   } catch (err) {
     console.error("[admin/billing PUT]", err);

@@ -15,11 +15,37 @@ import {
   type PlatformAdsSettings,
 } from "@/lib/ads";
 import { BRAND_SPOKEN, chromeBrandName } from "@/lib/brand";
+import {
+  DEFAULT_PLATFORM_STRIPE,
+  isStripeCredentialSetEmpty,
+  normalizeStripeConfig,
+  stripeFromEnvFallback,
+  type PlatformStripeConfig,
+} from "@/lib/stripe-config";
+import {
+  DEFAULT_PLATFORM_EMAIL,
+  emailFromEnvFallback,
+  isEmailConfigEmpty,
+  normalizeEmailConfig,
+  type PlatformEmailConfig,
+} from "@/lib/email-config";
 
 export type { HelpSettings };
 export { DEFAULT_HELP_SETTINGS, normalizeHelpSettings };
 export type { PlatformAdsSettings };
 export { DEFAULT_PLATFORM_ADS, normalizeAdsSettings };
+export type { PlatformStripeConfig, StripeCredentialSet } from "@/lib/stripe-config";
+export {
+  DEFAULT_PLATFORM_STRIPE,
+  DEFAULT_STRIPE_CREDENTIALS,
+  activeStripeCredentials,
+  activeStripeEnv,
+} from "@/lib/stripe-config";
+export type { PlatformEmailConfig } from "@/lib/email-config";
+export {
+  DEFAULT_PLATFORM_EMAIL,
+  normalizeEmailConfig,
+} from "@/lib/email-config";
 
 export type PlatformFeatureFlags = {
   voice: boolean;
@@ -42,20 +68,6 @@ export type PlatformAiConfig = {
   voice: PlatformVoiceConfig;
 };
 
-/** Stripe billing — edited in Admin → Billing (not env). */
-export type PlatformStripeConfig = {
-  secretKey: string;
-  webhookSecret: string;
-  publishableKey: string;
-  priceIdWeekly: string;
-  priceIdMonthly: string;
-  priceIdYearly: string;
-  /** Display labels shown on onboarding / billing (e.g. €4.99). */
-  displayPriceWeekly: string;
-  displayPriceMonthly: string;
-  displayPriceYearly: string;
-};
-
 export type PlatformSettings = {
   siteName: string;
   supportEmail: string;
@@ -71,6 +83,8 @@ export type PlatformSettings = {
   help: HelpSettings;
   ads: PlatformAdsSettings;
   stripe: PlatformStripeConfig;
+  /** Delivery credentials (Brevo / Gmail) — Admin → Email. */
+  email: PlatformEmailConfig;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -82,18 +96,6 @@ export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
     claude: { ...DEFAULT_AI_CONNECTORS.claude },
   },
   voice: { ...DEFAULT_VOICE_CONNECTOR },
-};
-
-export const DEFAULT_PLATFORM_STRIPE: PlatformStripeConfig = {
-  secretKey: "",
-  webhookSecret: "",
-  publishableKey: "",
-  priceIdWeekly: "",
-  priceIdMonthly: "",
-  priceIdYearly: "",
-  displayPriceWeekly: "€4.99",
-  displayPriceMonthly: "€14.99",
-  displayPriceYearly: "€99",
 };
 
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
@@ -114,52 +116,13 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   ai: { ...DEFAULT_PLATFORM_AI, connectors: { ...DEFAULT_AI_CONNECTORS }, voice: { ...DEFAULT_VOICE_CONNECTOR } },
   help: { ...DEFAULT_HELP_SETTINGS },
   ads: { ...DEFAULT_PLATFORM_ADS },
-  stripe: { ...DEFAULT_PLATFORM_STRIPE },
+  stripe: {
+    demoMode: true,
+    sandbox: { ...DEFAULT_PLATFORM_STRIPE.sandbox },
+    live: { ...DEFAULT_PLATFORM_STRIPE.live },
+  },
+  email: { ...DEFAULT_PLATFORM_EMAIL },
 };
-
-function normalizeStripe(raw: unknown): PlatformStripeConfig {
-  const r =
-    raw && typeof raw === "object"
-      ? (raw as Partial<PlatformStripeConfig>)
-      : {};
-  const str = (v: unknown, fallback = "") =>
-    typeof v === "string" ? v.trim() : fallback;
-  return {
-    secretKey: str(r.secretKey),
-    webhookSecret: str(r.webhookSecret),
-    publishableKey: str(r.publishableKey),
-    priceIdWeekly: str(r.priceIdWeekly),
-    priceIdMonthly: str(r.priceIdMonthly),
-    priceIdYearly: str(r.priceIdYearly),
-    displayPriceWeekly:
-      str(r.displayPriceWeekly) || DEFAULT_PLATFORM_STRIPE.displayPriceWeekly,
-    displayPriceMonthly:
-      str(r.displayPriceMonthly) || DEFAULT_PLATFORM_STRIPE.displayPriceMonthly,
-    displayPriceYearly:
-      str(r.displayPriceYearly) || DEFAULT_PLATFORM_STRIPE.displayPriceYearly,
-  };
-}
-
-/** One-time bootstrap from legacy STRIPE_* env when DB fields are empty. */
-function stripeFromEnvFallback(
-  current: PlatformStripeConfig
-): PlatformStripeConfig {
-  const env = (k: string) => process.env[k]?.trim() || "";
-  const pick = (cur: string, envKey: string) => cur || env(envKey);
-  return {
-    secretKey: pick(current.secretKey, "STRIPE_SECRET_KEY"),
-    webhookSecret: pick(current.webhookSecret, "STRIPE_WEBHOOK_SECRET"),
-    publishableKey: pick(current.publishableKey, "STRIPE_PUBLISHABLE_KEY"),
-    priceIdWeekly: pick(current.priceIdWeekly, "STRIPE_PRICE_ID_WEEKLY"),
-    priceIdMonthly:
-      pick(current.priceIdMonthly, "STRIPE_PRICE_ID_MONTHLY") ||
-      pick("", "STRIPE_PRICE_ID"),
-    priceIdYearly: pick(current.priceIdYearly, "STRIPE_PRICE_ID_YEARLY"),
-    displayPriceWeekly: current.displayPriceWeekly,
-    displayPriceMonthly: current.displayPriceMonthly,
-    displayPriceYearly: current.displayPriceYearly,
-  };
-}
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
 function isLegacyUserSettings(json: unknown): boolean {
@@ -254,7 +217,12 @@ function normalizeSettings(raw: unknown): PlatformSettings {
       },
       help: { ...DEFAULT_HELP_SETTINGS },
       ads: { ...DEFAULT_PLATFORM_ADS },
-      stripe: { ...DEFAULT_PLATFORM_STRIPE },
+      stripe: {
+        demoMode: true,
+        sandbox: { ...DEFAULT_PLATFORM_STRIPE.sandbox },
+        live: { ...DEFAULT_PLATFORM_STRIPE.live },
+      },
+      email: { ...DEFAULT_PLATFORM_EMAIL },
     };
   }
   const r = raw as Partial<PlatformSettings> & {
@@ -286,7 +254,8 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     ads: normalizeAdsSettings(
       (r as Partial<PlatformSettings>).ads ?? DEFAULT_PLATFORM_ADS
     ),
-    stripe: normalizeStripe((r as Partial<PlatformSettings>).stripe),
+    stripe: normalizeStripeConfig((r as Partial<PlatformSettings>).stripe),
+    email: normalizeEmailConfig((r as Partial<PlatformSettings>).email),
   };
 }
 
@@ -308,7 +277,12 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         connectors: { ...DEFAULT_AI_CONNECTORS },
         voice: { ...DEFAULT_VOICE_CONNECTOR },
       },
-      stripe: stripeFromEnvFallback(DEFAULT_PLATFORM_STRIPE),
+      stripe: stripeFromEnvFallback({
+        demoMode: true,
+        sandbox: { ...DEFAULT_PLATFORM_STRIPE.sandbox },
+        live: { ...DEFAULT_PLATFORM_STRIPE.live },
+      }),
+      email: emailFromEnvFallback({ ...DEFAULT_PLATFORM_EMAIL }),
     };
     await savePlatformSettings(seeded);
     return normalizeSettings(seeded);
@@ -320,24 +294,39 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     !raw ||
     typeof raw !== "object" ||
     !String((raw as PlatformSettings).fromAddress ?? "").trim();
+  const rawStripe = raw && typeof raw === "object" ? raw.stripe : null;
+  const legacyFlatStripe =
+    !!rawStripe &&
+    typeof rawStripe === "object" &&
+    !("sandbox" in rawStripe) &&
+    !("live" in rawStripe);
   const stripeEmpty =
-    !settings.stripe.secretKey &&
-    !settings.stripe.webhookSecret &&
-    !settings.stripe.priceIdMonthly;
+    isStripeCredentialSetEmpty(settings.stripe.sandbox) &&
+    isStripeCredentialSetEmpty(settings.stripe.live);
   const stripeBootstrapped = stripeEmpty
     ? stripeFromEnvFallback(settings.stripe)
     : settings.stripe;
   const needsStripePersist =
-    stripeEmpty &&
-    Boolean(
-      stripeBootstrapped.secretKey ||
-        stripeBootstrapped.webhookSecret ||
-        stripeBootstrapped.priceIdMonthly
-    );
+    legacyFlatStripe ||
+    (stripeEmpty &&
+      (!isStripeCredentialSetEmpty(stripeBootstrapped.sandbox) ||
+        !isStripeCredentialSetEmpty(stripeBootstrapped.live)));
   if (needsStripePersist) {
     settings = { ...settings, stripe: stripeBootstrapped };
   }
-  if (missingSender || needsStripePersist) {
+  const rawEmail = raw && typeof raw === "object" ? raw.email : null;
+  const emailMissing = !rawEmail || typeof rawEmail !== "object";
+  const emailEmpty = isEmailConfigEmpty(settings.email);
+  const emailBootstrapped = emailEmpty
+    ? emailFromEnvFallback(settings.email)
+    : settings.email;
+  const needsEmailPersist =
+    emailMissing ||
+    (emailEmpty && !isEmailConfigEmpty(emailBootstrapped));
+  if (needsEmailPersist) {
+    settings = { ...settings, email: emailBootstrapped };
+  }
+  if (missingSender || needsStripePersist || needsEmailPersist) {
     await savePlatformSettings(settings);
   }
   return settings;

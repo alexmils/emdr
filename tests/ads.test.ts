@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  normalizeAdsSettings,
+  parsePublicAdsConfig,
   publicAdsConfig,
   resolveAdDecision,
+  resolveAdsenseDisplaySlot,
   shouldBeginBlsAfterAd,
   type AdDecisionState,
   type PlatformAdsSettings,
@@ -108,6 +111,7 @@ describe("publicAdsConfig", () => {
     provider: "adsense",
     adsenseClient: "ca-pub-123",
     adsenseSlot: "456",
+    adsenseDisplaySlot: "789",
     frequencyMode: "per_session",
     everyMinutes: 5,
     everyNSets: 3,
@@ -124,6 +128,7 @@ describe("publicAdsConfig", () => {
     if (pub.adsActive) {
       assert.equal(pub.adsenseClient, "ca-pub-123");
       assert.equal(pub.provider, "adsense");
+      assert.equal(pub.adsenseDisplaySlot, "789");
     }
   });
 
@@ -131,6 +136,76 @@ describe("publicAdsConfig", () => {
     assert.deepEqual(publicAdsConfig({ ...ads, enabled: false }, true), {
       adsActive: false,
     });
+  });
+});
+
+describe("resolveAdsenseDisplaySlot", () => {
+  it("returns the dedicated display slot", () => {
+    assert.equal(
+      resolveAdsenseDisplaySlot({
+        adsenseDisplaySlot: "222",
+      }),
+      "222"
+    );
+  });
+
+  it("does not reuse the interstitial slot when display is empty", () => {
+    assert.equal(
+      resolveAdsenseDisplaySlot({
+        adsenseDisplaySlot: "  ",
+      }),
+      ""
+    );
+  });
+});
+
+describe("normalizeAdsSettings", () => {
+  it("defaults missing adsenseDisplaySlot from old DB JSON", () => {
+    const n = normalizeAdsSettings({
+      enabled: true,
+      provider: "adsense",
+      adsenseClient: "ca-pub-1",
+      adsenseSlot: "111",
+    });
+    assert.equal(n.adsenseDisplaySlot, "");
+    assert.equal(n.adsenseSlot, "111");
+    assert.equal(n.enabled, true);
+  });
+});
+
+describe("parsePublicAdsConfig", () => {
+  it("rejects malformed payloads", () => {
+    assert.deepEqual(parsePublicAdsConfig(null), { adsActive: false });
+    assert.deepEqual(parsePublicAdsConfig({ adsActive: true }), {
+      adsActive: true,
+      provider: "placeholder",
+      adsenseClient: "",
+      adsenseSlot: "",
+      adsenseDisplaySlot: "",
+      frequencyMode: "per_session",
+      everyMinutes: 5,
+      everyNSets: 3,
+      minWatchSeconds: 5,
+    });
+  });
+
+  it("accepts a full active payload", () => {
+    const pub = parsePublicAdsConfig({
+      adsActive: true,
+      provider: "adsense",
+      adsenseClient: "ca-pub-9",
+      adsenseSlot: "1",
+      adsenseDisplaySlot: "2",
+      frequencyMode: "every_n_sets",
+      everyMinutes: 10,
+      everyNSets: 4,
+      minWatchSeconds: 3,
+    });
+    assert.equal(pub.adsActive, true);
+    if (pub.adsActive) {
+      assert.equal(pub.adsenseDisplaySlot, "2");
+      assert.equal(pub.everyNSets, 4);
+    }
   });
 });
 

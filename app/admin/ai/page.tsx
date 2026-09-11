@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
+import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
 import type { PlatformSettings, PlatformVoiceConfig } from "@/lib/platform-settings";
 import type { AiProvider, ConnectorConfig } from "@/lib/types";
 import { fetchJson } from "@/lib/fetch-json";
 
-type Tab = "ai" | "voice";
+const TABS = ["ai", "voice"] as const;
+type Tab = (typeof TABS)[number];
+const TAB_ITEMS = [
+  { id: "ai", label: "AI" },
+  { id: "voice", label: "Voice" },
+] as const;
+
 type CatalogProvider = AiProvider | "voice";
 type ConnState =
   | { status: "idle" }
@@ -51,8 +58,8 @@ function ConnectionBadge({ conn }: { conn: ConnState }) {
   return null;
 }
 
-export default function AdminAiPage() {
-  const [tab, setTab] = useState<Tab>("ai");
+function AdminAiPageInner() {
+  const [tab, setTab] = useAdminTab(TABS, "ai");
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -126,22 +133,11 @@ export default function AdminAiPage() {
         subtitle="Platform-wide models and TTS. Applies to all users."
       />
       <main className="admin-main">
-        <div className="admin-tabs">
-          <button
-            type="button"
-            className={`admin-tab ${tab === "ai" ? "admin-tab-active" : ""}`}
-            onClick={() => setTab("ai")}
-          >
-            AI
-          </button>
-          <button
-            type="button"
-            className={`admin-tab ${tab === "voice" ? "admin-tab-active" : ""}`}
-            onClick={() => setTab("voice")}
-          >
-            Voice
-          </button>
-        </div>
+        <AdminTabs
+          tabs={TAB_ITEMS}
+          value={tab}
+          onChange={(id) => setTab(id as Tab)}
+        />
 
         {tab === "ai" && (
           <>
@@ -272,6 +268,20 @@ export default function AdminAiPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AdminAiPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="admin-page flex min-h-screen items-center justify-center">
+          <p className="text-[var(--text-secondary)]">Loading…</p>
+        </div>
+      }
+    >
+      <AdminAiPageInner />
+    </Suspense>
   );
 }
 

@@ -1,0 +1,124 @@
+/* Shared marketing button hover — pistachio color + smooth pulse */
+
+.frontend-home {
+  --fe-btn-mint: #a4eda5;
+  --fe-btn-pistachio: #c6d67e;
+  --fe-btn-ink: #2a3020;
+}
+
+@keyframes fe-btn-hover-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--fe-btn-pistachio) 42%, transparent),
+      0 6px 18px color-mix(in srgb, var(--fe-btn-mint) 16%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 7px color-mix(in srgb, var(--fe-btn-pistachio) 0%, transparent),
+      0 10px 26px color-mix(in srgb, var(--fe-btn-mint) 26%, transparent);
+  }
+}
+
+/* Filled / solid CTAs */
+.frontend-home .frontend-btn-primary,
+.frontend-home .frontend-header-cta,
+.frontend-home .fe-about-cta,
+.frontend-home .fe-how-cta,
+.frontend-home .fe-price-card-cta,
+.frontend-home .fe-price-card-cta--accent,
+.frontend-home .fe-site-footer-cta-btn--primary,
+.frontend-home .fe-site-footer-send,
+.frontend-home .fe-stories-nav-btn--accent {
+  transition:
+    background 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    filter 0.22s ease,
+    gap 0.22s ease;
+}
+
+.frontend-home .frontend-btn-primary:hover,
+.frontend-home .frontend-header-cta:hover,
+.frontend-home .fe-about-cta:hover,
+.frontend-home .fe-how-cta:hover,
+.frontend-home .fe-price-card-cta:hover,
+.frontend-home .fe-price-card-cta--accent:hover,
+.frontend-home .fe-site-footer-cta-btn--primary:hover,
+.frontend-home .fe-site-footer-send:hover,
+.frontend-home .fe-stories-nav-btn--accent:hover,
+.frontend-home .fe-blog-cta:hover {
+  background: var(--fe-btn-pistachio);
+  border-color: var(--fe-btn-pistachio);
+  color: var(--fe-btn-ink);
+  filter: none;
+  transform: translateY(-1px);
+  animation: fe-btn-hover-pulse 1.65s ease-in-out infinite;
+}
+
+.frontend-home .frontend-header-cta:hover .frontend-header-cta-icon {
+  background: var(--fe-btn-ink);
+  color: var(--fe-btn-pistachio);
+}
+
+.frontend-home .fe-about-cta:hover .fe-about-cta-icon {
+  background: var(--fe-btn-ink);
+  color: var(--fe-btn-pistachio);
+}
+
+/* Outline / ghost CTAs */
+.frontend-home .frontend-btn-ghost,
+.frontend-home .fe-site-footer-cta-btn--ghost,
+.frontend-home .fe-stories-nav-btn:not(.fe-stories-nav-btn--accent),
+.frontend-home .fe-blog-cta {
+  transition:
+    background 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.frontend-home .frontend-btn-ghost:hover,
+.frontend-home .fe-site-footer-cta-btn--ghost:hover,
+.frontend-home .fe-stories-nav-btn:not(.fe-stories-nav-btn--accent):hover {
+  border-color: var(--fe-btn-pistachio);
+  color: var(--fe-btn-pistachio);
+  background: color-mix(in srgb, var(--fe-btn-pistachio) 12%, transparent);
+  transform: translateY(-1px);
+  animation: fe-btn-hover-pulse 1.65s ease-in-out infinite;
+}
+
+/* Blog CTA base — match pistachio outline reference */
+.frontend-home .fe-blog-cta {
+  background: #fff;
+  border: 1.5px solid var(--fe-btn-pistachio);
+  color: var(--fe-btn-ink);
+  border-radius: 0.85rem;
+}
+
+.frontend-home .fe-blog-cta:hover {
+  background: color-mix(in srgb, var(--fe-btn-mint) 28%, #fff);
+  color: var(--fe-btn-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frontend-home .frontend-btn-primary:hover,
+  .frontend-home .frontend-header-cta:hover,
+  .frontend-home .fe-about-cta:hover,
+  .frontend-home .fe-how-cta:hover,
+  .frontend-home .fe-price-card-cta:hover,
+  .frontend-home .fe-price-card-cta--accent:hover,
+  .frontend-home .fe-site-footer-cta-btn--primary:hover,
+  .frontend-home .fe-site-footer-send:hover,
+  .frontend-home .fe-stories-nav-btn--accent:hover,
+  .frontend-home .fe-blog-cta:hover,
+  .frontend-home .frontend-btn-ghost:hover,
+  .frontend-home .fe-site-footer-cta-btn--ghost:hover,
+  .frontend-home .fe-stories-nav-btn:not(.fe-stories-nav-btn--accent):hover {
+    animation: none;
+    transform: none;
+  }
+}

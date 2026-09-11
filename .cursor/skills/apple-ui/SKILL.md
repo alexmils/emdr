@@ -1,11 +1,17 @@
 ---
 name: apple-ui
-description: Apple HIG styling for EMDR Guide. Use with global apple-design skill. Inter font on web; Apple tokens, glass, segmented controls.
+description: RETIRED for Nura. Use nura-ui-designer instead. Legacy Apple HIG notes only.
 ---
 
-# Apple UI — EMDR Guide
+# Apple UI — RETIRED
 
-Use together with the global **`apple-design`** skill (`billythekidz/apple-design-skill`).
+**Do not use for Nura UI/UX.** Load `.cursor/skills/nura-ui-designer/SKILL.md` (`/nura-ui-designer`).
+
+Legacy notes below are historical (Inter / `#007AFF` / glass) and conflict with pistachio brand.
+
+---
+
+Use together with the global **`apple-design`** skill (`billythekidz/apple-design-skill`) — **only if resurrecting old Apple chrome (do not)**.
 
 ## Web font
 

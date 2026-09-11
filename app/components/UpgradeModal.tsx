@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import {
   BILLING_PLANS,
+  isBillingPlanId,
   orderedBillingPlans,
   type BillingPlanId,
   type BillingPlanMeta,
@@ -35,6 +36,8 @@ export function UpgradeModal({
   const [error, setError] = useState("");
   const [plans, setPlans] =
     useState<Record<BillingPlanId, BillingPlanMeta>>(BILLING_PLANS);
+  /** End trial on the current Stripe price instead of opening a new Checkout. */
+  const [activateCurrent, setActivateCurrent] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -52,8 +55,22 @@ export function UpgradeModal({
         const res = await fetch("/api/billing/status");
         const data = (await res.json()) as {
           plans?: Record<BillingPlanId, BillingPlanMeta>;
+          plan?: string;
+          status?: string;
+          isTrialLimited?: boolean;
         };
         if (res.ok && data.plans) setPlans(data.plans);
+        if (
+          res.ok &&
+          data.status === "trialing" &&
+          data.isTrialLimited &&
+          isBillingPlanId(data.plan)
+        ) {
+          setPlan(data.plan);
+          setActivateCurrent(true);
+        } else {
+          setActivateCurrent(false);
+        }
       } catch {
         /* keep defaults */
       }
@@ -62,37 +79,43 @@ export function UpgradeModal({
 
   const headline =
     reason === "bls_limit_reached"
-      ? "You’ve used your free BLS preview"
+      ? "You’ve used your Free session time"
       : reason === "trial_limit_reached"
         ? "You’ve used your trial guided sessions"
         : "Upgrade for unlimited sessions";
 
   const detail =
     reason === "bls_limit_reached"
-      ? `Trial includes ${Math.floor(blsSecondsLimit / 60)} minutes of free BLS (${blsSecondsUsed}s used). Upgrade for unlimited bilateral stimulation.`
+      ? `Trial includes ${Math.floor(blsSecondsLimit / 60)} minutes of Free session time (${blsSecondsUsed}s used). Upgrade for unlimited Free sessions.`
       : reason === "trial_limit_reached"
         ? `Trial includes ${guidedLimit} guided wellness sessions (${guidedUsed} used). Upgrade to continue without limits.`
-        : "Get unlimited guided wellness sessions and bilateral stimulation.";
+        : activateCurrent
+          ? `End your trial and start billing on your ${plans[plan]?.label ?? plan} plan.`
+          : "Get unlimited guided and Free sessions.";
 
   const upgrade = useCallback(async () => {
     setBusy(true);
     setError("");
     try {
-      const activateRes = await fetch("/api/billing/activate", { method: "POST" });
-      const activateData = (await activateRes.json()) as {
-        error?: string;
-        code?: string;
-      };
-      if (activateRes.ok) {
-        window.location.href = "/app/billing?activated=1";
-        return;
-      }
-
-      if (
-        activateData.code !== "needs_checkout" &&
-        activateData.code !== "not_trialing"
-      ) {
-        // Unexpected activate failure — still try Checkout as fallback.
+      if (activateCurrent) {
+        const activateRes = await fetch("/api/billing/activate", {
+          method: "POST",
+        });
+        const activateData = (await activateRes.json()) as {
+          error?: string;
+          code?: string;
+        };
+        if (activateRes.ok) {
+          window.location.href = "/app/billing?activated=1";
+          return;
+        }
+        if (
+          activateData.code !== "needs_checkout" &&
+          activateData.code !== "not_trialing"
+        ) {
+          setError(activateData.error ?? "Could not activate subscription");
+          return;
+        }
       }
 
       const res = await fetch("/api/billing/checkout", {
@@ -102,7 +125,7 @@ export function UpgradeModal({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? activateData.error ?? "Checkout unavailable");
+        setError(data.error ?? "Checkout unavailable");
         return;
       }
       if (data.url) {
@@ -115,7 +138,7 @@ export function UpgradeModal({
     } finally {
       setBusy(false);
     }
-  }, [plan]);
+  }, [plan, activateCurrent]);
 
   if (!open) return null;
 
@@ -139,33 +162,49 @@ export function UpgradeModal({
         </h2>
         <p className="admin-panel-sub mt-2">{detail}</p>
 
-        <div className="upgrade-plan-list mt-4" role="radiogroup" aria-label="Plan">
-          {orderedBillingPlans(plans).map((p) => {
-            const id = p.id;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="radio"
-                aria-checked={plan === id}
-                className={`upgrade-plan-card ${plan === id ? "upgrade-plan-card--selected" : ""} ${p.highlight ? "upgrade-plan-card--highlight" : ""}`}
-                onClick={() => setPlan(id)}
-                disabled={busy}
-              >
-                <span className="upgrade-plan-label">
-                  {p.label}
-                  {p.savingsHint ? (
-                    <span className="upgrade-plan-badge">{p.savingsHint}</span>
-                  ) : null}
-                </span>
-                <span className="upgrade-plan-price">
-                  {p.displayPrice}
-                  <span className="upgrade-plan-period">{p.displayPeriod}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {!activateCurrent && (
+          <div
+            className="upgrade-plan-list mt-4"
+            role="radiogroup"
+            aria-label="Plan"
+          >
+            {orderedBillingPlans(plans).map((p) => {
+              const id = p.id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={plan === id}
+                  className={`upgrade-plan-card ${plan === id ? "upgrade-plan-card--selected" : ""} ${p.highlight ? "upgrade-plan-card--highlight" : ""}`}
+                  onClick={() => setPlan(id)}
+                  disabled={busy}
+                >
+                  <span className="upgrade-plan-label">
+                    {p.label}
+                    {p.savingsHint ? (
+                      <span className="upgrade-plan-badge">{p.savingsHint}</span>
+                    ) : null}
+                  </span>
+                  <span className="upgrade-plan-price">
+                    {p.displayPrice}
+                    <span className="upgrade-plan-period">{p.displayPeriod}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {activateCurrent && (
+          <p className="admin-panel-sub mt-4">
+            Billing continues on <strong>{plans[plan]?.label ?? plan}</strong>
+            {plans[plan]?.displayPrice
+              ? ` (${plans[plan].displayPrice}${plans[plan].displayPeriod})`
+              : ""}
+            . Change plans anytime from Manage billing.
+          </p>
+        )}
 
         <div className="upgrade-benefits">
           <p className="upgrade-benefits-label">Included with upgrade</p>
@@ -184,7 +223,7 @@ export function UpgradeModal({
                 aria-hidden
                 strokeWidth={2.25}
               />
-              <span>Unlimited bilateral stimulation</span>
+              <span>Unlimited Free sessions</span>
             </li>
             <li>
               <Check
@@ -214,7 +253,7 @@ export function UpgradeModal({
             disabled={busy}
             onClick={() => void upgrade()}
           >
-            {busy ? "Loading…" : "Upgrade now"}
+            {busy ? "Loading…" : "Pay now"}
           </button>
         </div>
       </div>

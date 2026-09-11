@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { getStripe, getStripeConfig, stripePriceIdsFromConfig } from "@/lib/stripe";
+import Stripe from "stripe";
+import {
+  getStripeConfig,
+  getStripeForLivemode,
+  stripePriceIdsFromConfig,
+} from "@/lib/stripe";
 import {
   findUserIdByStripeCustomer,
   mapStripeSubscription,
@@ -7,17 +12,39 @@ import {
   releaseStripeEvent,
   syncSubscriptionFromStripe,
 } from "@/lib/stripe-admin";
+import {
+  describeInvoicePayment,
+  recordBillingEvent,
+} from "@/lib/billing-events";
 import { getUserByEmail, getUserById, markOnboardingCompleted } from "@/lib/users";
+
+function verifyStripeEvent(
+  body: string,
+  sig: string,
+  secrets: string[]
+): Stripe.Event {
+  let lastErr: unknown;
+  for (const secret of secrets) {
+    if (!secret) continue;
+    try {
+      return Stripe.webhooks.constructEvent(body, sig, secret);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr ?? new Error("Webhook signature verification failed");
+}
 
 /** Stripe webhook — sync subscription state when configured. */
 export async function POST(request: Request) {
   const cfg = await getStripeConfig();
-  const secret = cfg.webhookSecret.trim();
-  const stripe = await getStripe();
-  if (!secret || !stripe) {
+  const secrets = [
+    cfg.sandbox.webhookSecret.trim(),
+    cfg.live.webhookSecret.trim(),
+  ].filter(Boolean);
+  if (secrets.length === 0) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
   }
-  const priceIds = stripePriceIdsFromConfig(cfg);
 
   let claimedEventId: string | null = null;
 
@@ -28,7 +55,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing signature" }, { status: 400 });
     }
 
-    const event = stripe.webhooks.constructEvent(body, sig, secret);
+    const event = verifyStripeEvent(body, sig, secrets);
+    const stripe = await getStripeForLivemode(event.livemode);
+    if (!stripe) {
+      return NextResponse.json(
+        {
+          error: event.livemode
+            ? "Live Stripe secret key is not configured"
+            : "Sandbox Stripe secret key is not configured",
+        },
+        { status: 503 }
+      );
+    }
+    const priceIds = stripePriceIdsFromConfig(
+      event.livemode ? cfg.live : cfg.sandbox
+    );
+
     const isNew = await markStripeEventProcessed(event.id, event.type);
     if (!isNew) {
       return NextResponse.json({ received: true, duplicate: true });
@@ -58,9 +100,12 @@ export async function POST(request: Request) {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as {
+        id?: string;
         client_reference_id?: string | null;
         customer?: string | null;
         subscription?: string | null;
+        amount_total?: number | null;
+        currency?: string | null;
         metadata?: { user_id?: string; user_email?: string; plan?: string };
       };
       const userId = await resolveUserId(
@@ -81,9 +126,27 @@ export async function POST(request: Request) {
       await syncSubscriptionFromStripe({
         userId,
         ...mapped,
+        stripeLivemode: event.livemode,
         eventCreatedAt: event.created,
       });
       await markOnboardingCompleted(userId);
+
+      const amountCents = session.amount_total ?? mapped.amountCents ?? 0;
+      const isTrial = mapped.status === "trialing" || amountCents === 0;
+      await recordBillingEvent({
+        userId,
+        stripeEventId: event.id,
+        eventType: event.type,
+        status: isTrial ? "trial_started" : "checkout",
+        amountCents,
+        currency: session.currency ?? mapped.currency,
+        description: isTrial
+          ? `Checkout · ${mapped.plan} trial started`
+          : `Checkout · ${mapped.plan}`,
+        subscriptionId: mapped.stripeSubscriptionId,
+        livemode: event.livemode,
+        occurredAt: event.created,
+      });
     }
 
     if (
@@ -125,6 +188,7 @@ export async function POST(request: Request) {
           accessTier: "none",
           stripeCustomerId: sub.customer,
           stripeSubscriptionId: sub.id,
+          stripeLivemode: event.livemode,
           eventCreatedAt: event.created,
         });
       } else {
@@ -132,6 +196,7 @@ export async function POST(request: Request) {
         await syncSubscriptionFromStripe({
           userId,
           ...mapped,
+          stripeLivemode: event.livemode,
           eventCreatedAt: event.created,
         });
         if (mapped.status === "trialing" || mapped.status === "active") {
@@ -145,8 +210,14 @@ export async function POST(request: Request) {
       event.type === "invoice.paid"
     ) {
       const invoice = event.data.object as {
+        id?: string;
         customer?: string | null;
         subscription?: string | null;
+        amount_paid?: number | null;
+        amount_due?: number | null;
+        currency?: string | null;
+        billing_reason?: string | null;
+        status?: string | null;
       };
       if (invoice.subscription) {
         const sub = await stripe.subscriptions.retrieve(invoice.subscription);
@@ -163,7 +234,35 @@ export async function POST(request: Request) {
         await syncSubscriptionFromStripe({
           userId,
           ...mapped,
+          stripeLivemode: event.livemode,
           eventCreatedAt: event.created,
+        });
+
+        const amountCents =
+          event.type === "invoice.paid"
+            ? (invoice.amount_paid ?? 0)
+            : (invoice.amount_due ?? invoice.amount_paid ?? 0);
+        await recordBillingEvent({
+          userId,
+          stripeEventId: event.id,
+          eventType: event.type,
+          status: event.type === "invoice.paid" ? "succeeded" : "failed",
+          amountCents,
+          currency: invoice.currency ?? mapped.currency,
+          description: describeInvoicePayment({
+            eventType: event.type,
+            amountCents,
+            currency: invoice.currency ?? mapped.currency,
+            plan: mapped.plan,
+            billingReason: invoice.billing_reason,
+          }),
+          invoiceId: invoice.id ?? null,
+          subscriptionId:
+            typeof invoice.subscription === "string"
+              ? invoice.subscription
+              : mapped.stripeSubscriptionId,
+          livemode: event.livemode,
+          occurredAt: event.created,
         });
       }
     }

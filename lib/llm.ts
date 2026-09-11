@@ -1,10 +1,24 @@
 import type { AiProvider } from "./types";
 import type { LlmRuntimeConfig } from "./platform-settings";
+import {
+  recordLlmUsage,
+  type LlmUsagePurpose,
+} from "./llm-usage";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }
+
+export type ChatCompletionMeta = {
+  userId?: string | null;
+  purpose?: LlmUsagePurpose;
+};
+
+type ParsedUsage = {
+  promptTokens: number;
+  completionTokens: number;
+};
 
 const PROVIDER_ORDER: AiProvider[] = ["deepseek", "openai", "claude"];
 
@@ -39,9 +53,49 @@ export function resolveLlmProvider(settings: LlmRuntimeConfig): {
   return null;
 }
 
+function parseOpenAiUsage(data: unknown): ParsedUsage | null {
+  if (!data || typeof data !== "object") return null;
+  const usage = (data as { usage?: Record<string, unknown> }).usage;
+  if (!usage) return null;
+  const prompt = Number(usage.prompt_tokens ?? 0);
+  const completion = Number(usage.completion_tokens ?? 0);
+  if (!Number.isFinite(prompt) || !Number.isFinite(completion)) return null;
+  if (prompt <= 0 && completion <= 0) return null;
+  return { promptTokens: prompt, completionTokens: completion };
+}
+
+function parseClaudeUsage(data: unknown): ParsedUsage | null {
+  if (!data || typeof data !== "object") return null;
+  const usage = (data as { usage?: Record<string, unknown> }).usage;
+  if (!usage) return null;
+  const prompt = Number(usage.input_tokens ?? 0);
+  const completion = Number(usage.output_tokens ?? 0);
+  if (!Number.isFinite(prompt) || !Number.isFinite(completion)) return null;
+  if (prompt <= 0 && completion <= 0) return null;
+  return { promptTokens: prompt, completionTokens: completion };
+}
+
+function trackUsage(
+  meta: ChatCompletionMeta | undefined,
+  provider: AiProvider,
+  model: string,
+  usage: ParsedUsage | null
+) {
+  if (!meta?.userId || !usage) return;
+  void recordLlmUsage({
+    userId: meta.userId,
+    provider,
+    model,
+    purpose: meta.purpose ?? "guided_chat",
+    promptTokens: usage.promptTokens,
+    completionTokens: usage.completionTokens,
+  }).catch((err) => console.warn("[llm] usage record failed:", err));
+}
+
 export async function chatCompletion(
   settings: LlmRuntimeConfig,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  meta?: ChatCompletionMeta
 ): Promise<string> {
   const resolved = resolveLlmProvider(settings);
   if (!resolved) {
@@ -74,6 +128,7 @@ export async function chatCompletion(
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
+    trackUsage(meta, provider, model, parseClaudeUsage(data));
     return data.content?.[0]?.text ?? "";
   }
 
@@ -107,6 +162,7 @@ export async function chatCompletion(
   });
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
+  trackUsage(meta, provider, model, parseOpenAiUsage(data));
   return data.choices?.[0]?.message?.content ?? "";
 }
 

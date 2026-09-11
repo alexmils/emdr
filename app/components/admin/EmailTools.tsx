@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { EmailTemplateId } from "@/lib/email/templates";
 import { fetchJson } from "@/lib/fetch-json";
 
+const PREVIEW_DEBOUNCE_MS = 120;
+
 export function TemplateEditor({
   template,
   onSaved,
@@ -20,6 +22,7 @@ export function TemplateEditor({
   const [subject, setSubject] = useState(template.subject);
   const [html, setHtml] = useState(template.html);
   const [text, setText] = useState(template.text);
+  const [previewHtml, setPreviewHtml] = useState(template.html);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -27,7 +30,14 @@ export function TemplateEditor({
     setSubject(template.subject);
     setHtml(template.html);
     setText(template.text);
+    setPreviewHtml(template.html);
   }, [template]);
+
+  // Live preview from draft HTML (light debounce so iframe srcDoc stays usable while typing)
+  useEffect(() => {
+    const id = window.setTimeout(() => setPreviewHtml(html), PREVIEW_DEBOUNCE_MS);
+    return () => window.clearTimeout(id);
+  }, [html]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,40 +61,61 @@ export function TemplateEditor({
     }
   };
 
+  const plainPreview = (text || html.replace(/<[^>]+>/g, " ")).trim();
+
   return (
-    <form className="admin-template-editor" onSubmit={(e) => void save(e)}>
-      <label className="admin-field-label">
-        Subject
-        <input
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="field"
+    <div className="admin-template-editor-wrap">
+      <form className="admin-template-editor" onSubmit={(e) => void save(e)}>
+        <label className="admin-field-label">
+          Subject
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="field"
+          />
+        </label>
+        <label className="admin-field-label">
+          HTML body
+          <textarea
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
+            className="field admin-textarea"
+            rows={8}
+          />
+        </label>
+        <label className="admin-field-label">
+          Plain text (optional)
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="field admin-textarea"
+            rows={3}
+          />
+        </label>
+        <button type="submit" disabled={busy} className="btn-primary w-fit">
+          {busy ? "Saving…" : template.isCustom ? "Update template" : "Save custom version"}
+        </button>
+        {err && <p className="admin-invite-msg">{err}</p>}
+      </form>
+      <div className="admin-email-preview-chrome">
+        <p className="admin-email-preview-subject">
+          <span className="admin-email-preview-label">Subject</span>
+          {subject || "(empty)"}
+        </p>
+        {/* sandbox="" blocks scripts — bare srcDoc is same-origin XSS */}
+        <iframe
+          title="Email preview"
+          className="admin-email-preview"
+          srcDoc={previewHtml}
+          sandbox=""
+          referrerPolicy="no-referrer"
         />
-      </label>
-      <label className="admin-field-label">
-        HTML body
-        <textarea
-          value={html}
-          onChange={(e) => setHtml(e.target.value)}
-          className="field admin-textarea"
-          rows={8}
-        />
-      </label>
-      <label className="admin-field-label">
-        Plain text (optional)
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="field admin-textarea"
-          rows={3}
-        />
-      </label>
-      <button type="submit" disabled={busy} className="btn-primary w-fit">
-        {busy ? "Saving…" : template.isCustom ? "Update template" : "Save custom version"}
-      </button>
-      {err && <p className="admin-invite-msg">{err}</p>}
-    </form>
+        {plainPreview ? (
+          <pre className="admin-email-preview-plain">{plainPreview}</pre>
+        ) : null}
+      </div>
+    </div>
   );
 }
 

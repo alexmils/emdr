@@ -55,12 +55,12 @@ describe("help RAG", () => {
       },
       {
         title: "Billing and trial",
-        body: "Trial includes guided sessions and free BLS minutes.",
+        body: "Trial includes guided sessions and Free mode minutes.",
         tags: ["billing", "trial"],
       },
       {
         title: "Session modes",
-        body: "Guided vs free BLS-only.",
+        body: "Guided vs Free mode (ball only).",
         tags: ["sessions"],
       },
     ];

@@ -8,9 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
-import { APP_BASE } from "@/lib/app-base";
+import { APP_BASE, LOGIN_PATH } from "@/lib/app-base";
 
 const OPEN_EVENT = "emdr-open-help";
 
@@ -55,6 +56,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
   const [open, setOpen] = useState(false);
   const fabVisible = showFab && shouldShowFab(pathname);
   const [enabled, setEnabled] = useState(true);
+  const [needsSignIn, setNeedsSignIn] = useState(false);
   const [welcome, setWelcome] = useState("");
   const [messages, setMessages] = useState<HelpMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -72,11 +74,17 @@ export function HelpChatWidget({ showFab = true }: Props) {
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
+    setNeedsSignIn(false);
     try {
       const res = await fetch("/api/help/chat");
       const data = await res.json();
       if (!res.ok) {
         setEnabled(false);
+        if (res.status === 401) {
+          setNeedsSignIn(true);
+          setError("");
+          return;
+        }
         setError(data.error ?? "Help is unavailable");
         return;
       }
@@ -135,6 +143,11 @@ export function HelpChatWidget({ showFab = true }: Props) {
         setError(data.error ?? "Send failed");
         setDraft(text);
         setMessages((m) => m.filter((x) => x.id !== optimistic.id));
+        if (res.status === 401) {
+          setNeedsSignIn(true);
+          setEnabled(false);
+          setError("");
+        }
         return;
       }
       setMessages(data.messages ?? []);
@@ -195,7 +208,13 @@ export function HelpChatWidget({ showFab = true }: Props) {
 
             <div className="help-drawer-body" ref={listRef}>
               {loading && <p className="help-drawer-muted">Loading…</p>}
-              {!loading && welcome && messages.length === 0 && (
+              {!loading && needsSignIn && (
+                <div className="help-bubble help-bubble-assistant">
+                  Sign in to chat with product support about billing, sessions,
+                  or your account.
+                </div>
+              )}
+              {!loading && !needsSignIn && welcome && messages.length === 0 && (
                 <div className="help-bubble help-bubble-assistant">{welcome}</div>
               )}
               {messages.map((m) => (
@@ -219,28 +238,36 @@ export function HelpChatWidget({ showFab = true }: Props) {
             </div>
 
             <footer className="help-drawer-foot">
-              <textarea
-                className="help-drawer-input"
-                rows={2}
-                value={draft}
-                disabled={!enabled || sending}
-                placeholder="Ask about billing, sessions, account…"
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    void send();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="btn-primary"
-                disabled={!enabled || sending || !draft.trim()}
-                onClick={() => void send()}
-              >
-                {sending ? "Sending…" : "Send"}
-              </button>
+              {needsSignIn ? (
+                <Link href={LOGIN_PATH} className="btn-primary help-drawer-signin">
+                  Sign in
+                </Link>
+              ) : (
+                <>
+                  <textarea
+                    className="help-drawer-input"
+                    rows={2}
+                    value={draft}
+                    disabled={!enabled || sending}
+                    placeholder="Ask about billing, sessions, account…"
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void send();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={!enabled || sending || !draft.trim()}
+                    onClick={() => void send()}
+                  >
+                    {sending ? "Sending…" : "Send"}
+                  </button>
+                </>
+              )}
             </footer>
           </aside>
         </div>

@@ -13,7 +13,7 @@ export const PHASE_LABELS: Record<ProtocolPhase, string> = {
 
 export const SESSION_MODE_LABELS: Record<SessionMode, string> = {
   idle: "Ready",
-  running: "BLS running",
+  running: "Set running",
   check_in: "Check-in",
 };
 

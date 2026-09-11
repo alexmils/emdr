@@ -19,13 +19,19 @@ export function formatDateTime(iso: string | null) {
 }
 
 export function formatMoney(cents: number, currency = "EUR") {
+  const fractionDigits = cents % 100 === 0 ? 0 : 2;
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
+
+export {
+  formatUsdMicros,
+  formatTokenCount,
+} from "@/lib/admin-llm-format";
 
 const ACTION_LABELS: Record<AuditAction, string> = {
   "user.login": "Signed in",
@@ -38,6 +44,9 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   "user.disabled": "Disabled",
   "user.enabled": "Enabled",
   "settings.platform_updated": "Platform settings updated",
+  "settings.email_updated": "Email settings updated",
+  "settings.stripe_updated": "Stripe settings updated",
+  "settings.stripe_synced": "Stripe prices synced",
   "email.test_sent": "Test email sent",
   "email.broadcast_sent": "Broadcast sent",
 };
@@ -45,3 +54,8 @@ const ACTION_LABELS: Record<AuditAction, string> = {
 export function actionLabel(action: AuditAction | string) {
   return ACTION_LABELS[action as AuditAction] ?? action;
 }
+
+export {
+  paymentStatusLabel,
+  describeInvoicePayment,
+} from "@/lib/billing-event-format";

@@ -1,32 +1,50 @@
 "use client";
-
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
+import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
+import { AppleToggle } from "@/app/components/AppleToggle";
 import { formatDateTime, formatMoney } from "@/lib/admin-format";
+import { formatTokenCount, formatUsdMicros } from "@/lib/admin-llm-format";
 import type { AdminBillingRow } from "@/lib/stripe-admin";
-import type { StripeAdminView } from "@/lib/stripe-admin-settings";
-import type { PlatformStripeConfig } from "@/lib/platform-settings";
+import type {
+  StripeAdminView,
+  StripeConfigPatch,
+  StripeEnvAdminView,
+} from "@/lib/stripe-admin-settings";
+import type { StripeCredentialSet } from "@/lib/platform-settings";
 import type { UserUsageRow } from "@/lib/usage";
+import type { LlmUsageTotals } from "@/lib/llm-usage";
 import { fetchJson } from "@/lib/fetch-json";
-
+import { DEFAULT_STRIPE_CREDENTIALS } from "@/lib/stripe-config";
+function emptyEnvView(): StripeEnvAdminView {
+  return {
+    ...DEFAULT_STRIPE_CREDENTIALS,
+    hasSecretKey: false,
+    hasWebhookSecret: false,
+  };
+}
 const EMPTY_STRIPE: StripeAdminView = {
-  secretKey: "",
-  webhookSecret: "",
-  publishableKey: "",
-  priceIdWeekly: "",
-  priceIdMonthly: "",
-  priceIdYearly: "",
-  displayPriceWeekly: "€4.99",
-  displayPriceMonthly: "€14.99",
-  displayPriceYearly: "€99",
-  hasSecretKey: false,
-  hasWebhookSecret: false,
+  demoMode: true,
+  activeEnv: "sandbox",
+  sandbox: emptyEnvView(),
+  live: emptyEnvView(),
 };
-
-export default function AdminBillingPage() {
+type EnvKey = "sandbox" | "live";
+const TABS = ["overview", "stripe", "subscriptions", "usage"] as const;
+type Tab = (typeof TABS)[number];
+const TAB_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "stripe", label: "Stripe" },
+  { id: "subscriptions", label: "Subscriptions" },
+  { id: "usage", label: "Usage" },
+] as const;
+function AdminBillingPageInner() {
+  const [tab, setTab] = useAdminTab(TABS, "overview");
   const [rows, setRows] = useState<AdminBillingRow[]>([]);
   const [usage, setUsage] = useState<UserUsageRow[]>([]);
+  const [llmMonth, setLlmMonth] = useState<LlmUsageTotals | null>(null);
+  const [llmAll, setLlmAll] = useState<LlmUsageTotals | null>(null);
   const [stripeConfigured, setStripeConfigured] = useState(false);
   const [catalogReady, setCatalogReady] = useState(false);
   const [webhookReady, setWebhookReady] = useState(false);
@@ -36,21 +54,25 @@ export default function AdminBillingPage() {
   const [busy, setBusy] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [msg, setMsg] = useState("");
-
+  const [editorEnv, setEditorEnv] = useState<EnvKey>("sandbox");
   const applyStripeResponse = (res: {
     stripe?: StripeAdminView;
     stripeConfigured?: boolean;
     catalogReady?: boolean;
     webhookReady?: boolean;
+    demoMode?: boolean;
+    activeEnv?: EnvKey;
   }) => {
-    if (res.stripe) setStripe(res.stripe);
+    if (res.stripe) {
+      setStripe(res.stripe);
+      setEditorEnv(res.stripe.activeEnv);
+    }
     if (typeof res.stripeConfigured === "boolean") {
       setStripeConfigured(res.stripeConfigured);
     }
     if (typeof res.catalogReady === "boolean") setCatalogReady(res.catalogReady);
     if (typeof res.webhookReady === "boolean") setWebhookReady(res.webhookReady);
   };
-
   const load = useCallback(async () => {
     const [billingRes, usageRes] = await Promise.all([
       fetchJson<{
@@ -61,14 +83,18 @@ export default function AdminBillingPage() {
         stripe?: StripeAdminView;
         canEdit?: boolean;
       }>("/api/admin/billing"),
-      fetchJson<{ usage: UserUsageRow[] }>("/api/admin/usage"),
+      fetchJson<{
+        usage: UserUsageRow[];
+        llm?: { allTime: LlmUsageTotals; thisMonth: LlmUsageTotals };
+      }>("/api/admin/usage"),
     ]);
     setRows(billingRes.rows ?? []);
     setCanEdit(billingRes.canEdit ?? false);
     setUsage(usageRes.usage ?? []);
+    setLlmAll(usageRes.llm?.allTime ?? null);
+    setLlmMonth(usageRes.llm?.thisMonth ?? null);
     applyStripeResponse(billingRes);
   }, []);
-
   useEffect(() => {
     void (async () => {
       try {
@@ -78,27 +104,41 @@ export default function AdminBillingPage() {
       }
     })();
   }, [load]);
-
+  const active = stripe[editorEnv];
+  const patchEnv = (partial: Partial<StripeCredentialSet>) =>
+    setStripe((s) => ({
+      ...s,
+      [editorEnv]: { ...s[editorEnv], ...partial },
+    }));
   const saveStripe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canEdit) return;
     setBusy(true);
     setMsg("");
     try {
-      const patch: Partial<PlatformStripeConfig> = {
-        publishableKey: stripe.publishableKey,
-        priceIdWeekly: stripe.priceIdWeekly,
-        priceIdMonthly: stripe.priceIdMonthly,
-        priceIdYearly: stripe.priceIdYearly,
-        displayPriceWeekly: stripe.displayPriceWeekly,
-        displayPriceMonthly: stripe.displayPriceMonthly,
-        displayPriceYearly: stripe.displayPriceYearly,
+      const buildEnvPatch = (env: EnvKey): Partial<StripeCredentialSet> => {
+        const src = stripe[env];
+        const patch: Partial<StripeCredentialSet> = {
+          publishableKey: src.publishableKey,
+          priceIdWeekly: src.priceIdWeekly,
+          priceIdMonthly: src.priceIdMonthly,
+          priceIdYearly: src.priceIdYearly,
+          displayPriceWeekly: src.displayPriceWeekly,
+          displayPriceMonthly: src.displayPriceMonthly,
+          displayPriceYearly: src.displayPriceYearly,
+        };
+        // Only send secrets when the admin typed a new value; empty = keep stored.
+        if (src.secretKey.trim()) patch.secretKey = src.secretKey.trim();
+        if (src.webhookSecret.trim()) {
+          patch.webhookSecret = src.webhookSecret.trim();
+        }
+        return patch;
       };
-      // Only send secrets when the admin typed a new non-empty value.
-      if (stripe.secretKey.trim()) patch.secretKey = stripe.secretKey.trim();
-      if (stripe.webhookSecret.trim()) {
-        patch.webhookSecret = stripe.webhookSecret.trim();
-      }
+      const patch: StripeConfigPatch = {
+        demoMode: stripe.demoMode,
+        sandbox: buildEnvPatch("sandbox"),
+        live: buildEnvPatch("live"),
+      };
       const res = await fetchJson<{
         stripe: StripeAdminView;
         stripeConfigured: boolean;
@@ -110,14 +150,18 @@ export default function AdminBillingPage() {
         body: JSON.stringify({ stripe: patch }),
       });
       applyStripeResponse(res);
-      setMsg("Stripe settings saved.");
+      setMsg(
+        stripe.demoMode
+          ? "Saved. Demo mode on — sandbox keys are used for Checkout."
+          : "Saved. Live mode on — real Stripe charges are enabled."
+      );
+      window.dispatchEvent(new Event("emdr-stripe-mode"));
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Save failed");
     } finally {
       setBusy(false);
     }
   };
-
   const syncFromStripe = async () => {
     if (!canEdit) return;
     setSyncing(true);
@@ -129,24 +173,26 @@ export default function AdminBillingPage() {
         catalogReady?: boolean;
         webhookReady?: boolean;
         summary?: string;
+        env?: EnvKey;
       }>("/api/admin/billing/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Empty → server uses saved key (leave-unchanged pattern).
-          secretKey: stripe.secretKey.trim() || undefined,
+          secretKey: active.secretKey.trim() || undefined,
+          env: editorEnv,
           save: true,
         }),
       });
       applyStripeResponse(res);
+      const envLabel = res.env === "live" ? "live" : "sandbox";
       setMsg(
         res.summary
-          ? `Synced from Stripe: ${res.summary}`
-          : "Synced plan prices from Stripe."
+          ? `Synced into ${envLabel}: ${res.summary}`
+          : `Synced plan prices into ${envLabel}.`
       );
-      if (!res.webhookReady) {
+      if (!res.webhookReady && editorEnv === stripe.activeEnv) {
         setMsg((m) =>
-          `${m} Add the webhook signing secret to finish Live checkout.`
+          `${m} Add the webhook signing secret to finish checkout.`
         );
       }
     } catch (err) {
@@ -155,27 +201,23 @@ export default function AdminBillingPage() {
       setSyncing(false);
     }
   };
-
-  const patch = (partial: Partial<PlatformStripeConfig>) =>
-    setStripe((s) => ({ ...s, ...partial }));
-
   const canSync =
-    canEdit && (Boolean(stripe.secretKey.trim()) || stripe.hasSecretKey);
-
+    canEdit &&
+    (Boolean(active.secretKey.trim()) || active.hasSecretKey);
   const totalMrr = rows.reduce(
     (sum, r) =>
       r.status === "active" && r.plan !== "free" ? sum + r.amountCents : sum,
     0
   );
-
   const stripeHint = stripeConfigured
-    ? "Catalog + webhook ready"
+    ? stripe.demoMode
+      ? "Sandbox catalog + webhook ready"
+      : "Live catalog + webhook ready"
     : catalogReady && !webhookReady
       ? "Prices synced — add webhook secret"
       : webhookReady && !catalogReady
         ? "Webhook set — add secret key + Price IDs (or Sync)"
         : "Configure Stripe below";
-
   if (loading) {
     return (
       <div className="admin-page flex min-h-screen items-center justify-center">
@@ -183,261 +225,403 @@ export default function AdminBillingPage() {
       </div>
     );
   }
-
   return (
     <div className="admin-page">
       <AdminPageHeader
         title="Billing"
-        subtitle="Stripe keys, plan prices, subscriptions, and usage."
+        subtitle="Sandbox vs live Stripe keys, plan prices, subscriptions, and usage."
       />
       <main className="admin-main">
-        <section className="admin-stat-grid">
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">MRR</p>
-            <p className="admin-stat-value">{formatMoney(totalMrr)}</p>
-          </article>
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Stripe</p>
-            <p className="admin-stat-value">
-              {stripeConfigured ? "Live" : "Off"}
-            </p>
-            <p className="admin-stat-hint">{stripeHint}</p>
-          </article>
-        </section>
-
-        <form
-          className="admin-form-stack admin-panel"
-          onSubmit={(e) => void saveStripe(e)}
-        >
-          <h2 className="admin-panel-title">Stripe configuration</h2>
-          <p className="admin-panel-sub">
-            Keys and Price IDs are stored in platform settings. Use{" "}
-            <strong>Sync from Stripe</strong> to pull active weekly / monthly /
-            yearly prices (prefers <code className="admin-code">app=nurahelp</code>{" "}
-            product metadata). Webhook URL:{" "}
-            <code className="admin-code">/api/webhooks/stripe</code>
-            {canEdit
-              ? " — leave secret fields blank to keep the saved value."
-              : " — view only (secrets hidden; platform admin can edit)."}
-          </p>
-
-          <label className="admin-field-label">
-            Secret key
-            <input
-              type="password"
-              autoComplete="off"
-              value={stripe.secretKey}
-              disabled={!canEdit}
-              onChange={(e) => patch({ secretKey: e.target.value })}
-              className="field"
-              placeholder={
-                stripe.hasSecretKey
-                  ? "•••• saved — paste to replace"
-                  : "rk_test_… or sk_test_…"
-              }
-            />
-          </label>
-          <label className="admin-field-label">
-            Webhook signing secret
-            <input
-              type="password"
-              autoComplete="off"
-              value={stripe.webhookSecret}
-              disabled={!canEdit}
-              onChange={(e) => patch({ webhookSecret: e.target.value })}
-              className="field"
-              placeholder={
-                stripe.hasWebhookSecret
-                  ? "•••• saved — paste to replace"
-                  : "whsec_…"
-              }
-            />
-          </label>
-          <label className="admin-field-label">
-            Publishable key (optional)
-            <input
-              type="text"
-              value={stripe.publishableKey}
-              disabled={!canEdit}
-              onChange={(e) => patch({ publishableKey: e.target.value })}
-              className="field"
-              placeholder="pk_test_…"
-            />
-          </label>
-
-          <h3 className="admin-panel-title" style={{ marginTop: "1rem" }}>
-            Plans
-          </h3>
-          <div className="admin-stat-grid">
-            {(
-              [
-                {
-                  label: "Weekly",
-                  priceId: stripe.priceIdWeekly,
-                  display: stripe.displayPriceWeekly,
-                  onPriceId: (v: string) => patch({ priceIdWeekly: v }),
-                  onDisplay: (v: string) => patch({ displayPriceWeekly: v }),
-                },
-                {
-                  label: "Monthly",
-                  priceId: stripe.priceIdMonthly,
-                  display: stripe.displayPriceMonthly,
-                  onPriceId: (v: string) => patch({ priceIdMonthly: v }),
-                  onDisplay: (v: string) => patch({ displayPriceMonthly: v }),
-                },
-                {
-                  label: "Yearly",
-                  priceId: stripe.priceIdYearly,
-                  display: stripe.displayPriceYearly,
-                  onPriceId: (v: string) => patch({ priceIdYearly: v }),
-                  onDisplay: (v: string) => patch({ displayPriceYearly: v }),
-                },
-              ] as const
-            ).map((plan) => (
-              <article key={plan.label} className="admin-stat-card">
-                <p className="admin-stat-label">{plan.label}</p>
-                <label className="admin-field-label">
-                  Display price
-                  <input
-                    type="text"
-                    value={plan.display}
-                    disabled={!canEdit}
-                    onChange={(e) => plan.onDisplay(e.target.value)}
-                    className="field"
-                  />
-                </label>
-                <label className="admin-field-label">
-                  Stripe Price ID
-                  <input
-                    type="text"
-                    value={plan.priceId}
-                    disabled={!canEdit}
-                    onChange={(e) => plan.onPriceId(e.target.value)}
-                    className="field"
-                    placeholder="price_…"
-                  />
-                </label>
+        <AdminTabs
+          tabs={TAB_ITEMS}
+          value={tab}
+          onChange={(id) => setTab(id as Tab)}
+        />
+        {tab === "overview" && (
+          <>
+            <section className="admin-stat-grid">
+              <article className="admin-stat-card">
+                <p className="admin-stat-label">MRR</p>
+                <p className="admin-stat-value">{formatMoney(totalMrr)}</p>
               </article>
-            ))}
-          </div>
-
-          {canEdit ? (
-            <div className="admin-form-actions">
+              <article className="admin-stat-card">
+                <p className="admin-stat-label">Stripe</p>
+                <p className="admin-stat-value">
+                  {stripeConfigured
+                    ? stripe.demoMode
+                      ? "Demo"
+                      : "Live"
+                    : "Off"}
+                </p>
+                <p className="admin-stat-hint">{stripeHint}</p>
+              </article>
+            </section>
+            {!stripeConfigured && (
+              <section className="admin-panel">
+                <p className="admin-panel-sub">
+                  Checkout works when the <strong>active</strong> env (demo →
+                  sandbox, unchecked → live) has a secret key, webhook secret, and at
+                  least one Price ID. User page:{" "}
+                  <Link href="/app/billing" className="admin-link">
+                    /app/billing
+                  </Link>
+                  . Configure Stripe in the{" "}
+                  <button
+                    type="button"
+                    className="admin-link border-0 bg-transparent p-0"
+                    onClick={() => setTab("stripe")}
+                  >
+                    Stripe tab
+                  </button>
+                  .
+                </p>
+              </section>
+            )}
+          </>
+        )}
+        {tab === "stripe" && (
+          <form
+            className="admin-form-stack admin-panel"
+            onSubmit={(e) => void saveStripe(e)}
+          >
+            <h2 className="admin-panel-title">Stripe configuration</h2>
+            <p className="admin-panel-sub">
+              Store sandbox and live credentials separately.{" "}
+              <strong>Demo mode</strong> chooses which set Checkout uses.
+              Webhook URL:{" "}
+              <code className="admin-code">/api/webhooks/stripe</code>
+              {canEdit
+                ? " — leave secret fields blank to keep the saved value."
+                : " — view only (secrets hidden; platform admin can edit)."}
+            </p>
+            <div className="admin-toggle-row admin-toggle-row-compact">
+              <label htmlFor="admin-stripe-demo-mode">Demo mode</label>
+              <AppleToggle
+                id="admin-stripe-demo-mode"
+                checked={stripe.demoMode}
+                disabled={!canEdit}
+                onChange={(nextDemo) => {
+                  if (
+                    !nextDemo &&
+                    !window.confirm(
+                      "Turn off Demo mode? Live Stripe keys will be used for Checkout and real charges can occur."
+                    )
+                  ) {
+                    return;
+                  }
+                  setStripe((s) => ({
+                    ...s,
+                    demoMode: nextDemo,
+                    activeEnv: nextDemo ? "sandbox" : "live",
+                  }));
+                }}
+              />
+            </div>
+            <p className="admin-panel-sub admin-toggle-hint">
+              On = sandbox keys for Checkout. Off = live keys (real charges).
+              Sandbox / Live below only picks which credentials you edit.
+            </p>
+            <div className="admin-segmented" role="tablist" aria-label="Stripe environment">
               <button
                 type="button"
-                className="btn btn-secondary"
-                disabled={busy || syncing || !canSync}
-                onClick={() => void syncFromStripe()}
+                role="tab"
+                aria-selected={editorEnv === "sandbox"}
+                className={
+                  editorEnv === "sandbox"
+                    ? "admin-segmented-btn admin-segmented-btn-active"
+                    : "admin-segmented-btn"
+                }
+                onClick={() => setEditorEnv("sandbox")}
               >
-                {syncing ? "Syncing…" : "Sync from Stripe"}
+                Sandbox
+                {stripe.demoMode ? " · active" : ""}
               </button>
               <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={busy || syncing}
+                type="button"
+                role="tab"
+                aria-selected={editorEnv === "live"}
+                className={
+                  editorEnv === "live"
+                    ? "admin-segmented-btn admin-segmented-btn-active"
+                    : "admin-segmented-btn"
+                }
+                onClick={() => setEditorEnv("live")}
               >
-                {busy ? "Saving…" : "Save Stripe settings"}
+                Live
+                {!stripe.demoMode ? " · active" : ""}
               </button>
-              {msg ? <p className="admin-panel-sub">{msg}</p> : null}
             </div>
-          ) : msg ? (
-            <p className="admin-panel-sub">{msg}</p>
-          ) : null}
-        </form>
-
-        {!stripeConfigured && (
-          <section className="admin-panel">
             <p className="admin-panel-sub">
-              Checkout is Live only when secret key, webhook secret, and at least
-              one Price ID are set. Sync fills Price IDs; webhook secret still
-              needs pasting from the Stripe Dashboard. User page:{" "}
-              <Link href="/app/billing" className="admin-link">
-                /app/billing
-              </Link>
-              .
+              Editing <strong>{editorEnv}</strong> credentials
+              {editorEnv === stripe.activeEnv
+                ? " (currently used for Checkout)."
+                : " (saved for when you switch Demo mode)."}
             </p>
+            <label className="admin-field-label">
+              Secret key
+              <input
+                type="password"
+                autoComplete="off"
+                value={active.secretKey}
+                disabled={!canEdit}
+                onChange={(e) => patchEnv({ secretKey: e.target.value })}
+                className="field"
+                placeholder={
+                  active.hasSecretKey
+                    ? "•••• saved — paste to replace"
+                    : editorEnv === "live"
+                      ? "sk_live_…"
+                      : "sk_test_… or rk_test_…"
+                }
+              />
+            </label>
+            <label className="admin-field-label">
+              Webhook signing secret
+              <input
+                type="password"
+                autoComplete="off"
+                value={active.webhookSecret}
+                disabled={!canEdit}
+                onChange={(e) => patchEnv({ webhookSecret: e.target.value })}
+                className="field"
+                placeholder={
+                  active.hasWebhookSecret
+                    ? "•••• saved — paste to replace"
+                    : "whsec_…"
+                }
+              />
+            </label>
+            <label className="admin-field-label">
+              Publishable key (optional)
+              <input
+                type="text"
+                value={active.publishableKey}
+                disabled={!canEdit}
+                onChange={(e) => patchEnv({ publishableKey: e.target.value })}
+                className="field"
+                placeholder={
+                  editorEnv === "live" ? "pk_live_…" : "pk_test_…"
+                }
+              />
+            </label>
+            <h3 className="admin-panel-title" style={{ marginTop: "1rem" }}>
+              Plans ({editorEnv})
+            </h3>
+            <div className="admin-stat-grid">
+              {(
+                [
+                  {
+                    label: "Weekly",
+                    priceId: active.priceIdWeekly,
+                    display: active.displayPriceWeekly,
+                    onPriceId: (v: string) => patchEnv({ priceIdWeekly: v }),
+                    onDisplay: (v: string) =>
+                      patchEnv({ displayPriceWeekly: v }),
+                  },
+                  {
+                    label: "Monthly",
+                    priceId: active.priceIdMonthly,
+                    display: active.displayPriceMonthly,
+                    onPriceId: (v: string) => patchEnv({ priceIdMonthly: v }),
+                    onDisplay: (v: string) =>
+                      patchEnv({ displayPriceMonthly: v }),
+                  },
+                  {
+                    label: "Yearly",
+                    priceId: active.priceIdYearly,
+                    display: active.displayPriceYearly,
+                    onPriceId: (v: string) => patchEnv({ priceIdYearly: v }),
+                    onDisplay: (v: string) =>
+                      patchEnv({ displayPriceYearly: v }),
+                  },
+                ] as const
+              ).map((plan) => (
+                <article key={plan.label} className="admin-stat-card">
+                  <p className="admin-stat-label">{plan.label}</p>
+                  <label className="admin-field-label">
+                    Display price
+                    <input
+                      type="text"
+                      value={plan.display}
+                      disabled={!canEdit}
+                      onChange={(e) => plan.onDisplay(e.target.value)}
+                      className="field"
+                    />
+                  </label>
+                  <label className="admin-field-label">
+                    Stripe Price ID
+                    <input
+                      type="text"
+                      value={plan.priceId}
+                      disabled={!canEdit}
+                      onChange={(e) => plan.onPriceId(e.target.value)}
+                      className="field"
+                      placeholder="price_…"
+                    />
+                  </label>
+                </article>
+              ))}
+            </div>
+            {canEdit ? (
+              <div className="admin-form-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={busy || syncing || !canSync}
+                  onClick={() => void syncFromStripe()}
+                >
+                  {syncing
+                    ? "Syncing…"
+                    : `Sync from Stripe (${editorEnv})`}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={busy || syncing}
+                >
+                  {busy ? "Saving…" : "Save Stripe settings"}
+                </button>
+                {msg ? <p className="admin-panel-sub">{msg}</p> : null}
+              </div>
+            ) : msg ? (
+              <p className="admin-panel-sub">{msg}</p>
+            ) : null}
+          </form>
+        )}
+        {tab === "subscriptions" && (
+          <section className="admin-panel">
+            <h2 className="admin-panel-title">Subscriptions</h2>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Renews</th>
+                    <th>Stripe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="admin-table-empty">
+                        No subscriptions yet
+                      </td>
+                    </tr>
+                  )}
+                  {rows.map((r) => (
+                    <tr key={r.userId}>
+                      <td>
+                        <Link
+                          href={`/admin/users/${r.userId}`}
+                          className="admin-link"
+                        >
+                          {r.email}
+                        </Link>
+                      </td>
+                      <td>{r.plan}</td>
+                      <td>{r.status}</td>
+                      <td>{formatMoney(r.amountCents, r.currency)}</td>
+                      <td>{formatDateTime(r.renewsAt)}</td>
+                      <td className="text-[var(--text-muted)]">
+                        {r.stripeSubscriptionId ? "Linked" : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
-
-        <section className="admin-panel">
-          <h2 className="admin-panel-title">Subscriptions</h2>
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Plan</th>
-                  <th>Status</th>
-                  <th>Amount</th>
-                  <th>Renews</th>
-                  <th>Stripe</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 && (
+        {tab === "usage" && (
+          <section className="admin-panel">
+            <h2 className="admin-panel-title">Usage</h2>
+            <p className="mb-3 text-sm text-[var(--text-muted)]">
+              AI tokens and estimated provider cost (USD list prices). Not charged
+              to users.
+            </p>
+            {(llmMonth || llmAll) && (
+              <div className="admin-stat-grid mb-4">
+                <article className="admin-stat-card">
+                  <p className="admin-stat-label">AI cost (month)</p>
+                  <p className="admin-stat-value">
+                    {formatUsdMicros(llmMonth?.costUsdMicros ?? 0)}
+                  </p>
+                  <p className="admin-stat-hint">
+                    {formatTokenCount(llmMonth?.totalTokens ?? 0)} tokens
+                  </p>
+                </article>
+                <article className="admin-stat-card">
+                  <p className="admin-stat-label">AI cost (all time)</p>
+                  <p className="admin-stat-value">
+                    {formatUsdMicros(llmAll?.costUsdMicros ?? 0)}
+                  </p>
+                  <p className="admin-stat-hint">
+                    {formatTokenCount(llmAll?.totalTokens ?? 0)} tokens ·{" "}
+                    {llmAll?.callCount ?? 0} calls
+                  </p>
+                </article>
+              </div>
+            )}
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="admin-table-empty">
-                      No subscriptions yet
-                    </td>
+                    <th>User</th>
+                    <th>Threads</th>
+                    <th>Messages</th>
+                    <th>AI tokens</th>
+                    <th>Est. AI cost</th>
+                    <th>Last activity</th>
                   </tr>
-                )}
-                {rows.map((r) => (
-                  <tr key={r.userId}>
-                    <td>
-                      <Link
-                        href={`/admin/users/${r.userId}`}
-                        className="admin-link"
-                      >
-                        {r.email}
-                      </Link>
-                    </td>
-                    <td>{r.plan}</td>
-                    <td>{r.status}</td>
-                    <td>{formatMoney(r.amountCents, r.currency)}</td>
-                    <td>{formatDateTime(r.renewsAt)}</td>
-                    <td className="text-[var(--text-muted)]">
-                      {r.stripeSubscriptionId ? "Linked" : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="admin-panel">
-          <h2 className="admin-panel-title">Usage</h2>
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Threads</th>
-                  <th>Messages</th>
-                  <th>Last activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usage.map((u) => (
-                  <tr key={u.userId}>
-                    <td>
-                      <Link
-                        href={`/admin/users/${u.userId}`}
-                        className="admin-link"
-                      >
-                        {u.email}
-                      </Link>
-                    </td>
-                    <td>{u.threadCount}</td>
-                    <td>{u.messageCount}</td>
-                    <td>{formatDateTime(u.lastActivityAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </thead>
+                <tbody>
+                  {usage.map((u) => (
+                    <tr key={u.userId}>
+                      <td>
+                        <Link
+                          href={`/admin/users/${u.userId}`}
+                          className="admin-link"
+                        >
+                          {u.email}
+                        </Link>
+                      </td>
+                      <td>{u.threadCount}</td>
+                      <td>{u.messageCount}</td>
+                      <td>
+                        {formatTokenCount(u.llmTotalTokens)}
+                        {u.llmCallCount > 0 ? (
+                          <span className="text-[var(--text-muted)]">
+                            {" "}
+                            · {u.llmCallCount} calls
+                          </span>
+                        ) : null}
+                      </td>
+                      <td>{formatUsdMicros(u.llmCostUsdMicros)}</td>
+                      <td>{formatDateTime(u.lastActivityAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </main>
     </div>
+  );
+}
+export default function AdminBillingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="admin-page flex min-h-screen items-center justify-center">
+          <p className="text-[var(--text-secondary)]">Loading…</p>
+        </div>
+      }
+    >
+      <AdminBillingPageInner />
+    </Suspense>
   );
 }

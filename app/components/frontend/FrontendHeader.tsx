@@ -1,0 +1,409 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
+import { ArrowRight, Menu, X } from "lucide-react";
+import { APP_BASE, LOGIN_PATH, appPath } from "@/lib/app-base";
+import { Avatar } from "@/app/components/Avatar";
+import { BrandLockup } from "@/app/components/BrandLockup";
+import {
+  scrollToLandingSection,
+  stashPendingLandingHash,
+} from "@/lib/landing-scroll";
+import "./frontend-header.css";
+
+type MeUser = {
+  email: string;
+  name: string | null;
+  avatarUrl?: string | null;
+  role?: string;
+};
+
+/** Landing section anchors — logo is Home; keep center nav compact. */
+const NAV_LINKS = [
+  { href: "/", label: "Home", id: "home" },
+  { href: "/#how-it-works", label: "How it works", id: "how-it-works" },
+  { href: "/#prices", label: "Prices", id: "prices" },
+  { href: "/#blog", label: "Blog", id: "blog" },
+  { href: "/#faq", label: "FAQ", id: "faq" },
+] as const;
+
+function HeaderCta({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <Link href={href} className="frontend-header-cta">
+      <span className="frontend-header-cta-text">
+        <span className="frontend-header-cta-line">{label}</span>
+        <span className="frontend-header-cta-line frontend-header-cta-line--hover">
+          {label}
+        </span>
+      </span>
+      <span className="frontend-header-cta-icon" aria-hidden>
+        <ArrowRight />
+      </span>
+    </Link>
+  );
+}
+
+function displayLabel(user: MeUser) {
+  if (user.name?.trim()) return user.name.trim();
+  return user.email.split("@")[0] ?? user.email;
+}
+
+export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<MeUser | null | undefined>(undefined);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState("");
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    void fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d: { user?: MeUser | null }) => setUser(d.user ?? null))
+      .catch(() => setUser(null));
+  }, []);
+
+  useEffect(() => {
+    const syncHash = () => setActiveHash(window.location.hash.replace(/^#/, ""));
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const hero = document.querySelector<HTMLElement>(".fe-hero");
+      if (overlay && hero) {
+        const bottom = hero.getBoundingClientRect().bottom;
+        setScrolled(bottom < 120);
+        return;
+      }
+      setScrolled(window.scrollY > 24);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [overlay]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [userMenuOpen]);
+
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  const onSectionNav = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+      closeMenu();
+
+      // Same-page: Lenis smooth scroll (Next soft-nav would not scroll).
+      if (pathname === "/") {
+        e.preventDefault();
+        if (id === "home") {
+          const ok = scrollToLandingSection("home");
+          if (ok) {
+            window.history.pushState(null, "", "/");
+            setActiveHash("");
+          }
+          return;
+        }
+        const ok = scrollToLandingSection(id);
+        if (ok) {
+          window.history.pushState(null, "", `#${id}`);
+          setActiveHash(id);
+        }
+        return;
+      }
+
+      // Other routes (404, about, …): Next soft-nav often drops `/#hash`.
+      // Stash id, navigate to `/`; HomeLanding scrolls + restores the fragment.
+      e.preventDefault();
+      if (id === "home") {
+        stashPendingLandingHash("");
+        router.push("/");
+        return;
+      }
+      stashPendingLandingHash(id);
+      setActiveHash(id);
+      router.push("/");
+    },
+    [pathname, closeMenu, router]
+  );
+
+  const isAdmin =
+    user?.role === "platform_admin" || user?.role === "support";
+  const dashboardHref = isAdmin ? "/admin" : APP_BASE;
+
+  const logout = async () => {
+    setUserMenuOpen(false);
+    closeMenu();
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  };
+
+  const headerClass = [
+    "frontend-header",
+    overlay ? "frontend-header--overlay" : "",
+    scrolled ? "frontend-header-scrolled" : "",
+    menuOpen ? "frontend-header-menu-open" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const label = user ? displayLabel(user) : "";
+
+  const isNavCurrent = (id: string) => {
+    if (pathname !== "/") return false;
+    if (id === "home") return !activeHash || activeHash === "home";
+    return activeHash === id;
+  };
+
+  return (
+    <header className={headerClass}>
+      <div className="frontend-header-wrap">
+        <div className="frontend-header-pill">
+          <div className="frontend-header-left">
+            <Link
+              href="/"
+              className="frontend-header-brand"
+              aria-label="NuraHelp home"
+              onClick={closeMenu}
+            >
+              <BrandLockup
+                tone={overlay && !scrolled ? "white" : "color"}
+              />
+            </Link>
+          </div>
+
+          <nav className="frontend-header-nav" aria-label="Site">
+            {NAV_LINKS.map(({ href, label: linkLabel, id }) => (
+              <Link
+                key={id}
+                href={href}
+                className="frontend-header-link"
+                aria-current={isNavCurrent(id) ? "true" : undefined}
+                onClick={(e) => onSectionNav(e, id)}
+              >
+                {linkLabel}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="frontend-header-right">
+            {user === undefined ? (
+              <span className="frontend-nav-muted" aria-hidden>
+                …
+              </span>
+            ) : user ? (
+              <div className="frontend-header-user" ref={userMenuRef}>
+                <span className="frontend-header-user-name">{label}</span>
+                <button
+                  type="button"
+                  className="frontend-header-user-avatar-btn"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={`Account menu for ${label}`}
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                >
+                  <Avatar
+                    src={user.avatarUrl}
+                    alt={label}
+                    fallback={label}
+                    className="avatar-sm frontend-header-avatar"
+                  />
+                </button>
+                {userMenuOpen ? (
+                  <div className="frontend-header-dropdown" role="menu">
+                    <Link
+                      href={dashboardHref}
+                      className="frontend-header-dropdown-item"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    {!isAdmin ? (
+                      <>
+                        <Link
+                          href={appPath("/settings?tab=profile")}
+                          className="frontend-header-dropdown-item"
+                          role="menuitem"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Settings
+                        </Link>
+                        <Link
+                          href={appPath("/billing")}
+                          className="frontend-header-dropdown-item"
+                          role="menuitem"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Billing
+                        </Link>
+                      </>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="frontend-header-dropdown-item frontend-header-dropdown-item--danger"
+                      role="menuitem"
+                      onClick={() => void logout()}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="frontend-header-guest">
+                <Link href={LOGIN_PATH} className="frontend-header-signin">
+                  Sign in
+                </Link>
+                <HeaderCta
+                  href={appPath("/create-account")}
+                  label="Get started"
+                />
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="frontend-header-menu-btn"
+              aria-expanded={menuOpen}
+              aria-controls="frontend-mobile-nav"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen ? (
+          <nav
+            id="frontend-mobile-nav"
+            className="frontend-header-mobile"
+            aria-label="Mobile site"
+          >
+            {user ? (
+              <div className="frontend-header-mobile-user">
+                <Avatar
+                  src={user.avatarUrl}
+                  alt={label}
+                  fallback={label}
+                  className="avatar-sm"
+                />
+                <div className="frontend-header-mobile-user-text">
+                  <p className="frontend-header-mobile-user-name">{label}</p>
+                  <p className="frontend-header-mobile-user-email">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {NAV_LINKS.map(({ href, label: linkLabel, id }) => (
+              <Link
+                key={id}
+                href={href}
+                className="frontend-header-mobile-link"
+                aria-current={isNavCurrent(id) ? "true" : undefined}
+                onClick={(e) => onSectionNav(e, id)}
+              >
+                {linkLabel}
+              </Link>
+            ))}
+
+            <div className="frontend-header-mobile-actions">
+              {user === undefined ? (
+                <span className="frontend-nav-muted">…</span>
+              ) : user ? (
+                <>
+                  <Link
+                    href={dashboardHref}
+                    className="frontend-btn-ghost"
+                    onClick={closeMenu}
+                  >
+                    Dashboard
+                  </Link>
+                  {!isAdmin ? (
+                    <>
+                      <Link
+                        href={appPath("/settings?tab=profile")}
+                        className="frontend-btn-ghost"
+                        onClick={closeMenu}
+                      >
+                        Settings
+                      </Link>
+                      <Link
+                        href={appPath("/billing")}
+                        className="frontend-btn-ghost"
+                        onClick={closeMenu}
+                      >
+                        Billing
+                      </Link>
+                    </>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="frontend-btn-ghost frontend-header-mobile-signout"
+                    onClick={() => void logout()}
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={LOGIN_PATH}
+                    className="frontend-btn-ghost"
+                    onClick={closeMenu}
+                  >
+                    Sign in
+                  </Link>
+                  <HeaderCta
+                    href={appPath("/create-account")}
+                    label="Get started"
+                  />
+                </>
+              )}
+            </div>
+          </nav>
+        ) : null}
+      </div>
+    </header>
+  );
+}

@@ -2,12 +2,9 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AuthShell,
-  AuthError,
-  AuthSuccess,
-} from "@/app/components/AuthShell";
+import { AuthError, AuthSuccess } from "@/app/components/AuthShell";
 import { HelpChatLink } from "@/app/components/HelpChatWidget";
+import { OnboardingShell } from "@/app/components/onboarding/OnboardingShell";
 import {
   BILLING_PLANS,
   orderedBillingPlans,
@@ -34,7 +31,9 @@ type BillingStatus = {
   plans?: Record<BillingPlanId, BillingPlanMeta>;
 };
 
-type Step = "welcome" | "plan" | "tutorial";
+type Step = "plan" | "tutorial";
+
+const FREE_MINUTES = Math.floor(TRIAL_BLS_SECONDS / 60);
 
 function OnboardingFlow() {
   const router = useRouter();
@@ -43,7 +42,7 @@ function OnboardingFlow() {
   const sessionId = params.get("session_id");
   const canceledPlan = params.get("plan");
 
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("plan");
   const [plan, setPlan] = useState<BillingPlanId>(
     canceledPlan === "weekly" || canceledPlan === "monthly" ? canceledPlan : "yearly"
   );
@@ -80,6 +79,14 @@ function OnboardingFlow() {
         }
         if (cancelled) return;
 
+        if (sessionId && typeof window !== "undefined") {
+          const url = new URL(window.location.href);
+          if (url.searchParams.has("session_id")) {
+            url.searchParams.delete("session_id");
+            window.history.replaceState({}, "", url.pathname + url.search);
+          }
+        }
+
         if (checkout === "success" && !data.canUseApp) {
           setStep("plan");
           setError(
@@ -98,7 +105,9 @@ function OnboardingFlow() {
           setStep("plan");
           setError("Checkout canceled. Choose a plan when you’re ready.");
         } else if (!data.needsOnboarding && data.needsPayment) {
-          setStep("plan");
+          // Returning canceled / blocked users — billing, not a fresh trial pitch.
+          router.replace(`${APP_BASE}/billing`);
+          return;
         }
       } catch (err) {
         if (!cancelled) {
@@ -111,7 +120,7 @@ function OnboardingFlow() {
     return () => {
       cancelled = true;
     };
-  }, [checkout, refreshStatus, router]);
+  }, [checkout, refreshStatus, router, sessionId]);
 
   const startCheckout = async () => {
     setBusy(true);
@@ -159,32 +168,40 @@ function OnboardingFlow() {
     }
   };
 
-  const subtitle = useMemo(() => {
-    if (step === "welcome") return "Guided wellness sessions with BLS";
-    if (step === "plan")
-      return `${TRIAL_DAYS}-day trial · card required · cancel anytime`;
-    return "A few tips before your first session";
+  const shellCopy = useMemo(() => {
+    if (step === "plan") {
+      return {
+        kicker: "Getting started" as string | undefined,
+        title: "Pick a plan",
+        lead: `${TRIAL_DAYS} days free · cancel anytime`,
+      };
+    }
+    return {
+      kicker: undefined as string | undefined,
+      title: "You’re ready",
+      lead: "Your trial is on. Open the app and tap New chat.",
+    };
   }, [step]);
 
   if (loading) {
     return (
-      <AuthShell title="Setting up…" subtitle="Loading your account" hideHomeLink>
-        <p className="onboarding-note !mb-0 text-center">Please wait…</p>
-      </AuthShell>
+      <OnboardingShell
+        kicker="Getting started"
+        title="Setting up…"
+        lead="Loading your account"
+      >
+        <p className="ob-note" style={{ margin: 0 }}>
+          Please wait…
+        </p>
+      </OnboardingShell>
     );
   }
 
   return (
-    <AuthShell
-      title={
-        step === "welcome"
-          ? "Welcome"
-          : step === "plan"
-            ? "Choose a plan"
-            : "Quick start"
-      }
-      subtitle={subtitle}
-      hideHomeLink
+    <OnboardingShell
+      kicker={shellCopy.kicker}
+      title={shellCopy.title}
+      lead={shellCopy.lead}
       footer={
         <p>
           <HelpChatLink>Need help?</HelpChatLink>
@@ -192,27 +209,7 @@ function OnboardingFlow() {
       }
     >
       {error && <AuthError message={error} />}
-      {success && <AuthSuccess message={success} />}
-
-      {step === "welcome" && (
-        <div>
-          <ul className="onboarding-bullets">
-            <li>AI-guided sessions or free BLS mode</li>
-            <li>
-              {TRIAL_DAYS}-day trial: {TRIAL_GUIDED_SESSIONS} guided sessions and{" "}
-              {Math.floor(TRIAL_BLS_SECONDS / 60)} min free BLS
-            </li>
-            <li>Card required — you won’t be charged until the trial ends</li>
-          </ul>
-          <button
-            type="button"
-            className="btn-primary mt-4 w-full"
-            onClick={() => setStep("plan")}
-          >
-            Continue
-          </button>
-        </div>
-      )}
+      {step === "plan" && success ? <AuthSuccess message={success} /> : null}
 
       {step === "plan" && (
         <div>
@@ -246,59 +243,40 @@ function OnboardingFlow() {
               );
             })}
           </div>
-          <p className="onboarding-note mt-3">
-            Payment method is saved now. Billing starts after the {TRIAL_DAYS}-day
-            trial.
+          <p className="ob-note">
+            Trial includes {TRIAL_GUIDED_SESSIONS} guided sessions and{" "}
+            {FREE_MINUTES} min of Free session time. We save your card now —
+            billing starts after day {TRIAL_DAYS}.
           </p>
           <button
             type="button"
-            className="btn-primary w-full"
+            className="frontend-btn-primary ob-cta"
             disabled={busy || !status?.stripeConfigured}
             onClick={() => void startCheckout()}
           >
-            {busy ? "Redirecting…" : "Start trial"}
-          </button>
-          <button
-            type="button"
-            className="btn-ghost mt-2 w-full"
-            disabled={busy}
-            onClick={() => setStep("welcome")}
-          >
-            Back
+            {busy ? "Redirecting…" : `Start ${TRIAL_DAYS}-day trial`}
           </button>
         </div>
       )}
 
       {step === "tutorial" && (
-        <div>
-          <ol className="onboarding-steps">
-            <li>
-              <strong>New chat</strong> — start a session from the sidebar
-            </li>
-            <li>
-              <strong>Guided or Free</strong> — pick how you want to work
-            </li>
-            <li>
-              <strong>BLS bar</strong> — start, stop, and adjust the ball
-            </li>
-          </ol>
-          {status?.isTrialLimited && (
-            <p className="onboarding-note">
-              Trial left: {status.guidedRemaining} guided ·{" "}
-              {Math.floor(Math.max(0, status.blsSecondsRemaining) / 60)} min BLS
-            </p>
-          )}
+        <div className="ob-tutorial">
+          <div className="ob-ball-preview" aria-hidden="true">
+            <div className="ob-ball-track">
+              <span className="ob-ball-dot" />
+            </div>
+          </div>
           <button
             type="button"
-            className="btn-primary mt-4 w-full"
+            className="frontend-btn-primary ob-cta"
             disabled={busy}
             onClick={() => void finish()}
           >
-            {busy ? "Opening…" : "Go to app"}
+            {busy ? "Opening…" : "Open the app"}
           </button>
         </div>
       )}
-    </AuthShell>
+    </OnboardingShell>
   );
 }
 

@@ -2,9 +2,11 @@ import { google } from "googleapis";
 import {
   EmailQuotaError,
   getFromAddress,
+  getReplyToAddress,
   type SendEmailInput,
   type SendEmailResult,
 } from "./types";
+import { getResolvedGmailCredentials } from "./status";
 
 async function buildRawMessage(input: SendEmailInput): Promise<string> {
   const from = await getFromAddress();
@@ -18,11 +20,13 @@ async function buildRawMessage(input: SendEmailInput): Promise<string> {
       "Gmail send-as address is not set. Configure Admin → Email → From address."
     );
   }
+  const replyTo = await getReplyToAddress();
   const boundary = `nurahelp_${Date.now()}`;
 
   const lines = [
     `From: ${from.name} <${sender}>`,
     `To: ${input.to}`,
+    ...(replyTo ? [`Reply-To: ${replyTo}`] : []),
     `Subject: =?UTF-8?B?${Buffer.from(input.subject).toString("base64")}?=`,
     "MIME-Version: 1.0",
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -43,6 +47,7 @@ async function buildRawMessage(input: SendEmailInput): Promise<string> {
   return lines.join("\r\n");
 }
 
+/** Sync env-only check — prefer async isGmailReady() for DB + env. */
 export function isGmailConfigured(): boolean {
   return Boolean(
     process.env.GMAIL_CLIENT_ID &&
@@ -51,21 +56,23 @@ export function isGmailConfigured(): boolean {
   );
 }
 
+export async function isGmailReady(): Promise<boolean> {
+  return Boolean(await getResolvedGmailCredentials());
+}
+
 export async function sendViaGmail(
   input: SendEmailInput
 ): Promise<SendEmailResult> {
-  const clientId = process.env.GMAIL_CLIENT_ID;
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  const creds = await getResolvedGmailCredentials();
 
-  if (!clientId || !clientSecret || !refreshToken) {
+  if (!creds) {
     throw new Error(
-      "Gmail API not configured (GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN)"
+      "Gmail API not configured. Set credentials in Admin → Email or GMAIL_CLIENT_ID / SECRET / REFRESH_TOKEN."
     );
   }
 
-  const oauth2 = new google.auth.OAuth2(clientId, clientSecret);
-  oauth2.setCredentials({ refresh_token: refreshToken });
+  const oauth2 = new google.auth.OAuth2(creds.clientId, creds.clientSecret);
+  oauth2.setCredentials({ refresh_token: creds.refreshToken });
 
   const gmail = google.gmail({ version: "v1", auth: oauth2 });
   const raw = await buildRawMessage(input);

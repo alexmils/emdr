@@ -78,24 +78,27 @@ export async function getSessionFromRequest(
   return verifySessionToken(token);
 }
 
-export function sessionCookieOptions(token: string) {
+export function sessionCookieOptions(
+  token: string,
+  opts?: { secure?: boolean }
+) {
   return {
     name: SESSION_COOKIE,
     value: token,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: opts?.secure ?? process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
     maxAge: SESSION_DAYS * 24 * 60 * 60,
   };
 }
 
-export function clearSessionCookieOptions() {
+export function clearSessionCookieOptions(opts?: { secure?: boolean }) {
   return {
     name: SESSION_COOKIE,
     value: "",
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: opts?.secure ?? process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
     maxAge: 0,

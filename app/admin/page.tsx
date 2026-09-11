@@ -1,10 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  Activity,
+  CreditCard,
+  LifeBuoy,
+  Mail,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { InviteForm } from "@/app/components/admin/InviteForm";
+import {
+  AdminGauge,
+  AdminSegmentBar,
+  AdminStackedBars,
+  CHART_SLICE_COLORS,
+  DeltaBadge,
+} from "@/app/components/admin/AdminCharts";
 import { actionLabel, formatDateTime, formatMoney } from "@/lib/admin-format";
+import { formatTokenCount, formatUsdMicros } from "@/lib/admin-llm-format";
 import type { AdminDashboardStats } from "@/lib/admin-stats";
 import type { AuditEvent } from "@/lib/audit-log";
 import { fetchJson } from "@/lib/fetch-json";
@@ -50,6 +66,30 @@ export default function AdminOverviewPage() {
     })();
   }, [load]);
 
+  const chartPoints = useMemo(() => {
+    if (!stats?.series7d) return [];
+    return stats.series7d.map((d) => ({
+      label: d.label,
+      a: d.messages,
+      b: Math.round(d.tokens / 100),
+      c: d.newUsers * 5,
+    }));
+  }, [stats]);
+
+  const purposeSlices = useMemo(() => {
+    if (!stats) return [];
+    const rows =
+      stats.llmByPurpose.length > 0
+        ? stats.llmByPurpose
+        : [{ key: "none", label: "No AI usage yet", costUsdMicros: 1, tokens: 0, callCount: 0 }];
+    return rows.map((r, i) => ({
+      key: r.key,
+      label: r.label,
+      value: r.costUsdMicros || r.tokens || 1,
+      color: CHART_SLICE_COLORS[i % CHART_SLICE_COLORS.length],
+    }));
+  }, [stats]);
+
   if (loading) {
     return (
       <div className="admin-page flex min-h-screen items-center justify-center">
@@ -66,80 +106,243 @@ export default function AdminOverviewPage() {
     );
   }
 
+  const weekTokens = stats.series7d.reduce((s, d) => s + d.tokens, 0);
+  const weekCost = stats.series7d.reduce((s, d) => s + d.costUsdMicros, 0);
+  const weekMessages = stats.series7d.reduce((s, d) => s + d.messages, 0);
+
+  let healthScore = stats.healthScore;
+  if (health?.brevoConfigured) healthScore = Math.min(100, healthScore + 5);
+  if (health?.gmailConfigured || health?.gmailFallbackConfigured) {
+    healthScore = Math.min(100, healthScore + 5);
+  }
+
   return (
     <div className="admin-page">
       <AdminPageHeader
         title="Overview"
-        subtitle="Platform health, usage, and recent activity."
+        subtitle="Live platform pulse — users, sessions, AI cost, and health."
       />
       <main className="admin-main">
-        <section className="admin-stat-grid">
-          <article className="admin-stat-card">
+        <section className="admin-dash-kpis">
+          <article className="admin-dash-kpi">
             <p className="admin-stat-label">Users</p>
             <p className="admin-stat-value">{stats.users.total}</p>
+            <DeltaBadge
+              current={stats.users.newThisMonth}
+              previous={stats.users.newLastMonth}
+            />
+          </article>
+          <article className="admin-dash-kpi">
+            <p className="admin-stat-label">MRR</p>
+            <p className="admin-stat-value">
+              {formatMoney(stats.billing.mrrCents, stats.billing.currency)}
+            </p>
             <p className="admin-stat-hint">
-              +{stats.users.newThisMonth} this month
+              {stats.billing.activePaid} paying · {stats.billing.paidSharePct}%
+              share
             </p>
           </article>
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Sessions</p>
-            <p className="admin-stat-value">{stats.sessions.totalThreads}</p>
-            <p className="admin-stat-hint">All user threads</p>
+          <article className="admin-dash-kpi">
+            <p className="admin-stat-label">AI cost (month)</p>
+            <p className="admin-stat-value">
+              {formatUsdMicros(stats.llm.costUsdMicrosThisMonth)}
+            </p>
+            <DeltaBadge
+              current={stats.llm.costUsdMicrosThisMonth}
+              previous={stats.llm.costUsdMicrosLastMonth}
+            />
           </article>
-          <article className="admin-stat-card">
+          <article className="admin-dash-kpi">
             <p className="admin-stat-label">Messages (month)</p>
             <p className="admin-stat-value">
               {stats.sessions.messagesThisMonth}
             </p>
-          </article>
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Paying</p>
-            <p className="admin-stat-value">{stats.billing.activePaid}</p>
-            <p className="admin-stat-hint">
-              MRR {formatMoney(stats.billing.mrrCents, stats.billing.currency)}
-            </p>
-          </article>
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Admins</p>
-            <p className="admin-stat-value">{stats.users.admins}</p>
-            <p className="admin-stat-hint">Platform administrators</p>
+            <DeltaBadge
+              current={stats.sessions.messagesThisMonth}
+              previous={stats.sessions.messagesLastMonth}
+            />
           </article>
         </section>
 
-        {health && (
-          <section className="admin-panel">
-            <h2 className="admin-panel-title">Health</h2>
-            <div className="admin-health-chips">
-              <span
-                className={`admin-health-chip ${
-                  health.brevoConfigured ? "admin-health-ok" : "admin-health-warn"
-                }`}
-              >
-                Brevo {health.brevoConfigured ? "primary" : "not configured"}
+        <div className="admin-dash-grid">
+          <section className="admin-panel admin-dash-span-2">
+            <div className="admin-panel-head-row">
+              <div>
+                <h2 className="admin-panel-title">Last 7 days</h2>
+                <p className="admin-panel-sub">
+                  Stacked activity — messages, tokens (÷100), new users (×5)
+                </p>
+              </div>
+              <div className="admin-dash-hero-metric">
+                <p className="admin-stat-label">Week AI cost</p>
+                <p className="admin-dash-hero-value">
+                  {formatUsdMicros(weekCost)}
+                </p>
+              </div>
+            </div>
+            <div className="admin-chart-wrap">
+              <AdminStackedBars points={chartPoints} />
+            </div>
+            <div className="admin-chart-legend">
+              <span>
+                <i style={{ background: "#84B067" }} /> Messages ({weekMessages})
               </span>
-              <span
-                className={`admin-health-chip ${
-                  health.gmailConfigured || health.gmailFallbackConfigured
-                    ? "admin-health-ok"
-                    : "admin-health-warn"
-                }`}
-              >
-                Gmail{" "}
-                {health.gmailConfigured || health.gmailFallbackConfigured
-                  ? "fallback"
-                  : "not configured"}
+              <span>
+                <i style={{ background: "#C6D67E" }} /> Tokens (~
+                {formatTokenCount(weekTokens)})
               </span>
-              <span className="admin-health-chip admin-health-neutral">
-                App URL {health.appUrl}
+              <span>
+                <i style={{ background: "#E8A87C" }} /> New users
               </span>
-              {health.fromAddress && (
-                <span className="admin-health-chip admin-health-neutral">
-                  Send as {health.fromName} &lt;{health.fromAddress}&gt;
-                </span>
-              )}
             </div>
           </section>
-        )}
+
+          <section className="admin-panel admin-dash-side-stats">
+            <h2 className="admin-panel-title">Snapshot</h2>
+            <div className="admin-dash-side-row">
+              <div>
+                <p className="admin-stat-label">Sessions</p>
+                <p className="admin-dash-side-value">
+                  {stats.sessions.totalThreads}
+                </p>
+              </div>
+            </div>
+            <div className="admin-dash-side-row">
+              <div>
+                <p className="admin-stat-label">AI tokens (month)</p>
+                <p className="admin-dash-side-value">
+                  {formatTokenCount(stats.llm.tokensThisMonth)}
+                </p>
+                <DeltaBadge
+                  current={stats.llm.tokensThisMonth}
+                  previous={stats.llm.tokensLastMonth}
+                />
+              </div>
+            </div>
+            <div className="admin-dash-side-row">
+              <div>
+                <p className="admin-stat-label">AI calls (month)</p>
+                <p className="admin-dash-side-value">
+                  {stats.llm.callsThisMonth}
+                </p>
+              </div>
+            </div>
+            <div className="admin-dash-side-row">
+              <div>
+                <p className="admin-stat-label">Team</p>
+                <p className="admin-dash-side-value">
+                  {stats.users.admins} admin · {stats.users.support} support
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="admin-panel">
+            <div className="admin-panel-head-row">
+              <h2 className="admin-panel-title">AI cost mix</h2>
+              <Link href="/admin/billing?tab=usage" className="admin-link">
+                Usage
+              </Link>
+            </div>
+            <p className="admin-dash-cost-total">
+              {formatUsdMicros(stats.llm.costUsdMicrosThisMonth)}
+              <span> this month</span>
+            </p>
+            <AdminSegmentBar slices={purposeSlices} />
+            <ul className="admin-dash-legend-list">
+              {purposeSlices.map((s) => {
+                const total = purposeSlices.reduce((a, x) => a + x.value, 0) || 1;
+                const pct = Math.round((s.value / total) * 100);
+                return (
+                  <li key={s.key}>
+                    <span
+                      className="admin-dash-swatch"
+                      style={{ background: s.color }}
+                    />
+                    <span>{s.label}</span>
+                    <strong>{pct}%</strong>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section className="admin-panel admin-dash-gauge-card">
+            <h2 className="admin-panel-title">Platform health</h2>
+            <AdminGauge value={healthScore} label="Operational score" />
+            {health && (
+              <div className="admin-health-chips admin-dash-health-chips">
+                <span
+                  className={`admin-health-chip ${
+                    health.brevoConfigured
+                      ? "admin-health-ok"
+                      : "admin-health-warn"
+                  }`}
+                >
+                  Brevo {health.brevoConfigured ? "ok" : "off"}
+                </span>
+                <span
+                  className={`admin-health-chip ${
+                    health.gmailConfigured || health.gmailFallbackConfigured
+                      ? "admin-health-ok"
+                      : "admin-health-warn"
+                  }`}
+                >
+                  Gmail{" "}
+                  {health.gmailConfigured || health.gmailFallbackConfigured
+                    ? "ok"
+                    : "off"}
+                </span>
+              </div>
+            )}
+          </section>
+
+          <section className="admin-panel">
+            <h2 className="admin-panel-title">Paying share</h2>
+            <p className="admin-dash-cost-total">
+              {stats.billing.paidSharePct}%
+              <span> of users on a paid plan</span>
+            </p>
+            <div className="admin-progress-track">
+              <div
+                className="admin-progress-fill"
+                style={{
+                  width: `${Math.min(100, stats.billing.paidSharePct)}%`,
+                }}
+              />
+            </div>
+            <p className="admin-panel-sub">
+              {stats.billing.activePaid} paying · MRR{" "}
+              {formatMoney(stats.billing.mrrCents, stats.billing.currency)}
+            </p>
+            <div className="admin-dash-quick">
+              <Link href="/admin/users?tab=invite" className="admin-dash-quick-btn">
+                <Users size={18} />
+                Invite
+              </Link>
+              <Link href="/admin/billing?tab=stripe" className="admin-dash-quick-btn">
+                <CreditCard size={18} />
+                Billing
+              </Link>
+              <Link href="/admin/help?tab=inbox" className="admin-dash-quick-btn">
+                <LifeBuoy size={18} />
+                Help
+              </Link>
+              <Link href="/admin/email?tab=delivery" className="admin-dash-quick-btn">
+                <Mail size={18} />
+                Email
+              </Link>
+              <Link href="/admin/ai?tab=ai" className="admin-dash-quick-btn">
+                <Sparkles size={18} />
+                AI
+              </Link>
+              <Link href="/admin/activity" className="admin-dash-quick-btn">
+                <Activity size={18} />
+                Activity
+              </Link>
+            </div>
+          </section>
+        </div>
 
         <div className="admin-two-col">
           <section className="admin-panel">
@@ -157,33 +360,25 @@ export default function AdminOverviewPage() {
                 View all
               </Link>
             </div>
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>When</th>
-                    <th>Action</th>
-                    <th>Actor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {events.length === 0 && (
-                    <tr>
-                      <td colSpan={3} className="admin-table-empty">
-                        No events yet
-                      </td>
-                    </tr>
-                  )}
-                  {events.map((ev) => (
-                    <tr key={ev.id}>
-                      <td>{formatDateTime(ev.createdAt)}</td>
-                      <td>{actionLabel(ev.action)}</td>
-                      <td>{ev.actorEmail ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ul className="admin-dash-feed">
+              {events.length === 0 && (
+                <li className="admin-dash-feed-empty">No events yet</li>
+              )}
+              {events.map((ev) => (
+                <li key={ev.id} className="admin-dash-feed-item">
+                  <span className="admin-dash-feed-dot" />
+                  <div className="admin-dash-feed-body">
+                    <p className="admin-dash-feed-title">
+                      {actionLabel(ev.action)}
+                    </p>
+                    <p className="admin-dash-feed-meta">
+                      {ev.actorEmail ?? "System"} ·{" "}
+                      {formatDateTime(ev.createdAt)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
         </div>
       </main>

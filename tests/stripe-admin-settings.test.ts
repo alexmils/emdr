@@ -5,34 +5,72 @@ import {
   stripeAdminStatus,
   toStripeAdminView,
 } from "../lib/stripe-admin-settings.ts";
-import { DEFAULT_PLATFORM_STRIPE } from "../lib/platform-settings.ts";
+import {
+  DEFAULT_PLATFORM_STRIPE,
+  DEFAULT_STRIPE_CREDENTIALS,
+  normalizeStripeConfig,
+} from "../lib/stripe-config.ts";
 import { orderedBillingPlans, BILLING_PLANS } from "../lib/billing-constants.ts";
+
+describe("normalizeStripeConfig", () => {
+  it("migrates legacy flat keys into sandbox + demoMode", () => {
+    const cfg = normalizeStripeConfig({
+      secretKey: "sk_test_legacy",
+      webhookSecret: "whsec_legacy",
+      priceIdMonthly: "price_m",
+      displayPriceMonthly: "€14.99",
+    });
+    assert.equal(cfg.demoMode, true);
+    assert.equal(cfg.sandbox.secretKey, "sk_test_legacy");
+    assert.equal(cfg.sandbox.priceIdMonthly, "price_m");
+    assert.equal(cfg.live.secretKey, "");
+  });
+
+  it("keeps nested sandbox/live and demoMode false", () => {
+    const cfg = normalizeStripeConfig({
+      demoMode: false,
+      sandbox: { ...DEFAULT_STRIPE_CREDENTIALS, secretKey: "sk_test" },
+      live: { ...DEFAULT_STRIPE_CREDENTIALS, secretKey: "sk_live" },
+    });
+    assert.equal(cfg.demoMode, false);
+    assert.equal(cfg.live.secretKey, "sk_live");
+  });
+});
 
 describe("toStripeAdminView", () => {
   it("redacts secrets for non-editors", () => {
     const cfg = {
       ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk_test_secret",
-      webhookSecret: "whsec_secret",
-      priceIdMonthly: "price_m",
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_test_secret",
+        webhookSecret: "whsec_secret",
+        priceIdMonthly: "price_m",
+      },
     };
     const view = toStripeAdminView(cfg, false);
-    assert.equal(view.secretKey, "");
-    assert.equal(view.webhookSecret, "");
-    assert.equal(view.hasSecretKey, true);
-    assert.equal(view.hasWebhookSecret, true);
-    assert.equal(view.priceIdMonthly, "price_m");
+    assert.equal(view.sandbox.secretKey, "");
+    assert.equal(view.sandbox.webhookSecret, "");
+    assert.equal(view.sandbox.hasSecretKey, true);
+    assert.equal(view.sandbox.hasWebhookSecret, true);
+    assert.equal(view.sandbox.priceIdMonthly, "price_m");
+    assert.equal(view.demoMode, true);
   });
 
-  it("returns secrets for editors", () => {
+  it("never returns secrets — even for editors", () => {
     const cfg = {
       ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk_test_secret",
-      webhookSecret: "whsec_secret",
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_test_secret",
+        webhookSecret: "whsec_secret",
+      },
     };
     const view = toStripeAdminView(cfg, true);
-    assert.equal(view.secretKey, "sk_test_secret");
-    assert.equal(view.webhookSecret, "whsec_secret");
+    assert.equal(view.sandbox.secretKey, "");
+    assert.equal(view.sandbox.webhookSecret, "");
+    assert.equal(view.sandbox.hasSecretKey, true);
+    assert.equal(view.sandbox.hasWebhookSecret, true);
   });
 });
 
@@ -40,53 +78,96 @@ describe("mergeStripeConfigPatch", () => {
   it("keeps secrets when patch sends empty strings", () => {
     const current = {
       ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk_keep",
-      webhookSecret: "whsec_keep",
-      priceIdMonthly: "price_old",
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_keep",
+        webhookSecret: "whsec_keep",
+        priceIdMonthly: "price_old",
+      },
     };
     const next = mergeStripeConfigPatch(current, {
-      secretKey: "",
-      webhookSecret: "   ",
-      priceIdMonthly: "price_new",
+      sandbox: {
+        secretKey: "",
+        webhookSecret: "   ",
+        priceIdMonthly: "price_new",
+      },
     });
-    assert.equal(next.secretKey, "sk_keep");
-    assert.equal(next.webhookSecret, "whsec_keep");
-    assert.equal(next.priceIdMonthly, "price_new");
+    assert.equal(next.sandbox.secretKey, "sk_keep");
+    assert.equal(next.sandbox.webhookSecret, "whsec_keep");
+    assert.equal(next.sandbox.priceIdMonthly, "price_new");
   });
 
-  it("replaces secrets when non-empty", () => {
+  it("replaces secrets when non-empty and toggles demoMode", () => {
     const current = {
       ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk_old",
-      webhookSecret: "whsec_old",
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_old",
+        webhookSecret: "whsec_old",
+      },
     };
     const next = mergeStripeConfigPatch(current, {
-      secretKey: " sk_new ",
-      webhookSecret: "whsec_new",
+      demoMode: false,
+      sandbox: {
+        secretKey: " sk_new ",
+        webhookSecret: "whsec_new",
+      },
     });
-    assert.equal(next.secretKey, "sk_new");
-    assert.equal(next.webhookSecret, "whsec_new");
+    assert.equal(next.demoMode, false);
+    assert.equal(next.sandbox.secretKey, "sk_new");
+    assert.equal(next.sandbox.webhookSecret, "whsec_new");
+  });
+  it("clears price IDs when patch sends empty strings", () => {
+    const current = {
+      ...DEFAULT_PLATFORM_STRIPE,
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_keep",
+        priceIdMonthly: "price_old",
+        priceIdWeekly: "price_w",
+      },
+    };
+    const next = mergeStripeConfigPatch(current, {
+      sandbox: {
+        priceIdMonthly: "",
+        priceIdWeekly: "   ",
+      },
+    });
+    assert.equal(next.sandbox.secretKey, "sk_keep");
+    assert.equal(next.sandbox.priceIdMonthly, "");
+    assert.equal(next.sandbox.priceIdWeekly, "");
   });
 });
 
 describe("stripeAdminStatus", () => {
-  it("splits catalog vs webhook readiness", () => {
+  it("splits catalog vs webhook readiness on active env", () => {
     const catalogOnly = stripeAdminStatus({
-      ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk",
-      priceIdWeekly: "price_w",
+      demoMode: true,
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk",
+        priceIdWeekly: "price_w",
+      },
+      live: { ...DEFAULT_STRIPE_CREDENTIALS },
     });
     assert.equal(catalogOnly.catalogReady, true);
     assert.equal(catalogOnly.webhookReady, false);
     assert.equal(catalogOnly.stripeConfigured, false);
+    assert.equal(catalogOnly.demoMode, true);
+    assert.equal(catalogOnly.activeEnv, "sandbox");
 
-    const live = stripeAdminStatus({
-      ...DEFAULT_PLATFORM_STRIPE,
-      secretKey: "sk",
-      webhookSecret: "whsec",
-      priceIdMonthly: "price_m",
+    const liveReady = stripeAdminStatus({
+      demoMode: false,
+      sandbox: { ...DEFAULT_STRIPE_CREDENTIALS },
+      live: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        secretKey: "sk_live",
+        webhookSecret: "whsec",
+        priceIdMonthly: "price_m",
+      },
     });
-    assert.equal(live.stripeConfigured, true);
+    assert.equal(liveReady.stripeConfigured, true);
+    assert.equal(liveReady.activeEnv, "live");
   });
 });
 

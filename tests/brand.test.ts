@@ -31,6 +31,7 @@ describe("chromeBrandName", () => {
     });
     assert.equal(s.siteName, BRAND_SPOKEN);
     assert.equal(s.fromName, BRAND_SPOKEN);
+    assert.equal(s.email.brevoApiKey, "");
   });
 });
 
@@ -42,5 +43,25 @@ describe("rewriteRetiredBrandCopy", () => {
       "Hi — I’m the Nura assistant."
     );
     assert.equal(rewriteRetiredBrandCopy("What NuraHelp is"), "What Nura is");
+    assert.equal(
+      rewriteRetiredBrandCopy("Trial includes 10 minutes of free BLS"),
+      "Trial includes 10 minutes of Free mode"
+    );
+    assert.equal(
+      rewriteRetiredBrandCopy("Free mode is BLS-only controls"),
+      "Free mode is the moving ball only"
+    );
+    assert.equal(
+      rewriteRetiredBrandCopy(
+        "overview of bilateral stimulation and how guided sessions are structured"
+      ),
+      "overview of the moving ball and how Guided sessions are structured"
+    );
+    assert.equal(
+      rewriteRetiredBrandCopy(
+        "use **bilateral stimulation** — rhythmically tracking something left and right — while"
+      ),
+      "follow **a moving target left and right** — like the ball in Free or Guided mode — while"
+    );
   });
 });

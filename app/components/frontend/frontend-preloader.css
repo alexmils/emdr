@@ -1,0 +1,60 @@
+/* Full-screen mint preloader — percent on top, wave fills below */
+
+html.fe-preloader-active,
+html.fe-preloader-active body {
+  overflow: hidden;
+}
+
+.fe-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: #a4eda5;
+  color: #2a3020;
+  transition: transform 0.7s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+}
+
+.fe-preloader.is-out {
+  transform: translateY(-105%);
+  pointer-events: none;
+}
+
+.fe-preloader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.35rem, 4vw, 2.1rem);
+}
+
+.fe-preloader-count {
+  margin: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: var(--font-sans, var(--font-source-sans), ui-sans-serif, system-ui, sans-serif);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  user-select: none;
+}
+
+.fe-preloader-num {
+  font-size: clamp(3.5rem, 14vw, 7.5rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.fe-preloader-pct {
+  margin-top: 0.35em;
+  margin-left: 0.08em;
+  font-size: clamp(1.15rem, 3.4vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fe-preloader {
+    display: none;
+  }
+}

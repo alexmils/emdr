@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 import { requireAdminAccess, isAuthContext } from "@/lib/api-auth";
-import { getEmailProviderEnvStatus } from "@/lib/email/status";
+import { getEmailProviderStatus } from "@/lib/email/status";
 import { getFromAddress } from "@/lib/email/types";
-import { getPublicAppUrl } from "@/lib/platform-settings";
+import { getPlatformSettings, getPublicAppUrl } from "@/lib/platform-settings";
+import { emailAdminStatus } from "@/lib/email-admin-settings";
 
+/** Lightweight health for dashboard chips — full settings at /api/admin/email/settings. */
 export async function GET() {
   const auth = await requireAdminAccess();
   if (!isAuthContext(auth)) return auth;
 
   try {
-    const env = getEmailProviderEnvStatus();
+    const settings = await getPlatformSettings();
+    const env = await getEmailProviderStatus();
     let fromAddress: string | null = null;
     let fromName: string | null = null;
     try {
@@ -19,13 +22,23 @@ export async function GET() {
     } catch {
       /* optional until configured */
     }
+    const appUrl = await getPublicAppUrl();
+    const detailed = emailAdminStatus(settings.email, {
+      fromName: settings.fromName,
+      fromAddress: settings.fromAddress,
+      appUrl,
+      resolvedFromName: fromName,
+      resolvedFromAddress: fromAddress,
+    });
 
     return NextResponse.json({
       status: {
         ...env,
-        appUrl: await getPublicAppUrl(),
+        appUrl,
         fromAddress,
         fromName,
+        replyTo: detailed.replyTo,
+        env: detailed.env,
       },
     });
   } catch (err) {

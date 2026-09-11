@@ -14,15 +14,13 @@ export default function ResourcesPage() {
       <article className="frontend-legal">
         <h1>Resources</h1>
         <p>
-          Short guides — not a blog dump. We will grow this library as Nura
-          expands beyond EMDR.
+          Short guides live in the app library after you sign in. This public
+          page stays a light overview.
         </p>
         <p>
-          <Link href="/emdr">What EMDR is</Link>
+          <Link href="/app/resources">Open Resources in the app</Link>
           {" · "}
-          <Link href="/emdr">How a session is structured</Link>
-          {" · "}
-          <Link href="/emdr">Bilateral stimulation</Link>
+          <Link href="/about">About Nura</Link>
         </p>
         <p>
           Nura is not a licensed therapist. Use these pages to understand the

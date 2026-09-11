@@ -16,7 +16,7 @@ export const DEFAULT_HELP_SETTINGS: HelpSettings = {
   welcomeMessage:
     "Hi — I’m the Nura assistant. Ask about billing, your account, or how sessions work. For emergencies, contact local emergency services.",
   allowedTopics:
-    "Billing and plans\nTrial limits\nAccount and password\nHow guided and free sessions work\nBLS controls\nPrivacy and data basics\nTechnical troubleshooting",
+    "Billing and plans\nTrial limits\nAccount and password\nHow guided and free sessions work\nSession controls\nPrivacy and data basics\nTechnical troubleshooting",
   deniedTopics:
     "Medical or clinical diagnosis\nTherapy advice or trauma processing guidance\nCrisis counseling\nLegal advice\nAnything unrelated to the Nura product",
   extraSystemNotes: "",

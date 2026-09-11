@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PublicAdsConfig } from "@/lib/ads";
+import { scheduleAdSensePush } from "@/lib/adsense-client";
 
 type ActiveAds = Extract<PublicAdsConfig, { adsActive: true }>;
 
@@ -12,12 +13,6 @@ type Props = {
   onUpgrade: () => void;
 };
 
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-  }
-}
-
 export function AdInterstitial({
   open,
   config,
@@ -26,7 +21,6 @@ export function AdInterstitial({
 }: Props) {
   const [remaining, setRemaining] = useState(0);
   const slotRef = useRef<HTMLModElement>(null);
-  const pushedRef = useRef(false);
 
   const minWatch = config?.minWatchSeconds ?? 0;
 
@@ -49,20 +43,11 @@ export function AdInterstitial({
   useEffect(() => {
     if (!open || !config || config.provider !== "adsense") return;
     if (!config.adsenseClient || !config.adsenseSlot) return;
-    if (pushedRef.current) return;
-    pushedRef.current = true;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // Ad blockers / missing loader — ignore
-    }
+    return scheduleAdSensePush(slotRef.current);
   }, [open, config]);
 
   useEffect(() => {
-    if (!open) {
-      pushedRef.current = false;
-      return;
-    }
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && remaining <= 0) onContinue();
     };

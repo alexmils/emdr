@@ -17,7 +17,8 @@ Before ending your turn on any task that changes code, config, or behavior:
    - hit the affected route(s) or check terminal output for **500**, **tuple concurrently updated**, or stack traces;
    - fix regressions before reporting done.
 5. **Mobile shell** — when touching any page, layout, nav/tabs, or page-level CSS: verify at ~**390×844** (screenshot or measured layout) per `.cursor/rules/mobile-shell-check.mdc`. Do not ship UI checked only on desktop.
-6. **Report honestly** — if something could not be verified (no DB, no network, missing env, no browser), say what was checked, what was skipped, and why.
+6. **Copy + design review** — when touching a page or user-facing UI: run **/redpen**, **/writing-copy**, and **/frontend-design** per `.cursor/rules/page-copy-design-review.mdc`. If issues remain, propose and apply fixes before ending.
+7. **Report honestly** — if something could not be verified (no DB, no network, missing env, no browser), say what was checked, what was skipped, and why.
 
 ## Do not
 

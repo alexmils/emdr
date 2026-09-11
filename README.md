@@ -46,10 +46,11 @@ Set in `.env` while using the tunnel: `APP_URL=https://dev.nurahelp.com`, `TRUST
 
 Ordinary users complete `/app/onboarding` after invite password setup:
 
-1. Welcome → choose weekly/monthly/yearly plan
+1. Pick a plan → start 7-day trial
 2. Stripe Checkout (card required) with a **7-day trial**
-3. Trial limits: **3 guided sessions** and **10 minutes** total Free/BLS
-4. Exhausted limits open an **Upgrade** modal (no extra usage spent)
+3. Quick start tips, then the app
+4. Trial limits: **3 guided sessions** and **10 minutes** total Free/BLS
+5. Exhausted limits open an **Upgrade** modal (no extra usage spent)
 
 Configure Stripe in **Admin → Billing** (secret key, webhook secret, Price IDs, display prices). Defaults: weekly **€4.99**, monthly **€14.99**, yearly **€99**.
 

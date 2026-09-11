@@ -1,26 +1,59 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Mail } from "lucide-react";
 import {
   AuthShell,
   AuthField,
   AuthError,
   AuthLink,
 } from "@/app/components/AuthShell";
+import { GoogleAuthButton } from "@/app/components/GoogleAuthButton";
 import { APP_BASE, LOGIN_PATH, safeAppNext } from "@/lib/app-base";
+import {
+  createAccountPathWithSearch,
+  initialCreateAccountStep,
+} from "@/lib/auth/create-account-ui";
+import { googleAuthErrorMessage } from "@/lib/auth/google-ui";
 
 function CreateAccountForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next");
+  const oauthError = googleAuthErrorMessage(params.get("error"));
 
+  const [step, setStep] = useState<"methods" | "email">(() =>
+    initialCreateAccountStep(oauthError)
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const title = document.getElementById("auth-shell-title");
+    title?.focus({ preventScroll: true });
+  }, [step]);
+
+  const clearErrorFromUrl = () => {
+    if (!params.get("error")) return;
+    router.replace(createAccountPathWithSearch(params.toString()));
+  };
+
+  const goMethods = () => {
+    setError("");
+    clearErrorFromUrl();
+    setStep("methods");
+  };
+
+  const goEmail = () => {
+    setError("");
+    clearErrorFromUrl();
+    setStep("email");
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +81,6 @@ function CreateAccountForm() {
         return;
       }
 
-      // New consumers go through onboarding; honor deep links only under /app.
       const dest = next
         ? safeAppNext(next, `${APP_BASE}/onboarding`)
         : `${APP_BASE}/onboarding`;
@@ -61,19 +93,59 @@ function CreateAccountForm() {
     }
   };
 
+  const footer = (
+    <p>
+      Already have an account?{" "}
+      <AuthLink href={LOGIN_PATH}>Sign in</AuthLink>
+    </p>
+  );
+
+  const legal = (
+    <p className="auth-method-legal">
+      By continuing you agree to our{" "}
+      <AuthLink href="/terms">Terms</AuthLink> and{" "}
+      <AuthLink href="/privacy">Privacy</AuthLink>.
+    </p>
+  );
+
+  if (step === "methods") {
+    return (
+      <AuthShell
+        align="center"
+        title="Start your free trial"
+        subtitle="Choose how you want to continue"
+        footer={footer}
+      >
+        {error ? <AuthError message={error} /> : null}
+        <div className="auth-method-stack">
+          <GoogleAuthButton
+            next={next ?? undefined}
+            from="create-account"
+            variant="ink"
+          />
+          <button
+            type="button"
+            className="auth-method-btn auth-method-btn--muted"
+            onClick={goEmail}
+          >
+            <Mail size={18} strokeWidth={2} aria-hidden />
+            Continue with email
+          </button>
+        </div>
+        {legal}
+      </AuthShell>
+    );
+  }
+
   return (
     <AuthShell
+      align="center"
       title="Create account"
-      subtitle="Start your EMDR Support trial"
-      footer={
-        <p>
-          Already have an account?{" "}
-          <AuthLink href={LOGIN_PATH}>Sign in</AuthLink>
-        </p>
-      }
+      subtitle="Enter your email and a password"
+      footer={footer}
     >
-      <form onSubmit={submit}>
-        {error && <AuthError message={error} />}
+      <form onSubmit={submit} className="auth-email-form">
+        {error ? <AuthError message={error} /> : null}
         <AuthField
           id="name"
           label="Name"
@@ -110,7 +182,7 @@ function CreateAccountForm() {
           onChange={setConfirm}
           autoComplete="new-password"
         />
-        <p className="text-caption mb-4">
+        <p className="text-caption mb-4 text-left">
           Use at least 8 characters with a letter and a number.
         </p>
         <button
@@ -120,11 +192,14 @@ function CreateAccountForm() {
         >
           {loading ? "Creating…" : "Create account"}
         </button>
-        <p className="text-caption mt-4 text-center">
-          By creating an account you agree to our{" "}
-          <AuthLink href="/terms">Terms</AuthLink> and{" "}
-          <AuthLink href="/privacy">Privacy</AuthLink>.
-        </p>
+        {legal}
+        <button
+          type="button"
+          className="auth-method-back"
+          onClick={goMethods}
+        >
+          ← Other sign-up options
+        </button>
       </form>
     </AuthShell>
   );

@@ -1,0 +1,36 @@
+---
+description: Admin nav + search — register every new page/section/tab in lib/admin-nav.ts
+globs: app/admin/**/*,lib/admin-nav.ts,app/components/admin/**/*
+alwaysApply: false
+---
+
+# Admin nav & search registry
+
+Admin sidebar **and** the top search bar share one registry: `lib/admin-nav.ts` (`ADMIN_NAV_SECTIONS`).
+
+Search is **derived** via `buildAdminSearchIndex` / `filterAdminSearch` — do **not** maintain a second list of searchable pages.
+
+## When you add anything under `/admin`
+
+| You add… | You must… |
+|---|---|
+| New **section** (sidebar group) | New object in `ADMIN_NAV_SECTIONS` (`id`, `label`, `items`) |
+| New **page** (route) | New `AdminNavItem` under the right section (`href`, `label`, `icon`) + page under `app/admin/` |
+| New **tab** / subpage | `children[]` entry with `href` including `?tab=…`, `label`, `tab` id |
+| Default tab for a page | Update `ADMIN_DEFAULT_TAB_BY_PATH` |
+| Aliases (“stripe keys”, “mrr”) | Optional `keywords` on the nav child/item if you extend the type — prefer searchable labels first |
+| Account-only screen (e.g. Settings) | Add an entry in `buildAdminSearchIndex` (kind `action`) if it is not in the sidebar |
+
+Also:
+
+1. Wire the page with `AdminTabs` / `?tab=` the same ids as nav `tab` fields.
+2. Respect `adminOnly` on section / item / child (support role must not see platform-only hits).
+3. Run / extend `tests/admin-nav.test.ts` when changing matching or the search index.
+4. Do **not** hardcode nav links only inside a page or a one-off component and skip `admin-nav.ts` — the item will be missing from sidebar **and** search.
+
+## Quick checklist
+
+- [ ] Entry in `ADMIN_NAV_SECTIONS` (section and/or item and/or child)
+- [ ] `ADMIN_DEFAULT_TAB_BY_PATH` if the page uses tabs
+- [ ] Icon added to `AdminNavIcon` + `NAV_ICONS` in `AdminShell` when introducing a new icon key
+- [ ] Search finds it without any extra file (smoke: type the label in the admin top search)

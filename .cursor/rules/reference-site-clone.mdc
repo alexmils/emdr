@@ -1,0 +1,24 @@
+---
+description: When user gives a screenshot + reference site URL, scrape CSS/JS and clone the pattern automatically
+alwaysApply: true
+---
+
+# EMDR — reference site + screenshot → clone automatically
+
+When the user sends a **screenshot** (or clear visual target) **and** a **live site URL** (Webflow, Framer, marketing demo, etc.):
+
+## Do this immediately — do not wait to be told
+
+1. **Scrape the page** — fetch HTML (`curl.exe` / Exa / browser). Locate the matching section(s) from the screenshot (footer, hero, pricing, nav, …).
+2. **Pull CSS** — download linked stylesheets; extract rules for the relevant classes (layout, colors, type scale, buttons, forms, breakpoints).
+3. **Note motion/JS** — Webflow IX2, marquees, hover swaps, scroll reveals. Recreate with CSS animations and/or the project’s GSAP/Lenis stack (`useLandingMotion`), not by copying Webflow runtime JS.
+4. **Adapt to Nura** — map structure and rhythm to pistachio brand tokens (`docs/brand.md`, `lib/brand.ts`). Do **not** ship neon competitor greens, Inter, or fake app-store CTAs if Nura has no native apps (use Get started / Sign in instead).
+5. **Ship in product files** — marketing under `app/components/frontend/` + scoped CSS; keep BLS jargon out of user copy.
+6. **Verify** — lint/tests; hard-refresh on **3471**; mobile ~390×844 for chrome/footer/nav.
+
+## Do not
+
+- Ask “should I inspect the CSS?” — yes, always.
+- Paste raw Webflow class dumps or jquery/webflow bundles into the repo.
+- Invent a loose “inspired by” layout when the screenshot shows a specific composition — match hierarchy and spacing first, then brand colors/type.
+---

@@ -9,7 +9,7 @@ import {
   savePlatformSettings,
 } from "@/lib/platform-settings";
 import {
-  applyCatalogSyncToStripeConfig,
+  applyCatalogSyncToCredentials,
   pickPlanPricesFromStripeList,
 } from "@/lib/stripe-sync";
 import { resetStripeClient } from "@/lib/stripe";
@@ -17,15 +17,17 @@ import {
   toStripeAdminView,
   stripeAdminStatus,
 } from "@/lib/stripe-admin-settings";
+import { activeStripeEnv } from "@/lib/stripe-config";
 import { clientIp, writeAuditEvent } from "@/lib/audit-log";
 
 /**
- * Pull active recurring week/month/year prices from Stripe and write them
- * into Admin → Billing settings.
+ * Pull active recurring week/month/year prices from Stripe into the
+ * currently active env (sandbox if demoMode, else live).
  *
  * Body (optional):
- * - secretKey: use this key instead of the saved one (for unsaved form drafts)
- * - save: default true — persist into app_settings
+ * - secretKey: draft key for the active env
+ * - env: force "sandbox" | "live" (default: active)
+ * - save: default true
  */
 export async function POST(request: Request) {
   const auth = await requirePlatformSettingsAccess();
@@ -35,14 +37,22 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => ({}))) as {
       secretKey?: unknown;
       save?: unknown;
+      env?: unknown;
     };
     const current = await getPlatformSettings();
+    const envName =
+      body.env === "live" || body.env === "sandbox"
+        ? body.env
+        : activeStripeEnv(current.stripe);
+    const target = current.stripe[envName];
     const draftKey =
       typeof body.secretKey === "string" ? body.secretKey.trim() : "";
-    const secretKey = draftKey || current.stripe.secretKey.trim();
+    const secretKey = draftKey || target.secretKey.trim();
     if (!secretKey) {
       return NextResponse.json(
-        { error: "Enter a Stripe secret key first" },
+        {
+          error: `Enter a Stripe secret key for ${envName} first`,
+        },
         { status: 400 }
       );
     }
@@ -73,13 +83,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const mergedStripe = applyCatalogSyncToStripeConfig(
+    const syncedCreds = applyCatalogSyncToCredentials(
       {
-        ...current.stripe,
+        ...target,
         ...(draftKey ? { secretKey: draftKey } : {}),
       },
       sync
     );
+
+    const mergedStripe = {
+      ...current.stripe,
+      [envName]: syncedCreds,
+    };
 
     const shouldSave = body.save !== false;
     let stripeConfig = mergedStripe;
@@ -94,6 +109,7 @@ export async function POST(request: Request) {
         actorUserId: auth.user.id,
         action: "settings.stripe_synced",
         detail: {
+          env: envName,
           scanned: sync.scanned,
           weekly: sync.weekly?.priceId ?? null,
           monthly: sync.monthly?.priceId ?? null,
@@ -107,11 +123,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       saved: shouldSave,
+      env: envName,
       sync,
       stripe: toStripeAdminView(stripeConfig, true),
       stripeConfigured: status.stripeConfigured,
       catalogReady: status.catalogReady,
       webhookReady: status.webhookReady,
+      demoMode: status.demoMode,
       summary: [
         sync.weekly
           ? `Weekly ${sync.weekly.displayPrice} (${sync.weekly.priceId})`

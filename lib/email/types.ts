@@ -52,3 +52,10 @@ export async function getFromAddress(): Promise<{ email: string; name: string }>
       "Nura",
   };
 }
+
+/** Optional Reply-To from Admin → Email (empty = omit header). */
+export async function getReplyToAddress(): Promise<string | null> {
+  const platform = await getPlatformSettings();
+  const reply = platform.email.replyTo.trim();
+  return reply || null;
+}
