@@ -31,6 +31,13 @@ Add API keys in `.env` or via Settings.
 
 To use an existing Postgres instance instead of Docker, set `DATABASE_URL` in `.env`.
 
+### Production (Coolify)
+
+- Site: [nurahelp.com](https://nurahelp.com)
+- Panel: [server.nurahelp.com](https://server.nurahelp.com)
+- CI: push to `main` → GitHub Actions builds `ghcr.io/alexmils/nura` → Coolify pulls the image (no Next build on the VPS)
+- Manual redeploy: Actions → **Build and Deploy** → Run workflow
+
 ### Dev tunnel (`dev.nurahelp.com`)
 
 Exposes local **3471** behind Cloudflare Access (email one-time PIN; anyone can request a code). Credentials live in `%USERPROFILE%\.cloudflared\` (not git).
