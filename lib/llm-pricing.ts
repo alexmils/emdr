@@ -16,7 +16,13 @@ const MODEL_RATES: Record<string, TokenRate> = {
   "gpt-4o": { inputPerMillion: 2.5, outputPerMillion: 10 },
   "gpt-5-mini": { inputPerMillion: 0.25, outputPerMillion: 2 },
   "gpt-5": { inputPerMillion: 1.25, outputPerMillion: 10 },
-  // DeepSeek
+  // DeepSeek (V4 API ids; legacy aliases still resolve via family match)
+  "deepseek-v4-flash": { inputPerMillion: 0.27, outputPerMillion: 1.1 },
+  "deepseek-v4-pro": { inputPerMillion: 1.1, outputPerMillion: 4.4 },
+  "deepseek-v4-flash-vision-exp": {
+    inputPerMillion: 0.27,
+    outputPerMillion: 1.1,
+  },
   "deepseek-chat": { inputPerMillion: 0.27, outputPerMillion: 1.1 },
   "deepseek-reasoner": { inputPerMillion: 0.55, outputPerMillion: 2.19 },
   // Anthropic
@@ -58,7 +64,10 @@ export function resolveTokenRate(
   if (/gpt-4\.1/i.test(model)) return MODEL_RATES["gpt-4.1"];
   if (/haiku/i.test(model)) return MODEL_RATES["claude-3-5-haiku-latest"];
   if (/sonnet/i.test(model)) return MODEL_RATES["claude-3-5-sonnet-latest"];
-  if (/deepseek/i.test(model)) return MODEL_RATES["deepseek-chat"];
+  if (/deepseek-v4-pro|deepseek-pro/i.test(model)) {
+    return MODEL_RATES["deepseek-v4-pro"];
+  }
+  if (/deepseek/i.test(model)) return MODEL_RATES["deepseek-v4-flash"];
 
   return (
     PROVIDER_DEFAULTS[provider] ?? {

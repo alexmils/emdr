@@ -21,6 +21,24 @@ export class ProviderCatalogError extends Error {
 
 const OPENAI_CHAT_RE =
   /^(gpt-|o[1-9]|chatgpt-|codex-)/i;
+/** Exclude OpenAI media / non-chat SKUs that match the chat prefix. */
+const OPENAI_NON_CHAT_RE =
+  /(image|tts|transcribe|realtime|audio|whisper|embedding|moderation|search-preview)/i;
+
+/** Current DeepSeek API model IDs (docs + live allow-list aliases). */
+const DEEPSEEK_DOCUMENTED_MODELS = [
+  "deepseek-v4-flash",
+  "deepseek-v4-pro",
+  "deepseek-v4-flash-vision-exp",
+] as const;
+
+/** Map legacy / shortened allow-list ids → documented request ids. */
+const DEEPSEEK_CANONICAL: Record<string, string> = {
+  "deepseek-flash": "deepseek-v4-flash",
+  "deepseek-chat": "deepseek-v4-flash",
+  "deepseek-reasoner": "deepseek-v4-flash",
+  "deepseek-coder": "deepseek-v4-flash",
+};
 
 function redactSecrets(text: string): string {
   return text
@@ -96,6 +114,19 @@ function uniqueSorted(ids: string[]): string[] {
   );
 }
 
+export function isOpenAiChatModelId(id: string): boolean {
+  if (!OPENAI_CHAT_RE.test(id)) return false;
+  if (OPENAI_NON_CHAT_RE.test(id)) return false;
+  return true;
+}
+
+/** Prefer documented DeepSeek ids when the allow-list returns a short/legacy alias. */
+export function canonicalizeDeepseekModelId(id: string): string {
+  const t = id.trim();
+  if (!t) return t;
+  return DEEPSEEK_CANONICAL[t] ?? t;
+}
+
 function openaiStyleIds(data: unknown): string[] {
   if (!data || typeof data !== "object") return [];
   const list = (data as { data?: unknown }).data;
@@ -107,6 +138,80 @@ function openaiStyleIds(data: unknown): string[] {
         : ""
     )
     .filter(Boolean);
+}
+
+async function probeDeepseekModelId(
+  apiKey: string,
+  model: string,
+  fetchFn: CatalogFetch
+): Promise<boolean> {
+  let res: Response;
+  try {
+    res = await fetchFn("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: "ping" }],
+        max_tokens: 1,
+      }),
+      signal: AbortSignal.timeout(12_000),
+    });
+  } catch {
+    return false;
+  }
+  if (!res.ok) return false;
+  try {
+    const data = (await res.json()) as { model?: unknown };
+    const returned =
+      typeof data.model === "string" ? data.model.trim() : "";
+    // Accept only when the provider actually serves this id (not a silent remap).
+    return (
+      returned === model ||
+      canonicalizeDeepseekModelId(returned) === model
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function listDeepseekModels(
+  apiKey: string,
+  fetchFn: CatalogFetch
+): Promise<string[]> {
+  const data = await providerGet(
+    "https://api.deepseek.com/models",
+    { Authorization: `Bearer ${apiKey}` },
+    fetchFn
+  );
+  const fromApi = openaiStyleIds(data).map(canonicalizeDeepseekModelId);
+  const allowed = new Set(fromApi);
+
+  // Documented SKUs may be on the key but omitted from /models (e.g. vision-exp).
+  const missing = DEEPSEEK_DOCUMENTED_MODELS.filter((id) => !allowed.has(id));
+  if (missing.length) {
+    const checks = await Promise.all(
+      missing.map(async (id) =>
+        (await probeDeepseekModelId(apiKey, id, fetchFn)) ? id : null
+      )
+    );
+    for (const id of checks) {
+      if (id) allowed.add(id);
+    }
+  }
+
+  // Prefer documented order, then any extras.
+  const ordered: string[] = [];
+  for (const id of DEEPSEEK_DOCUMENTED_MODELS) {
+    if (allowed.has(id)) ordered.push(id);
+  }
+  for (const id of uniqueSorted([...allowed])) {
+    if (!ordered.includes(id)) ordered.push(id);
+  }
+  return ordered;
 }
 
 export async function listLlmModels(
@@ -131,21 +236,18 @@ export async function listLlmModels(
     return uniqueSorted(openaiStyleIds(data));
   }
 
-  const url =
-    provider === "deepseek"
-      ? "https://api.deepseek.com/models"
-      : "https://api.openai.com/v1/models";
+  if (provider === "deepseek") {
+    return listDeepseekModels(key, fetchFn);
+  }
+
   const data = await providerGet(
-    url,
+    "https://api.openai.com/v1/models",
     { Authorization: `Bearer ${key}` },
     fetchFn
   );
   const ids = openaiStyleIds(data);
-  if (provider === "openai") {
-    const chat = ids.filter((id) => OPENAI_CHAT_RE.test(id));
-    return uniqueSorted(chat.length ? chat : ids);
-  }
-  return uniqueSorted(ids);
+  const chat = ids.filter(isOpenAiChatModelId);
+  return uniqueSorted(chat.length ? chat : ids);
 }
 
 export async function listVoiceCatalog(

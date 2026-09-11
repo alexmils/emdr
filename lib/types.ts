@@ -92,7 +92,7 @@ export interface AppSettings {
 }
 
 export const DEFAULT_AI_CONNECTORS = {
-  deepseek: { apiKey: "", model: "deepseek-chat", enabled: true },
+  deepseek: { apiKey: "", model: "deepseek-v4-flash", enabled: true },
   // Chat-tuned (not gpt-5* reasoning): short protocol turns, temp control, low latency.
   openai: { apiKey: "", model: "gpt-4.1-mini", enabled: true },
   claude: { apiKey: "", model: "claude-3-5-haiku-latest", enabled: true },

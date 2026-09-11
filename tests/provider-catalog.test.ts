@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  canonicalizeDeepseekModelId,
+  isOpenAiChatModelId,
   listLlmModels,
   listVoiceCatalog,
   sanitizeProviderError,
@@ -21,6 +23,22 @@ describe("sanitizeProviderError", () => {
   });
 });
 
+describe("model id helpers", () => {
+  it("canonicalizes DeepSeek allow-list aliases", () => {
+    assert.equal(canonicalizeDeepseekModelId("deepseek-flash"), "deepseek-v4-flash");
+    assert.equal(canonicalizeDeepseekModelId("deepseek-chat"), "deepseek-v4-flash");
+    assert.equal(canonicalizeDeepseekModelId("deepseek-v4-pro"), "deepseek-v4-pro");
+  });
+
+  it("keeps OpenAI chat models and drops media SKUs", () => {
+    assert.ok(isOpenAiChatModelId("gpt-4.1-mini"));
+    assert.ok(isOpenAiChatModelId("gpt-5.5"));
+    assert.ok(!isOpenAiChatModelId("gpt-image-1"));
+    assert.ok(!isOpenAiChatModelId("gpt-4o-mini-tts"));
+    assert.ok(!isOpenAiChatModelId("whisper-1"));
+  });
+});
+
 describe("listLlmModels", () => {
   it("parses OpenAI-compatible model ids and prefers chat models", async () => {
     const fetchFn = async () =>
@@ -29,6 +47,8 @@ describe("listLlmModels", () => {
           data: [
             { id: "whisper-1" },
             { id: "gpt-4o-mini" },
+            { id: "gpt-image-1" },
+            { id: "gpt-4o-mini-tts" },
             { id: "text-embedding-3-small" },
           ],
         }),
@@ -38,14 +58,56 @@ describe("listLlmModels", () => {
     assert.deepEqual(models, ["gpt-4o-mini"]);
   });
 
-  it("parses DeepSeek models", async () => {
-    const fetchFn = async () =>
-      new Response(
-        JSON.stringify({ data: [{ id: "deepseek-chat" }, { id: "deepseek-reasoner" }] }),
-        { status: 200 }
-      );
+  it("maps DeepSeek allow-list aliases to documented ids and probes extras", async () => {
+    const fetchFn = async (url: string, init?: RequestInit) => {
+      if (url.endsWith("/models")) {
+        return new Response(
+          JSON.stringify({
+            data: [{ id: "deepseek-flash" }, { id: "deepseek-v4-pro" }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.includes("/chat/completions")) {
+        const body = JSON.parse(String(init?.body || "{}")) as { model?: string };
+        const requested = body.model || "";
+        // Vision remaps to flash on this key — must not be listed.
+        const served =
+          requested === "deepseek-v4-pro"
+            ? "deepseek-v4-pro"
+            : "deepseek-flash";
+        return new Response(JSON.stringify({ model: served }), { status: 200 });
+      }
+      return new Response("not found", { status: 404 });
+    };
     const models = await listLlmModels("deepseek", "sk-test", fetchFn);
-    assert.deepEqual(models, ["deepseek-chat", "deepseek-reasoner"]);
+    assert.deepEqual(models, ["deepseek-v4-flash", "deepseek-v4-pro"]);
+  });
+
+  it("includes DeepSeek vision when the key actually serves it", async () => {
+    const fetchFn = async (url: string, init?: RequestInit) => {
+      if (url.endsWith("/models")) {
+        return new Response(
+          JSON.stringify({
+            data: [{ id: "deepseek-v4-flash" }, { id: "deepseek-v4-pro" }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.includes("/chat/completions")) {
+        const body = JSON.parse(String(init?.body || "{}")) as { model?: string };
+        return new Response(JSON.stringify({ model: body.model }), {
+          status: 200,
+        });
+      }
+      return new Response("not found", { status: 404 });
+    };
+    const models = await listLlmModels("deepseek", "sk-test", fetchFn);
+    assert.deepEqual(models, [
+      "deepseek-v4-flash",
+      "deepseek-v4-pro",
+      "deepseek-v4-flash-vision-exp",
+    ]);
   });
 
   it("does not throw raw secret on 401", async () => {
