@@ -12,7 +12,13 @@ const PUBLIC_PATHS = [
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const origin = siteOrigin(await getPublicAppUrl());
+  let publicUrl: string | undefined;
+  try {
+    publicUrl = await getPublicAppUrl();
+  } catch {
+    publicUrl = undefined;
+  }
+  const origin = siteOrigin(publicUrl);
   return PUBLIC_PATHS.map((path) => ({
     url: path === "/" ? `${origin}/` : `${origin}${path}`,
     changeFrequency: path === "/" ? "weekly" : "monthly",

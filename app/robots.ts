@@ -3,7 +3,13 @@ import { getPublicAppUrl } from "@/lib/platform-settings";
 import { siteOrigin } from "@/lib/site-seo";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const origin = siteOrigin(await getPublicAppUrl());
+  let publicUrl: string | undefined;
+  try {
+    publicUrl = await getPublicAppUrl();
+  } catch {
+    publicUrl = undefined;
+  }
+  const origin = siteOrigin(publicUrl);
   return {
     rules: {
       userAgent: "*",
