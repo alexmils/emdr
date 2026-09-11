@@ -32,7 +32,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Create account**: `/app/create-account` + `POST /api/auth/register`; link from login footer and landing header; new users land on onboarding
 - **Stripe project `nurahelp`**: dedicated test sandbox (`acct_1UCsfAAiWsQlzMVG`, Dashboard name **Nura sandbox**); product NuraHelp AI with weekly €4.99 / monthly €14.99 / yearly €99; Customer Portal; webhook → `https://dev.nurahelp.com/api/webhooks/stripe`; claimed and verified Checkout branding
 - **Admin Stripe settings**: secret key, webhook secret, Price IDs, and display prices editable at `/admin/billing` (stored in `app_settings.stripe`); runtime no longer requires `STRIPE_*` env (optional one-time env bootstrap); **Sync from Stripe** pulls active week/month/year prices via `POST /api/admin/billing/sync`; support role cannot read live secrets; empty secret fields on save leave stored values unchanged; catalog vs webhook readiness shown separately
-- **Stripe demo / live mode**: Admin → Billing stores separate sandbox + live credential sets; **Demo mode** checkbox (default on) selects sandbox for Checkout; unchecked uses live keys for real charges; admin top banner shows demo vs live; webhook verifies against both secrets and routes by `livemode`; optional `STRIPE_LIVE_*` env bootstrap
+- **Stripe demo / live mode**: Admin → Billing stores separate sandbox + live credential sets; **Demo mode** checkbox (default on) selects sandbox for Checkout; unchecked uses live keys for real charges; admin top banner only when demo is on; webhook verifies against both secrets and routes by `livemode`; optional `STRIPE_LIVE_*` env bootstrap
 - **Help chat**: right-side drawer (“Need help?”) under `/app`; AI first reply with keyword RAG (`help_knowledge`) + allow/deny topics; admin inbox + email notify at `/admin/help`; settings stored in platform `help` block
 - **Guided intake phase (EMDR Phase 1)**: new `intake` protocol phase before grounding; conversational history-taking + safety screen; persistent `client_profiles` table (RLS); returning users get short re-evaluation opener; interpreter extracts intake fields; BLS disabled until after intake
 - **Free-session ads**: interstitial before BLS start for trial users only (`lib/ads.ts` + `AdInterstitial`); admin frequency controls (per session / every N minutes / every N sets); AdSense + placeholder + GAM seam; paying users never receive ad config from `/api/billing/status`
@@ -145,6 +145,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin ElevenLabs Configure: after API key (or env/stored fallback) loads the catalog, Voice and Model are dropdowns from ElevenLabs; optional **Custom voice** / **Custom model** override the list; unknown saved values land in the custom fields instead of being wiped
 - Admin Voice tab: ElevenLabs settings card on top, thin divider, then lazy-loaded voice cards (name, play sample, round select); toast on select; `POST /api/admin/ai/voice-preview`; admin ToastProvider
 - Admin Voice picker review fixes: reload after Configure (`reloadToken`), preview generation token, select lock + quiet save (toast only), voice ID validation + encodeURIComponent, fixed sample text + per-admin preview cooldown, Refresh on empty-key state
+- Admin chrome: drop the pink “Live Stripe is active” top banner; only show the demo/sandbox banner when Demo mode is on (live status stays on Billing → Stripe)
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -315,6 +316,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Composer primary CTA: empty = Start voice; typing = same slot becomes Send (ChatGPT-style swap)
 - Guided chat scale-up: wider overlay (~48rem), taller thread, larger bubbles/type (~17px), 44px avatars, taller composer/voice controls (`AgentOverlay`, `globals.css`)
 - Guided Voice Mode: pistachio **ribbon wave** between transcript and status bar — mic-reactive while listening, soft ambient sway while thinking/speaking (`VoiceWave`, `useMicLevel`, `lib/mic-level.ts`)
+- Guided Voice Mode visual: dual S-curve ribbons (logo vernacular, not EQ bars) + ease-in-out enter (chat lifts, dock fades up from below)
+- Voice wave fix: stronger idle amplitude, taller SVG, unique gradient ids — no more flat “broken” line
 
 ---
 

@@ -17,7 +17,7 @@ export function normalizeMicRms(rms: number, gate = 0.02, gain = 4.2): number {
   return Math.min(1, gated * gain);
 }
 
-/** Attack/release smoothing so bars don’t flicker. */
+/** Attack/release smoothing so motion doesn’t flicker. */
 export function smoothLevel(
   prev: number,
   next: number,
@@ -29,38 +29,47 @@ export function smoothLevel(
 }
 
 /**
- * Bar heights for a soft “ribbon” meter (center louder).
- * `level` 0–1; `t` is time in seconds for idle breath / speaking sway.
+ * Peak displacement in viewBox units — always readable, mic boosts further.
+ * Idle listening still breathes; never a flat line.
  */
-export function ribbonBarHeights(
+export function waveAmplitude(
   level: number,
-  barCount: number,
-  t: number,
   mode: "listening" | "ambient" | "quiet"
-): number[] {
-  const n = Math.max(1, barCount);
-  const out: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const center = (i - (n - 1) / 2) / ((n - 1) / 2 || 1);
-    const envelope = 1 - Math.abs(center) * 0.45;
-    if (mode === "quiet") {
-      out.push(0.12 + envelope * 0.06);
-      continue;
-    }
-    if (mode === "ambient") {
-      const wobble =
-        0.22 +
-        envelope * 0.28 +
-        Math.sin(t * 2.1 + i * 0.7) * 0.1 +
-        Math.sin(t * 3.4 + i) * 0.05;
-      out.push(Math.min(0.85, Math.max(0.12, wobble)));
-      continue;
-    }
-    const speech =
-      0.14 +
-      level * envelope * 0.86 +
-      Math.sin(t * 14 + i * 1.1) * level * 0.12;
-    out.push(Math.min(1, Math.max(0.1, speech)));
+): number {
+  const voice = Math.min(1, Math.max(0, level));
+  if (mode === "quiet") return 10;
+  if (mode === "ambient") return 16 + voice * 8;
+  // Base wobble ~18 even in silence; speech can reach ~36
+  return 18 + Math.max(voice, 0.12) * 22;
+}
+
+/**
+ * Soft S-curve ribbon (Nura wave vernacular).
+ * Uses enough vertical travel to read clearly at ~4rem tall.
+ */
+export function buildVoiceWavePath(
+  width: number,
+  height: number,
+  t: number,
+  amplitude: number,
+  lag = 0
+): string {
+  const mid = height / 2;
+  const step = 4;
+  const parts: string[] = [];
+  for (let x = 0; x <= width; x += step) {
+    const nx = x / width;
+    // Envelope: stronger in the middle (logo-like), soft tips
+    const envelope = Math.sin(nx * Math.PI);
+    const y =
+      mid +
+      envelope *
+        (Math.sin(nx * Math.PI * 2.4 + t * 2.4 + lag) * amplitude +
+          Math.sin(nx * Math.PI * 4.8 + t * 3.1 + lag * 1.3) *
+            amplitude *
+            0.35 +
+          Math.sin(t * 1.7 + lag) * amplitude * 0.08);
+    parts.push(`${x === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`);
   }
-  return out;
+  return parts.join(" ");
 }

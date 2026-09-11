@@ -392,18 +392,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Billing settings
             </Link>
           </div>
-        ) : demoMode === false ? (
-          <div className="admin-mode-banner admin-mode-banner-live" role="status">
-            <span>
-              Live Stripe is active — real charges will be processed.
-            </span>
-            <Link
-              href="/admin/billing?tab=stripe"
-              className="admin-mode-banner-link"
-            >
-              Billing settings
-            </Link>
-          </div>
         ) : null}
         <div className="admin-topbar">
           <AdminSearch isPlatformAdmin={user?.role === "platform_admin"} />

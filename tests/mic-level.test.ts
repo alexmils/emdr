@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildVoiceWavePath,
   normalizeMicRms,
-  ribbonBarHeights,
   rmsFromTimeDomain,
   smoothLevel,
+  waveAmplitude,
 } from "../lib/mic-level";
 
 describe("mic-level", () => {
@@ -34,13 +35,16 @@ describe("mic-level", () => {
     assert.ok(down > 0.8);
   });
 
-  it("ribbonBarHeights returns barCount values in range", () => {
-    const bars = ribbonBarHeights(0.6, 9, 1.2, "listening");
-    assert.equal(bars.length, 9);
-    for (const h of bars) {
-      assert.ok(h >= 0.1 && h <= 1);
-    }
-    const quiet = ribbonBarHeights(0, 5, 0, "quiet");
-    assert.ok(quiet.every((h) => h < 0.25));
+  it("waveAmplitude keeps a readable idle floor", () => {
+    assert.ok(waveAmplitude(0, "listening") >= 18);
+    assert.ok(waveAmplitude(0.8, "listening") > waveAmplitude(0.8, "ambient"));
+    assert.ok(waveAmplitude(0.8, "ambient") > waveAmplitude(0, "quiet"));
+  });
+
+  it("buildVoiceWavePath has real vertical travel", () => {
+    const d = buildVoiceWavePath(360, 72, 0.8, 22, 0);
+    assert.ok(d.startsWith("M"));
+    const ys = [...d.matchAll(/[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
+    assert.ok(Math.max(...ys) - Math.min(...ys) > 20);
   });
 });
