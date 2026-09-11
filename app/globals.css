@@ -6174,6 +6174,21 @@ select.field option:disabled {
   color: var(--destructive);
 }
 
+.admin-seo-conn-check {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.admin-seo-conn-check-details {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
 .admin-modal-backdrop {
   position: fixed;
   inset: 0;

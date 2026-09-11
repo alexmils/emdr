@@ -85,6 +85,43 @@ function connActionLabel(
   return "Connect";
 }
 
+type SeoConnCheck =
+  | { status: "idle" }
+  | { status: "checking" }
+  | { status: "ok"; profile?: string; details?: string[] }
+  | { status: "failed"; error: string };
+
+function SeoConnectionBadge({ check }: { check: SeoConnCheck }) {
+  if (check.status === "checking") {
+    return <p className="admin-conn-idle">Checking connection…</p>;
+  }
+  if (check.status === "ok") {
+    return (
+      <div className="admin-seo-conn-check">
+        <p className="admin-conn-ok">
+          Connection OK
+          {check.profile ? ` — ${check.profile}` : ""}
+        </p>
+        {check.details?.length ? (
+          <ul className="admin-seo-conn-check-details">
+            {check.details.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    );
+  }
+  if (check.status === "failed") {
+    return (
+      <p className="admin-conn-fail">
+        Failed{check.error ? ` — ${check.error}` : ""}
+      </p>
+    );
+  }
+  return null;
+}
+
 function ConnectionConnectModal({
   connId,
   seo,
@@ -103,6 +140,8 @@ function ConnectionConnectModal({
   onOpenGtm: () => void;
 }) {
   const [draft, setDraft] = useState(initial);
+  const [check, setCheck] = useState<SeoConnCheck>({ status: "idle" });
+  const [testing, setTesting] = useState(false);
   const titles: Record<ConnId, string> = {
     gsc: "Google Search Console",
     ignore_ips: "Ignored IPs",
@@ -123,6 +162,61 @@ function ConnectionConnectModal({
   }, [onClose]);
 
   const infoOnly = connId === "meta" || connId === "linkedin";
+  const canTest =
+    connId === "ga4" ||
+    connId === "gsc" ||
+    connId === "gtm" ||
+    connId === "clarity" ||
+    connId === "bing" ||
+    connId === "ignore_ips";
+
+  async function runTest(): Promise<boolean> {
+    if (!canTest) return false;
+    setTesting(true);
+    setCheck({ status: "checking" });
+    try {
+      const res = await fetch("/api/admin/seo/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: connId,
+          ga4MeasurementId: draft.ga4MeasurementId,
+          ga4PropertyId: draft.ga4PropertyId,
+          googleServiceAccountJson: draft.googleServiceAccountJson,
+          gscProperty: draft.gscProperty,
+          gscVerification: draft.gscVerification,
+          gtmId: draft.gtmId,
+          clarityId: draft.clarityId,
+          bingVerification: draft.bingVerification,
+          ignoreIps: draft.ignoreIps,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        profile?: string;
+        details?: string[];
+      };
+      if (data.ok) {
+        setCheck({
+          status: "ok",
+          profile: data.profile,
+          details: data.details,
+        });
+        return true;
+      }
+      setCheck({
+        status: "failed",
+        error: data.error || "Connection check failed",
+      });
+      return false;
+    } catch {
+      setCheck({ status: "failed", error: "Connection check failed" });
+      return false;
+    } finally {
+      setTesting(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -149,7 +243,16 @@ function ConnectionConnectModal({
       patch = { bingVerification: draft.bingVerification };
     }
     const ok = await onSave(patch);
-    if (ok) onClose();
+    if (!ok) return;
+    if (canTest) {
+      const passed = await runTest();
+      if (passed) {
+        window.setTimeout(() => onClose(), 900);
+        return;
+      }
+      return;
+    }
+    onClose();
   }
 
   return (
@@ -194,6 +297,7 @@ function ConnectionConnectModal({
               <>
                 <p className="admin-panel-sub">
                   Paste the property and verification code from Search Console.
+                  Test uses the Google service account from Analytics when set.
                 </p>
                 <label className="admin-field-label">
                   Property
@@ -387,17 +491,35 @@ function ConnectionConnectModal({
               </>
             ) : null}
 
+            <div className="admin-conn-row">
+              <SeoConnectionBadge check={check} />
+            </div>
+
             <div className="admin-modal-actions">
               <button
                 type="button"
                 className="admin-btn-edit"
                 onClick={onClose}
-                disabled={busy}
+                disabled={busy || testing}
               >
                 Cancel
               </button>
-              <button type="submit" className="admin-btn-edit" disabled={busy}>
-                {busy ? "Saving…" : "Save"}
+              {canTest ? (
+                <button
+                  type="button"
+                  className="admin-btn-edit"
+                  disabled={busy || testing}
+                  onClick={() => void runTest()}
+                >
+                  {testing ? "Testing…" : "Test"}
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                className="admin-btn-edit"
+                disabled={busy || testing}
+              >
+                {busy ? "Saving…" : testing ? "Checking…" : "Save"}
               </button>
             </div>
           </form>

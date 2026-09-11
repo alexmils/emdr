@@ -6,6 +6,7 @@ import {
   isIgnoredAnalyticsIp,
 } from "../lib/analytics-ignore.ts";
 import {
+  DEFAULT_PLATFORM_SEO,
   isAllowedOgImageUrl,
   isValidClarityId,
   isValidGa4Id,
@@ -29,6 +30,11 @@ import {
   parseAnalyticsRange,
   parseGa4PropertyId,
 } from "../lib/site-analytics.ts";
+import {
+  isLikelyIpOrCidr,
+  isSeoTestConnId,
+  testSeoConnection,
+} from "../lib/seo-test-connection.ts";
 import {
   consentToMode,
   isGtmAllowedPath,
@@ -240,5 +246,50 @@ describe("platform settings seo block", () => {
     assert.ok(s.seo);
     assert.equal(s.seo.ga4MeasurementId, "");
     assert.deepEqual(s.seo.pages, {});
+  });
+});
+
+describe("seo-test-connection", () => {
+  it("recognizes connection types", () => {
+    assert.ok(isSeoTestConnId("ga4"));
+    assert.ok(isSeoTestConnId("gsc"));
+    assert.ok(!isSeoTestConnId("meta"));
+  });
+
+  it("validates ignore IP entries", () => {
+    assert.ok(isLikelyIpOrCidr("1.2.3.4"));
+    assert.ok(isLikelyIpOrCidr("10.0.0.0/8"));
+    assert.ok(!isLikelyIpOrCidr("999.1.1.1"));
+    assert.ok(!isLikelyIpOrCidr("not-an-ip"));
+  });
+
+  it("checks bing code and ignore list without network", async () => {
+    const empty = { ...DEFAULT_PLATFORM_SEO, pages: {} };
+    const bing = await testSeoConnection(
+      { type: "bing", bingVerification: "AbCdEfGhIjKlMnOp" },
+      empty
+    );
+    assert.equal(bing.ok, true);
+    assert.match(bing.profile || "", /Bing/);
+
+    const ips = await testSeoConnection(
+      { type: "ignore_ips", ignoreIps: "1.2.3.4, 5.6.7.8" },
+      empty
+    );
+    assert.equal(ips.ok, true);
+    assert.equal(ips.profile, "2 addresses");
+
+    const badIp = await testSeoConnection(
+      { type: "ignore_ips", ignoreIps: "nope" },
+      empty
+    );
+    assert.equal(badIp.ok, false);
+
+    const ga4format = await testSeoConnection(
+      { type: "ga4", ga4MeasurementId: "G-TEST1234" },
+      empty
+    );
+    assert.equal(ga4format.ok, true);
+    assert.equal(ga4format.profile, "G-TEST1234");
   });
 });
