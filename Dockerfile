@@ -1,14 +1,20 @@
 # NuraHelp — production image for Coolify
+#
+# WORKDIR must NOT be `/app`: Next.js App Router lives under `./app`, and the
+# product console is `./app/app` (URL `/app`). Building/running with cwd `/app`
+# makes standalone path traces collide (e.g. `/` loads `app/app/page.tsx` +
+# AppAccessGate, skips root layout/`globals.css` → unstyled + forced login).
+# See vercel/next.js#68690.
 FROM node:22-alpine AS deps
-WORKDIR /app
+WORKDIR /nura
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
 # Coolify may inject NODE_ENV=production during build; keep devDeps for next build/typescript.
 RUN npm ci --include=dev
 
 FROM node:22-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+WORKDIR /nura
+COPY --from=deps /nura/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
@@ -16,7 +22,7 @@ ENV NODE_OPTIONS=--max-old-space-size=3072
 RUN npm run build
 
 FROM node:22-alpine AS runner
-WORKDIR /app
+WORKDIR /nura
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3471
@@ -25,9 +31,9 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /nura/public ./public
+COPY --from=builder --chown=nextjs:nodejs /nura/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /nura/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3471

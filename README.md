@@ -37,6 +37,7 @@ To use an existing Postgres instance instead of Docker, set `DATABASE_URL` in `.
 - Panel: [server.nurahelp.com](https://server.nurahelp.com)
 - CI: push to `main` → GitHub Actions builds `ghcr.io/alexmils/nura` → Coolify pulls the image (no Next build on the VPS)
 - Manual redeploy: Actions → **Build and Deploy** → Run workflow
+- Docker image `WORKDIR` is `/nura` (not `/app`) — avoids Next standalone path collision with the `/app` console route
 
 ### Dev tunnel (`dev.nurahelp.com`)
 
