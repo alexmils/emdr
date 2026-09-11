@@ -25,7 +25,7 @@ describe("session labels", () => {
   });
 
   it("uses phase-specific check-in placeholders", () => {
-    assert.match(checkInPlaceholder("intake"), /work on/i);
+    assert.match(checkInPlaceholder("intake"), /anxiety|memory/i);
     assert.match(checkInPlaceholder("installation"), /VoC/i);
     assert.match(checkInPlaceholder("desensitization"), /SUDs/i);
   });

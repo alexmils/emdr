@@ -66,6 +66,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Product UI type scale**: shared `--ui-*` tokens (body ~17px, muted 16px, caption 15px, controls 48px); sidebar, Home “Start a session”, Learn cards, buttons/fields, workspace header aligned with Settings
 - **Guided Voice Mode**: ChatGPT-style voice in Guided sessions — browser Web Speech mic, ElevenLabs replies, live transcript; interpreter `startSet` auto-starts the moving ball when ready (`AgentOverlay`, `useGuidedVoiceMode`, `lib/browser-speech.ts`)
 - **Help chat widget**: compact bottom-right panel (~360×512 max) instead of full-height side drawer; transparent click-outside; slide-up open
+- **Cloudflare Turnstile** on password auth forms (login, create-account, forgot/reset/create-password): widget embed + canonical siteverify (`lib/turnstile.ts`); env `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAMES`; `TurnstileField` renders after Script `onReady` (no `turnstile.ready()` with async Script)
 
 ### Changed
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
@@ -306,6 +307,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Home Learn teaser: editorial white panel + sage-rail rows (“Before you begin”) instead of washed-out horizontal cards; shorter featured summaries; subtitle uses secondary ink for contrast
 - Resources article: left-aligned with sidebar toggle (no floated center column); larger Resources back link; white paper body; library scroll also left-aligned
 - Resources article: Receptly-style blog column — menu/back stay left; title + body centered in white paper
+- Intake welcome: removed duplicate “We’ll set up the ball…” (overlay + canvas) that overlapped topic chips
+- Guided composer: Dictate **mic** on the left (fills the text field); sage **Start voice** waveform CTA on the right (full Voice Mode)
+- Guided Voice Mode CTA: pistachio fill + ink waveform (distinct from sage Send)
+- Guided composer contrast: Voice Mode = ink circle + gold waveform; Send hidden until text; white composer bar
+- Agent chat avatar: Nura circle mark (`G-black-on-mint-128`) instead of generic guide silhouette
+- Composer primary CTA: empty = Start voice; typing = same slot becomes Send (ChatGPT-style swap)
+- Guided chat scale-up: wider overlay (~48rem), taller thread, larger bubbles/type (~17px), 44px avatars, taller composer/voice controls (`AgentOverlay`, `globals.css`)
+- Guided Voice Mode: pistachio **ribbon wave** between transcript and status bar — mic-reactive while listening, soft ambient sway while thinking/speaking (`VoiceWave`, `useMicLevel`, `lib/mic-level.ts`)
 
 ---
 

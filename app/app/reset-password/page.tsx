@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AuthShell,
@@ -8,6 +8,11 @@ import {
   AuthError,
   AuthLink,
 } from "@/app/components/AuthShell";
+import {
+  TurnstileField,
+  type TurnstileFieldHandle,
+} from "@/app/components/TurnstileField";
+import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -18,6 +23,8 @@ function ResetPasswordForm() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileFieldHandle>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,18 +40,28 @@ function ResetPasswordForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      setError("Complete the verification check, then try again.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({
+          token,
+          password,
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+        }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error ?? "Reset failed");
+        turnstileRef.current?.reset();
         return;
       }
 
@@ -52,6 +69,7 @@ function ResetPasswordForm() {
       router.refresh();
     } catch {
       setError("Network error. Try again.");
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -105,9 +123,14 @@ function ResetPasswordForm() {
         <p className="text-caption mb-4">
           Use at least 8 characters with a letter and a number.
         </p>
+        <TurnstileField
+          ref={turnstileRef}
+          action="reset-password"
+          onToken={setTurnstileToken}
+        />
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !turnstileToken}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
           {loading ? "Saving…" : "Update password"}

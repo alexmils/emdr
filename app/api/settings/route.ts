@@ -30,6 +30,11 @@ async function memoryEnabled(): Promise<boolean> {
   return platform.flags.memory !== false;
 }
 
+async function voiceEnabledFlag(): Promise<boolean> {
+  const platform = await getPlatformSettings();
+  return platform.flags.voice !== false;
+}
+
 function trimStr(v: unknown, max: number): string {
   return String(v ?? "")
     .trim()
@@ -39,11 +44,13 @@ function trimStr(v: unknown, max: number): string {
 export async function GET() {
   return withAuth(async () => {
     const enabled = await memoryEnabled();
+    const voiceEnabled = await voiceEnabledFlag();
     return NextResponse.json({
       settings: await getSettings(),
       memories: enabled ? await listMemories() : [],
       memorySets: enabled ? await listMemorySets() : [],
       memoryEnabled: enabled,
+      voiceEnabled,
     });
   });
 }

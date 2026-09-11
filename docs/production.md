@@ -164,6 +164,9 @@ Set in Coolify → **nurahelp** → Environment (values not in git):
 | `WEBAUTHN_ORIGIN` | `https://nurahelp.com` |
 | `PORT` | `3471` (image default) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Prod Google OAuth; add redirect `https://nurahelp.com/api/auth/google/callback` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Public Turnstile sitekey |
+| `TURNSTILE_SECRET` | Turnstile widget secret (Coolify only; never git) |
+| `TURNSTILE_HOSTNAMES` | Prod: `nurahelp.com,www.nurahelp.com` (no localhost) |
 | Email / Stripe | Prefer **Admin → Email / Billing** in DB; optional env bootstrap |
 
 Schema migrates on app start via app DB init (same as local).

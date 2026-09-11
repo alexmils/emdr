@@ -11,13 +11,30 @@ import {
 } from "@/lib/auth/session";
 import { getUserById, publicUser, setUserPassword } from "@/lib/users";
 import { getAppUrl, sendTemplateEmail } from "@/lib/email";
+import { clientIp } from "@/lib/audit-log";
+import {
+  extractTurnstileToken,
+  verifyTurnstileToken,
+} from "@/lib/turnstile";
 
 export async function POST(request: Request) {
   try {
-    const { token, password } = (await request.json()) as {
+    const body = (await request.json()) as {
       token?: string;
       password?: string;
+      "cf-turnstile-response"?: string;
     };
+
+    const gate = await verifyTurnstileToken({
+      token: extractTurnstileToken(body),
+      expectedAction: "reset-password",
+      remoteip: clientIp(request),
+    });
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
+
+    const { token, password } = body;
 
     if (!token || !password) {
       return NextResponse.json(

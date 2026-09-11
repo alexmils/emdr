@@ -131,4 +131,19 @@ describe("session interpreter", () => {
     assert.equal(interp.intakeComplete, true);
     assert.equal(interp.riskFlag, false);
   });
+
+  it("parses startSet flag", () => {
+    const on = parseSessionInterpretation({
+      distress: "ok",
+      startSet: true,
+      summary: "ready",
+    });
+    assert.equal(on.startSet, true);
+    const off = parseSessionInterpretation({
+      distress: "ok",
+      summary: "chat",
+    });
+    assert.equal(off.startSet, false);
+    assert.equal(EMPTY_INTERPRETATION.startSet, false);
+  });
 });

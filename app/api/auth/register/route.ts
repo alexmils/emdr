@@ -22,6 +22,10 @@ import {
   getEntitlementForUser,
   publicEntitlement,
 } from "@/lib/entitlements";
+import {
+  extractTurnstileToken,
+  verifyTurnstileToken,
+} from "@/lib/turnstile";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -33,7 +37,17 @@ export async function POST(request: Request) {
       email?: string;
       password?: string;
       name?: string;
+      "cf-turnstile-response"?: string;
     };
+
+    const gate = await verifyTurnstileToken({
+      token: extractTurnstileToken(body),
+      expectedAction: "signup",
+      remoteip: clientIp(request),
+    });
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
 
     const email = body.email?.trim().toLowerCase() ?? "";
     const password = body.password ?? "";

@@ -282,6 +282,7 @@ export async function POST(request: Request) {
               needsGrounding: interpretation.needsGrounding,
               intakeComplete: interpretation.intakeComplete,
               riskFlag: interpretation.riskFlag,
+              startSet: interpretation.startSet,
             }
           : null,
       });
@@ -304,6 +305,7 @@ export async function POST(request: Request) {
               needsGrounding: interpretation.needsGrounding,
               intakeComplete: interpretation.intakeComplete,
               riskFlag: interpretation.riskFlag,
+              startSet: interpretation.startSet,
             }
           : null,
         warning: e instanceof Error ? e.message : "LLM error",

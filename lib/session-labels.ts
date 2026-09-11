@@ -68,7 +68,7 @@ export function checkInQuickReplies(phase: ProtocolPhase): QuickReply[] {
 export function checkInPlaceholder(phase: ProtocolPhase): string {
   switch (phase) {
     case "intake":
-      return "What would you like to work on?";
+      return "Anxiety, a memory…";
     case "desensitization":
       return "What do you notice? Or rate SUDs 0–10…";
     case "installation":

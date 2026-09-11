@@ -15,6 +15,7 @@ import type {
   Memory,
   MemorySet,
   Message,
+  ProtocolPhase,
   SessionKind,
   Thread,
   ThreadMemorySet,
@@ -117,7 +118,14 @@ interface AppState {
   updateThreadLocal: (id: string, patch: Partial<Thread>) => Promise<void>;
   chooseSessionMode: (kind: Exclude<SessionKind, "pending">) => Promise<boolean>;
   deleteThread: (id: string) => Promise<void>;
-  sendUserMessage: (text: string) => Promise<void>;
+  sendUserMessage: (text: string) => Promise<{
+    startSet: boolean;
+    riskFlag?: boolean;
+    distress?: "ok" | "elevated" | "overwhelm";
+    agentText?: string;
+    agentId?: string;
+    phase?: ProtocolPhase;
+  }>;
   requestCheckIn: () => Promise<void>;
   bootstrapAgent: () => Promise<void>;
   refreshSettings: () => Promise<void>;
@@ -135,6 +143,8 @@ interface AppState {
   adsConfig: PublicAdsConfig;
   /** True after the first billing/ads fetch attempt (success or fail). */
   adsReady: boolean;
+  /** Platform flag: voice features (TTS / Voice Mode) allowed. */
+  voiceEnabled: boolean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -145,6 +155,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
   const [memoryEnabled, setMemoryEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [threadMemorySets, setThreadMemorySets] = useState<ThreadMemorySet[]>(
     []
   );
@@ -437,45 +448,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [activeThreadId, refreshThreads]
   );
 
-  const sendUserMessage = useCallback(
-    async (text: string) => {
-      if (!activeThreadId) return;
-      const optimistic: Message = {
-        id: `tmp-${Date.now()}`,
-        threadId: activeThreadId,
-        role: "user",
-        content: text,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((m) => [...m, optimistic]);
-      const data = await fetchJson<{
-        message?: Message;
-        thread?: Thread;
-      }>("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: activeThreadId, userMessage: text }),
-      });
-      if (data.thread) {
-        setThreads((list) =>
-          list.map((t) => (t.id === data.thread!.id ? data.thread! : t))
+  const sendUserMessage = useCallback(async (text: string) => {
+    if (!activeThreadId) {
+      return { startSet: false as const };
+    }
+    const optimistic: Message = {
+      id: `tmp-${Date.now()}`,
+      threadId: activeThreadId,
+      role: "user",
+      content: text,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((m) => [...m, optimistic]);
+    const data = await fetchJson<{
+      message?: Message;
+      thread?: Thread;
+      interpretation?: {
+        startSet?: boolean;
+        riskFlag?: boolean;
+        distress?: "ok" | "elevated" | "overwhelm";
+      } | null;
+    }>("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ threadId: activeThreadId, userMessage: text }),
+    });
+    if (data.thread) {
+      setThreads((list) =>
+        list.map((t) => (t.id === data.thread!.id ? data.thread! : t))
+      );
+    }
+    if (data.message) {
+      const assistantMsg = data.message;
+      setMessages((m) => {
+        const withoutTmp = m.filter((x) => x.id !== optimistic.id);
+        const hasUser = withoutTmp.some(
+          (x) => x.role === "user" && x.content === text
         );
-      }
-      if (data.message) {
-        const assistantMsg = data.message;
-        setMessages((m) => {
-          const withoutTmp = m.filter((x) => x.id !== optimistic.id);
-          const hasUser = withoutTmp.some(
-            (x) => x.role === "user" && x.content === text
-          );
-          return hasUser
-            ? [...withoutTmp, assistantMsg]
-            : [...withoutTmp, optimistic, assistantMsg];
-        });
-      }
-    },
-    [activeThreadId]
-  );
+        return hasUser
+          ? [...withoutTmp, assistantMsg]
+          : [...withoutTmp, optimistic, assistantMsg];
+      });
+    }
+    return {
+      startSet: Boolean(data.interpretation?.startSet),
+      riskFlag: data.interpretation?.riskFlag,
+      distress: data.interpretation?.distress,
+      agentText: data.message?.content,
+      agentId: data.message?.id,
+      phase: data.thread?.phase,
+    };
+  }, [activeThreadId]);
 
   const requestCheckIn = useCallback(async () => {
     if (!activeThreadId) return;
@@ -506,11 +529,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         memories?: Memory[];
         memorySets?: MemorySet[];
         memoryEnabled?: boolean;
+        voiceEnabled?: boolean;
       }>("/api/settings");
       setSettings(data.settings ?? DEFAULT_SETTINGS);
       setMemories(data.memories ?? []);
       setMemorySets(data.memorySets ?? []);
       setMemoryEnabled(data.memoryEnabled !== false);
+      setVoiceEnabled(data.voiceEnabled !== false);
     } catch (err) {
       console.error("refreshSettings failed:", err);
     }
@@ -640,6 +665,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       noteAdSetCompleted,
       adsConfig,
       adsReady,
+      voiceEnabled,
     }),
     [
       threads,
@@ -648,6 +674,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       memorySets,
       threadMemorySets,
       memoryEnabled,
+      voiceEnabled,
       settings,
       bls,
       sessionMode,

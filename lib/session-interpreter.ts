@@ -22,6 +22,8 @@ export type SessionInterpretation = {
   riskFlag: boolean;
   riskNotes: string | null;
   intakeComplete: boolean;
+  /** True when the guide should start a bilateral set after this turn. */
+  startSet: boolean;
 };
 
 export const EMPTY_INTERPRETATION: SessionInterpretation = {
@@ -43,6 +45,7 @@ export const EMPTY_INTERPRETATION: SessionInterpretation = {
   riskFlag: false,
   riskNotes: null,
   intakeComplete: false,
+  startSet: false,
 };
 
 const PHASE_SET = new Set<string>(PHASE_ORDER);
@@ -114,6 +117,7 @@ export function parseSessionInterpretation(
     riskFlag,
     riskNotes: asTrimmedString(o.riskNotes, 400),
     intakeComplete: Boolean(o.intakeComplete),
+    startSet: Boolean(o.startSet),
   };
 }
 
@@ -139,7 +143,8 @@ Return ONLY a single JSON object (no markdown, no prose) with this exact shape:
   "goals": string|null,
   "riskFlag": boolean,
   "riskNotes": string|null,
-  "intakeComplete": boolean
+  "intakeComplete": boolean,
+  "startSet": boolean
 }
 
 Rules:
@@ -149,6 +154,7 @@ Rules:
 - riskFlag true if suicidality, active crisis, severe dissociation, or feels unsafe — also set riskNotes briefly.
 - suggestedPhase: only when the conversation clearly warrants advancing or returning (e.g. intakeComplete → grounding; SUDs 0-1 in desensitization → installation; overwhelm → grounding). Prefer null if unsure.
 - needsGrounding true if user asks for safe place, feels flooded, dissociated, or unsafe.
+- startSet: true only when a bilateral set should begin now — phase is (or this turn advances to) desensitization, installation, or body_scan; distress is not overwhelm; riskFlag is false; and the user is ready to continue / go with that / begin the set. Never true during intake, grounding, assessment, or closure. Prefer false if unsure.
 - summary: one short clinical note for the guide agent (not shown verbatim to user unless needed).
 - userFacingHint: optional one short line the guide may use; null if none.
 - Current phase is ${phase}. Do not output anything except JSON.`;
@@ -163,6 +169,7 @@ export function interpretationContextBlock(
     `- needsGrounding: ${interp.needsGrounding}`,
     `- riskFlag: ${interp.riskFlag}`,
     `- intakeComplete: ${interp.intakeComplete}`,
+    `- startSet: ${interp.startSet}`,
     interp.suds != null ? `- suds: ${interp.suds}` : null,
     interp.voc != null ? `- voc: ${interp.voc}` : null,
     interp.target ? `- target: ${interp.target}` : null,

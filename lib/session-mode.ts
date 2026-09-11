@@ -79,3 +79,25 @@ export function canRepeatGuidedSet(opts: {
     phaseAllowsBlsSet(opts.phase)
   );
 }
+
+/**
+ * Whether Voice Mode may auto-start a set after the guide finishes speaking.
+ * Requires interpreter startSet plus the same gates as a manual start.
+ */
+export function shouldAutoStartSet(opts: {
+  startSet: boolean;
+  sessionKind: SessionKind;
+  phase: ProtocolPhase;
+  sessionMode: SessionMode;
+  riskFlag?: boolean;
+  distress?: "ok" | "elevated" | "overwhelm";
+}): boolean {
+  if (!opts.startSet) return false;
+  if (opts.riskFlag) return false;
+  if (opts.distress === "overwhelm") return false;
+  return canStartBls({
+    sessionKind: opts.sessionKind,
+    phase: opts.phase,
+    sessionMode: opts.sessionMode,
+  });
+}

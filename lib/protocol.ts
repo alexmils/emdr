@@ -63,13 +63,13 @@ export function checkInLine(phase: ProtocolPhase): string {
 export function openingLine(phase: ProtocolPhase): string {
   switch (phase) {
     case "intake":
-      return "Welcome. Before we start any processing, I'd like to understand what brings you here. In a few words — what would you like to work on today?";
+      return "Welcome. In a few words — what would you like to work on today?";
     case "grounding":
       return "Welcome. Before we work a target, let's ground. Notice your breath. When you're ready, describe your safe place in a few words — real or imagined.";
     case "assessment":
       return "Bring up the target as a picture, or the strongest body sensation if there's no clear image. What is the worst part, and what negative belief about yourself goes with it?";
     case "desensitization":
-      return "Hold the target in mind — image, belief, and body sensation. When you're ready, press Space or your controller to begin the set. I'll stay quiet while the ball moves.";
+      return "Hold the target in mind — image, belief, and body sensation. I'll start the set now — follow the ball. I'll stay quiet while it moves.";
     case "installation":
       return "Focus on your positive belief together with the target. Notice how true it feels now, from 0 to 7.";
     case "body_scan":

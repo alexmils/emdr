@@ -1495,8 +1495,8 @@ body:has(.app-shell.session-immersive) .help-fab {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.4rem;
-  margin: 0.85rem 0 0;
+  gap: 0.55rem;
+  margin: 1.1rem 0 0;
   padding: 0;
 }
 
@@ -1505,9 +1505,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 500;
-  padding: 0.35rem 0.7rem;
+  padding: 0.55rem 1.1rem;
   cursor: pointer;
   transition:
     border-color 0.12s ease,
@@ -1523,7 +1523,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 /* Intake welcome — quiet chips, one glowing composer */
 .agent-overlay--intake.agent-overlay--prompt {
-  width: min(94%, 40rem);
+  width: min(96%, 48rem);
 }
 
 .agent-overlay--intake .agent-overlay-inner {
@@ -1535,11 +1535,11 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-overlay--intake .agent-overlay-text {
-  max-width: 32rem;
+  max-width: 40rem;
   margin-inline: auto;
-  font-size: clamp(1.0625rem, 2.5vw, 1.2rem);
-  line-height: 1.55;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.2rem, 2.6vw, 1.4rem);
+  line-height: 1.5;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
@@ -1567,9 +1567,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.15rem;
 }
 
 .agent-overlay--intake .agent-quick-reply:hover {
@@ -1579,11 +1579,11 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-overlay--intake .agent-composer {
-  margin-top: 1rem;
-  min-height: 56px;
-  padding: 0.4rem 0.4rem 0.4rem 1.25rem;
+  margin-top: 1.15rem;
+  min-height: 64px;
+  padding: 0.45rem 0.45rem 0.45rem 1.35rem;
   border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
-  background: color-mix(in srgb, var(--bg-page) 55%, #fff);
+  background: #fff;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent),
     0 4px 18px color-mix(in srgb, var(--ink) 6%, transparent);
@@ -1597,7 +1597,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-overlay--intake .agent-composer-input {
-  font-size: 1.0625rem;
+  font-size: 1.1875rem;
 }
 
 .agent-overlay--intake .agent-composer-input::placeholder {
@@ -1605,10 +1605,10 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-overlay--intake .agent-composer-send {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   background: var(--accent);
-  color: var(--on-accent);
+  color: #fff;
 }
 
 .agent-overlay--intake .agent-composer-send:hover:not(:disabled) {
@@ -1616,27 +1616,27 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-overlay--intake .agent-composer-send:disabled {
-  opacity: 0.28;
+  display: none;
 }
 
 @media (max-width: 390px) {
   .agent-overlay--intake .agent-overlay-text {
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
   }
 
   .agent-overlay--intake .agent-quick-replies {
-    gap: 0.4rem;
-    margin-top: 1.15rem;
+    gap: 0.45rem;
+    margin-top: 1.2rem;
   }
 
   .agent-overlay--intake .agent-quick-reply {
-    font-size: 0.8125rem;
-    padding: 0.45rem 0.85rem;
+    font-size: 0.9375rem;
+    padding: 0.5rem 0.95rem;
   }
 
   .agent-overlay--intake .agent-composer {
-    min-height: 52px;
-    margin-top: 0.85rem;
+    min-height: 56px;
+    margin-top: 1rem;
   }
 }
 
@@ -1936,8 +1936,8 @@ body:has(.app-shell.session-immersive) .help-fab {
   top: calc(50% - var(--bls-dock-height, 0px) / 2);
   bottom: auto;
   z-index: 30;
-  width: min(94%, 40rem);
-  max-height: min(70vh, 32rem);
+  width: min(96%, 48rem);
+  max-height: min(78vh, 42rem);
   transform: translate(-50%, -50%);
   pointer-events: none;
   transition: top 0.25s var(--ease);
@@ -1951,8 +1951,8 @@ body:has(.app-shell.session-immersive) .help-fab {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  max-height: min(70vh, 32rem);
+  gap: 1rem;
+  max-height: min(78vh, 42rem);
   background: transparent;
   border: none;
   box-shadow: none;
@@ -1976,17 +1976,17 @@ body:has(.app-shell.session-immersive) .help-fab {
   position: relative;
   display: block;
   width: 100%;
-  max-width: 34rem;
+  max-width: 42rem;
   margin-inline: auto;
   padding-inline: 1.75rem;
 }
 
 .agent-overlay-text {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: clamp(1.2rem, 2.4vw, 1.4rem);
   font-weight: 400;
-  line-height: 1.55;
-  letter-spacing: -0.01em;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
   color: var(--text);
   text-align: center;
   text-wrap: pretty;
@@ -2007,20 +2007,20 @@ body:has(.app-shell.session-immersive) .help-fab {
 .agent-chat-messages {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1.05rem;
   flex: 1 1 auto;
   min-height: 0;
-  max-height: min(42vh, 20rem);
+  max-height: min(54vh, 30rem);
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 0.25rem 0.15rem;
+  padding: 0.35rem 0.2rem;
   scroll-behavior: smooth;
 }
 
 .agent-chat-row {
   display: flex;
   align-items: flex-end;
-  gap: 0.55rem;
+  gap: 0.7rem;
   max-width: 100%;
 }
 
@@ -2034,9 +2034,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .agent-chat-bubble {
   position: relative;
-  max-width: min(78%, 28rem);
-  padding: 0.65rem 0.85rem;
-  border-radius: 1rem;
+  max-width: min(82%, 36rem);
+  padding: 0.85rem 1.05rem;
+  border-radius: 1.15rem;
   text-align: left;
 }
 
@@ -2054,7 +2054,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .agent-chat-text {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   line-height: 1.55;
   color: var(--text);
   text-wrap: pretty;
@@ -2074,7 +2074,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-chat-bubble--agent .agent-chat-text {
-  padding-right: 1.5rem;
+  padding-right: 1.75rem;
 }
 
 .avatar-img,
@@ -2097,6 +2097,18 @@ body:has(.app-shell.session-immersive) .help-fab {
   font-size: 0.75rem;
 }
 
+/* Guided chat: larger presence without changing sidebar/header avatars */
+.agent-overlay .avatar-sm {
+  width: 44px;
+  height: 44px;
+  font-size: 0.875rem;
+}
+
+.agent-overlay .btn-icon-sm {
+  min-width: 36px;
+  min-height: 36px;
+}
+
 .avatar-lg {
   width: 72px;
   height: 72px;
@@ -2110,19 +2122,31 @@ body:has(.app-shell.session-immersive) .help-fab {
 .agent-composer {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  margin-top: 1.25rem;
-  min-height: 52px;
-  padding: 0.35rem 0.35rem 0.35rem 1.15rem;
-  border: 1px solid var(--border);
+  gap: 0.4rem;
+  margin-top: 1.35rem;
+  min-height: 60px;
+  padding: 0.4rem 0.4rem 0.4rem 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--ink, #2a3020) 14%, var(--border));
   border-radius: 999px;
-  background: var(--bg-elevated);
+  background: #fff;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+    0 1px 2px rgba(42, 48, 32, 0.06),
+    0 8px 20px rgba(42, 48, 32, 0.06);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
+}
+
+.agent-composer-wrap {
+  margin-top: 1.35rem;
+}
+
+.agent-composer-wrap .agent-composer {
+  margin-top: 0;
+}
+
+.agent-composer--with-mic {
+  padding-left: 0.45rem;
 }
 
 .agent-composer:focus-within {
@@ -2135,14 +2159,14 @@ body:has(.app-shell.session-immersive) .help-fab {
 .agent-composer-input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
+  min-height: 44px;
   border: none;
   outline: none;
   background: transparent;
   color: var(--text);
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   line-height: 1.4;
-  padding: 0.35rem 0.5rem 0.35rem 0;
+  padding: 0.4rem 0.55rem 0.4rem 0;
 }
 
 .agent-composer-input::placeholder {
@@ -2153,13 +2177,13 @@ body:has(.app-shell.session-immersive) .help-fab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: var(--bg-page);
+  color: #fff;
   cursor: pointer;
   transition:
     background 0.12s ease,
@@ -2172,40 +2196,145 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-composer-send:disabled {
-  opacity: 0.35;
-  cursor: default;
+  display: none;
 }
 
 .agent-composer-mic {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
-  margin-left: -0.35rem;
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--ink, #2a3020);
+  opacity: 0.72;
   cursor: pointer;
   transition:
     background 0.12s ease,
-    color 0.12s ease;
+    color 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .agent-composer-mic:hover {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--ink, #2a3020) 8%, transparent);
+  opacity: 1;
+  color: var(--ink, #2a3020);
+}
+
+.agent-composer-mic.is-listening {
+  opacity: 1;
+  background: color-mix(in srgb, var(--gold, #c6d67e) 35%, transparent);
+  color: var(--ink, #2a3020);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold, #c6d67e) 70%, transparent);
+}
+
+.agent-composer-voice-mode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  /* High contrast like ChatGPT blue CTA — Nura ink + gold */
+  background: var(--ink, #2a3020);
+  color: var(--gold, #c6d67e);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
+}
+
+.agent-composer-voice-mode:hover {
+  background: var(--sidebar-bg, #3d4129);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold, #c6d67e) 55%, transparent);
+}
+
+.agent-composer-voice-mode:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold, #c6d67e) 80%, transparent);
+}
+
+.agent-composer-hint {
+  margin: 0.4rem 0.25rem 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--danger, #a14a3a);
+}
+
+.agent-voice-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  margin-top: 1.15rem;
+  width: 100%;
+}
+
+.agent-voice-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.35rem 1rem;
+  pointer-events: none;
+}
+
+.agent-voice-wave-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.75rem;
+  width: min(100%, 18rem);
+}
+
+.agent-voice-wave-bar {
+  display: block;
+  width: 0.42rem;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: center center;
+  background: linear-gradient(
+    180deg,
+    var(--gold, #c6d67e) 0%,
+    var(--accent, #84b067) 55%,
+    color-mix(in srgb, var(--accent, #84b067) 70%, var(--ink, #2a3020)) 100%
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent, #84b067) 28%, transparent);
+  will-change: transform;
+}
+
+.agent-voice-wave--thinking .agent-voice-wave-bar,
+.agent-voice-wave--speaking .agent-voice-wave-bar {
+  opacity: 0.85;
+}
+
+.agent-voice-wave--bls .agent-voice-wave-bar {
+  opacity: 0.35;
+  filter: grayscale(0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-voice-wave-bar {
+    transition: none;
+  }
 }
 
 .agent-voice-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-  min-height: 56px;
-  padding: 0.55rem 0.65rem 0.55rem 0.75rem;
+  gap: 0.85rem;
+  margin-top: 0;
+  min-height: 64px;
+  padding: 0.6rem 0.7rem 0.6rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--bg-elevated);
@@ -2215,8 +2344,8 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-voice-orb {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--accent);
@@ -2259,7 +2388,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .agent-voice-status {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 500;
   color: var(--text);
   line-height: 1.3;
@@ -2267,7 +2396,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .agent-voice-interim {
   margin: 0.15rem 0 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.35;
   white-space: nowrap;
@@ -2285,15 +2414,15 @@ body:has(.app-shell.session-immersive) .help-fab {
 .agent-voice-end {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   flex-shrink: 0;
-  min-height: 36px;
-  padding: 0.35rem 0.75rem;
+  min-height: 42px;
+  padding: 0.4rem 0.9rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   cursor: pointer;
   transition:
     background 0.12s ease,
@@ -2313,15 +2442,60 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 
   .agent-voice-end {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     padding: 0;
     justify-content: center;
   }
 }
 
+@media (max-width: 390px) {
+  .agent-overlay {
+    width: min(98%, 48rem);
+    max-height: min(82vh, 42rem);
+  }
+
+  .agent-overlay-inner {
+    max-height: min(82vh, 42rem);
+    gap: 0.85rem;
+  }
+
+  .agent-chat-messages {
+    max-height: min(48vh, 26rem);
+    gap: 0.9rem;
+  }
+
+  .agent-chat-text {
+    font-size: 1rem;
+  }
+
+  .agent-overlay .avatar-sm {
+    width: 40px;
+    height: 40px;
+  }
+
+  .agent-composer {
+    min-height: 56px;
+  }
+
+  .agent-composer-input {
+    font-size: 1.0625rem;
+  }
+
+  .agent-quick-reply {
+    font-size: 0.9375rem;
+    padding: 0.5rem 0.95rem;
+  }
+}
+
 .agent-overlay--intake .agent-composer-mic {
-  color: var(--text-secondary);
+  color: var(--ink, #2a3020);
+  opacity: 0.72;
+}
+
+.agent-overlay--intake .agent-composer-voice-mode {
+  background: var(--ink, #2a3020);
+  color: var(--gold, #c6d67e);
 }
 
 .agent-overlay--intake .agent-voice-bar {
@@ -7612,6 +7786,11 @@ select.field option:disabled {
 .auth-method-back:hover {
   color: var(--earth, #84b067);
   text-decoration: underline;
+}
+
+.auth-turnstile {
+  margin: 0.75rem 0 0.25rem;
+  min-height: 65px;
 }
 
 .auth-email-form {

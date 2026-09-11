@@ -31,6 +31,7 @@ import { shouldBeginBlsAfterAd } from "@/lib/ads";
 import { WorkspaceMenuButton } from "./SidebarNavContext";
 import { LearnTeaser } from "./LearnTeaser";
 import { BillingChargeHint } from "./BillingChargeHint";
+import { useGuidedVoiceMode } from "./useGuidedVoiceMode";
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -61,6 +62,7 @@ export function SessionWorkspace() {
     createThread,
     maybeShowAd,
     noteAdSetCompleted,
+    voiceEnabled,
   } = useApp();
   const { user: currentUser } = useCurrentUser();
 
@@ -69,6 +71,8 @@ export function SessionWorkspace() {
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
   const [focusedField, setFocusedField] = useState<BlsToolbarField>("speed1");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playResolveRef = useRef<(() => void) | null>(null);
+  const playGenRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const blsDockRef = useRef<HTMLDivElement>(null);
   const runningRef = useRef(running);
@@ -245,28 +249,64 @@ export function SessionWorkspace() {
     noteAdSetCompleted,
   ]);
 
-  const playLine = useCallback(async (text: string) => {
-    try {
-      const res = await fetch("/api/voice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) return;
-      const buf = await res.arrayBuffer();
-      const blob = new Blob([buf], { type: "audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-      if (audioRef.current) {
-        audioRef.current.pause();
+  const stopPlayback = useCallback(() => {
+    playGenRef.current += 1;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      try {
         URL.revokeObjectURL(audioRef.current.src);
+      } catch {
+        /* ignore */
       }
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      await audio.play();
-    } catch {
-      /* voice optional */
+      audioRef.current = null;
     }
+    const resolve = playResolveRef.current;
+    playResolveRef.current = null;
+    resolve?.();
   }, []);
+
+  const playLine = useCallback(
+    async (text: string) => {
+      stopPlayback();
+      const gen = playGenRef.current;
+      try {
+        const res = await fetch("/api/voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (gen !== playGenRef.current) return;
+        if (!res.ok) return;
+        const buf = await res.arrayBuffer();
+        if (gen !== playGenRef.current) return;
+        const blob = new Blob([buf], { type: "audio/mpeg" });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        await new Promise<void>((resolve) => {
+          let settled = false;
+          const done = () => {
+            if (settled) return;
+            settled = true;
+            if (playResolveRef.current === done) playResolveRef.current = null;
+            try {
+              URL.revokeObjectURL(url);
+            } catch {
+              /* ignore */
+            }
+            resolve();
+          };
+          playResolveRef.current = done;
+          audio.addEventListener("ended", done, { once: true });
+          audio.addEventListener("error", done, { once: true });
+          void audio.play().catch(() => done());
+        });
+      } catch {
+        /* voice optional */
+      }
+    },
+    [stopPlayback]
+  );
 
   const navigateToolbar = useCallback(
     (direction: "left" | "right" | "up" | "down") => {
@@ -413,12 +453,36 @@ export function SessionWorkspace() {
 
   const handleReply = useCallback(
     async (text: string) => {
-      if (!guided) return;
-      await sendUserMessage(text);
+      if (!guided) return { startSet: false as const };
+      const result = await sendUserMessage(text);
       setSessionMode("idle");
+      return result;
     },
     [guided, sendUserMessage, setSessionMode]
   );
+
+  const lastAgent = [...messages].reverse().find((m) => m.role === "agent");
+
+  const voice = useGuidedVoiceMode({
+    voiceFeatureOn: Boolean(voiceEnabled && guided),
+    sessionKind: thread?.mode ?? "pending",
+    phase: thread?.phase ?? "intake",
+    sessionMode,
+    running,
+    onSend: handleReply,
+    onPlayLine: playLine,
+    onBeginBls: beginBlsRun,
+    lastAgentId: lastAgent?.id ?? null,
+    lastAgentContent: lastAgent?.content ?? null,
+  });
+
+  const exitVoiceMode = voice.exit;
+  const exitVoice = useCallback(() => {
+    stopPlayback();
+    exitVoiceMode();
+  }, [stopPlayback, exitVoiceMode]);
+
+  useEffect(() => () => stopPlayback(), [stopPlayback]);
 
   if (!thread) {
     return (
@@ -450,7 +514,7 @@ export function SessionWorkspace() {
               New chat
             </button>
           </div>
-          <div className="workspace-home-empty-learn w-full max-w-lg">
+          <div className="workspace-home-empty-learn">
             <LearnTeaser />
           </div>
         </div>
@@ -545,9 +609,7 @@ export function SessionWorkspace() {
                 ? "default"
                 : sessionMode === "check_in"
                   ? "check_in"
-                  : thread.phase === "intake"
-                    ? "intake"
-                    : "guided_wait"
+                  : "guided_wait"
               : "default"
           }
         />
@@ -564,6 +626,13 @@ export function SessionWorkspace() {
             onReply={(t) => void handleReply(t)}
             onPlayLine={(t) => void playLine(t)}
             onRepeatSet={repeatAllowed ? repeatSet : undefined}
+            voiceAvailable={voice.available}
+            voiceActive={voice.active}
+            voicePhase={voice.phase}
+            voiceInterim={voice.interim}
+            voiceError={voice.error}
+            onEnterVoice={voice.enter}
+            onExitVoice={exitVoice}
           />
         )}
 

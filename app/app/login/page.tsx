@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startAuthentication } from "@simplewebauthn/browser";
 import {
@@ -10,9 +10,14 @@ import {
   AuthLink,
 } from "@/app/components/AuthShell";
 import { GoogleAuthButton } from "@/app/components/GoogleAuthButton";
+import {
+  TurnstileField,
+  type TurnstileFieldHandle,
+} from "@/app/components/TurnstileField";
 import { APP_BASE, appPath } from "@/lib/app-base";
 import { resolveAccessRedirect } from "@/lib/access-gate";
 import { googleAuthErrorMessage } from "@/lib/auth/google-ui";
+import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 
 function redirectAfterLogin(
   next: string,
@@ -43,22 +48,33 @@ function LoginForm() {
   const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileFieldHandle>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!turnstileToken) {
+      setError("Complete the verification check, then try again.");
+      return;
+    }
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+        }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error ?? "Sign in failed");
+        turnstileRef.current?.reset();
         return;
       }
 
@@ -68,6 +84,7 @@ function LoginForm() {
       router.refresh();
     } catch {
       setError("Network error. Try again.");
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -161,9 +178,14 @@ function LoginForm() {
           onChange={setPassword}
           autoComplete="current-password"
         />
+        <TurnstileField
+          ref={turnstileRef}
+          action="login"
+          onToken={setTurnstileToken}
+        />
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || !turnstileToken}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
           {loading ? "Signing in…" : "Sign in"}

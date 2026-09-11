@@ -9,13 +9,29 @@ import {
   publicEntitlement,
 } from "@/lib/entitlements";
 import { ensureUserAccessStub } from "@/lib/user-access";
+import {
+  extractTurnstileToken,
+  verifyTurnstileToken,
+} from "@/lib/turnstile";
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = (await request.json()) as {
+    const body = (await request.json()) as {
       email?: string;
       password?: string;
+      "cf-turnstile-response"?: string;
     };
+
+    const gate = await verifyTurnstileToken({
+      token: extractTurnstileToken(body),
+      expectedAction: "login",
+      remoteip: clientIp(request),
+    });
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
+
+    const { email, password } = body;
 
     if (!email?.trim() || !password) {
       return NextResponse.json(

@@ -5,6 +5,7 @@ import {
   canStartBls,
   isChoosableSessionMode,
   phaseAllowsBlsSet,
+  shouldAutoStartSet,
   shouldBootstrapAgent,
   showsBlsControls,
   showsBlsToolbar,
@@ -27,6 +28,14 @@ describe("session mode helpers", () => {
   });
 
   it("shows BLS toolbar in guided only when a set is ready or running", () => {
+    assert.equal(
+      showsBlsToolbar({
+        sessionKind: "guided",
+        phase: "intake",
+        sessionMode: "idle",
+      }),
+      false
+    );
     assert.equal(
       showsBlsToolbar({
         sessionKind: "guided",
@@ -170,6 +179,65 @@ describe("session mode helpers", () => {
     assert.equal(
       canRepeatGuidedSet({
         sessionKind: "free",
+        phase: "desensitization",
+        sessionMode: "check_in",
+      }),
+      false
+    );
+  });
+
+  it("auto-starts a set only with startSet and canStartBls gates", () => {
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: true,
+        sessionKind: "guided",
+        phase: "desensitization",
+        sessionMode: "idle",
+      }),
+      true
+    );
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: false,
+        sessionKind: "guided",
+        phase: "desensitization",
+        sessionMode: "idle",
+      }),
+      false
+    );
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: true,
+        sessionKind: "guided",
+        phase: "assessment",
+        sessionMode: "idle",
+      }),
+      false
+    );
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: true,
+        sessionKind: "guided",
+        phase: "desensitization",
+        sessionMode: "idle",
+        riskFlag: true,
+      }),
+      false
+    );
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: true,
+        sessionKind: "guided",
+        phase: "desensitization",
+        sessionMode: "idle",
+        distress: "overwhelm",
+      }),
+      false
+    );
+    assert.equal(
+      shouldAutoStartSet({
+        startSet: true,
+        sessionKind: "guided",
         phase: "desensitization",
         sessionMode: "check_in",
       }),

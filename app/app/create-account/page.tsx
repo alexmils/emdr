@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail } from "lucide-react";
 import {
@@ -10,12 +10,17 @@ import {
   AuthLink,
 } from "@/app/components/AuthShell";
 import { GoogleAuthButton } from "@/app/components/GoogleAuthButton";
+import {
+  TurnstileField,
+  type TurnstileFieldHandle,
+} from "@/app/components/TurnstileField";
 import { APP_BASE, LOGIN_PATH, safeAppNext } from "@/lib/app-base";
 import {
   createAccountPathWithSearch,
   initialCreateAccountStep,
 } from "@/lib/auth/create-account-ui";
 import { googleAuthErrorMessage } from "@/lib/auth/google-ui";
+import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 
 function CreateAccountForm() {
   const router = useRouter();
@@ -32,6 +37,8 @@ function CreateAccountForm() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileFieldHandle>(null);
 
   useEffect(() => {
     const title = document.getElementById("auth-shell-title");
@@ -64,6 +71,11 @@ function CreateAccountForm() {
       return;
     }
 
+    if (!turnstileToken) {
+      setError("Complete the verification check, then try again.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -73,11 +85,13 @@ function CreateAccountForm() {
           email,
           password,
           name: name.trim() || undefined,
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Could not create account");
+        turnstileRef.current?.reset();
         return;
       }
 
@@ -88,6 +102,7 @@ function CreateAccountForm() {
       router.refresh();
     } catch {
       setError("Network error. Try again.");
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -185,9 +200,14 @@ function CreateAccountForm() {
         <p className="text-caption mb-4 text-left">
           Use at least 8 characters with a letter and a number.
         </p>
+        <TurnstileField
+          ref={turnstileRef}
+          action="signup"
+          onToken={setTurnstileToken}
+        />
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !turnstileToken}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
           {loading ? "Creating…" : "Create account"}
