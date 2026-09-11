@@ -270,6 +270,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Cursor rule `git-commit-push`: when user says commit (unless “commit only”), always **commit + push** in the same turn
 - Admin SEO Connections: **Connect** / **Edit** on each card opens a modal to enter that tool’s IDs (replaces the long bottom form)
 - Production Docker: `WORKDIR` `/app` → `/nura` so standalone traces do not collide with App Router `app/` + console `/app` (fixes unstyled pages and `/` rendering as login/AppAccessGate; vercel/next.js#68690)
+- Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 
 ---
 
