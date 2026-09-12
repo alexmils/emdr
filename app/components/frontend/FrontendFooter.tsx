@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { Mail } from "lucide-react";
 import { BrandLockup } from "@/app/components/BrandLockup";
 import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
 import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
@@ -118,13 +117,6 @@ export function FrontendFooter() {
                 linkClassName="fe-site-footer-social-link"
                 labelled={false}
               />
-              <a
-                href="mailto:hello@nurahelp.com"
-                className="fe-site-footer-social-link"
-                aria-label="Email Nura"
-              >
-                <Mail size={18} strokeWidth={1.6} aria-hidden />
-              </a>
             </div>
           </div>
 

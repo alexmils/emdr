@@ -437,6 +437,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
+- Marketing footer social row: drop the `mailto:hello@nurahelp.com` envelope icon (Instagram + Facebook remain)
 
 ---
 
