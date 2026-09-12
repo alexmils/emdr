@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         name: sample.name,
         supportEmail: sample.supportEmail,
         homeUrl: sample.homeUrl,
+        billingNote: "Your subscription was canceled.",
       });
     } else {
       await sendTemplateEmail(to.trim(), "welcome", {

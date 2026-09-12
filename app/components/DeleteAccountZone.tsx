@@ -3,23 +3,37 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/app/components/Toast";
+import { DELETE_CONFIRM_PHRASE } from "@/lib/delete-account-shared";
 
 type Props = {
   email: string | null | undefined;
+  hasPassword?: boolean;
 };
 
-export function DeleteAccountZone({ email }: Props) {
+export function DeleteAccountZone({ email, hasPassword = false }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPhrase, setConfirmPhrase] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit =
+  const emailOk =
     Boolean(email) &&
-    confirmEmail.trim().toLowerCase() === (email ?? "").trim().toLowerCase() &&
-    !busy;
+    confirmEmail.trim().toLowerCase() === (email ?? "").trim().toLowerCase();
+  const stepUpOk = hasPassword
+    ? password.length > 0
+    : confirmPhrase.trim().toUpperCase() === DELETE_CONFIRM_PHRASE;
+  const canSubmit = emailOk && stepUpOk && !busy;
+
+  const resetForm = () => {
+    setConfirmEmail("");
+    setPassword("");
+    setConfirmPhrase("");
+    setError(null);
+  };
 
   const onDelete = async () => {
     if (!canSubmit) return;
@@ -29,7 +43,12 @@ export function DeleteAccountZone({ email }: Props) {
       const res = await fetch("/api/auth/delete-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirmEmail }),
+        body: JSON.stringify({
+          confirmEmail,
+          ...(hasPassword
+            ? { password }
+            : { confirmPhrase }),
+        }),
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -56,8 +75,8 @@ export function DeleteAccountZone({ email }: Props) {
       </h3>
       <p className="settings-help mt-1">
         Permanently delete your account, sessions, intake notes, and memory
-        sets. An active subscription is canceled when billing is configured.
-        This cannot be undone.
+        sets. An active subscription must cancel successfully before deletion
+        finishes. This cannot be undone.
       </p>
 
       {!open ? (
@@ -66,8 +85,7 @@ export function DeleteAccountZone({ email }: Props) {
           className="btn-danger mt-3"
           onClick={() => {
             setOpen(true);
-            setConfirmEmail("");
-            setError(null);
+            resetForm();
           }}
         >
           Delete account
@@ -90,6 +108,36 @@ export function DeleteAccountZone({ email }: Props) {
               disabled={busy}
             />
           </label>
+          {hasPassword ? (
+            <label className="mt-2 block">
+              <span className="settings-label mb-1 block">Password</span>
+              <input
+                className="field"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={busy}
+              />
+            </label>
+          ) : (
+            <label className="mt-2 block">
+              <span className="settings-label mb-1 block">
+                Type {DELETE_CONFIRM_PHRASE} to confirm
+              </span>
+              <input
+                className="field"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={DELETE_CONFIRM_PHRASE}
+                value={confirmPhrase}
+                onChange={(e) => setConfirmPhrase(e.target.value)}
+                disabled={busy}
+              />
+            </label>
+          )}
           {error && (
             <p className="mt-2 settings-body-text text-[var(--destructive)]">
               {error}
@@ -110,8 +158,7 @@ export function DeleteAccountZone({ email }: Props) {
               disabled={busy}
               onClick={() => {
                 setOpen(false);
-                setConfirmEmail("");
-                setError(null);
+                resetForm();
               }}
             >
               Cancel

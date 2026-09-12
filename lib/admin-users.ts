@@ -1,33 +1,37 @@
-import { ensureSchemaReady, getPool } from "@/lib/db";
-
 import { isValidUserRole, type UserRole } from "@/lib/roles";
-
+import { deleteUserAccount } from "@/lib/delete-account";
+import {
+  ensureSchemaReady,
+  getPool,
+} from "@/lib/db";
 import { getUserById, type UserStatus } from "@/lib/users";
 
 export async function deleteAdminUser(
   targetId: string,
   actorId: string
-): Promise<{ ok: true } | { error: string }> {
-  await ensureSchemaReady();
-
-  if (targetId === actorId) {
-    return { error: "You cannot delete your own account" };
-  }
-
-  const target = await getUserById(targetId);
-  if (!target) return { error: "User not found" };
-
-  if (target.role === "platform_admin") {
-    const { rows } = await getPool().query<{ c: number }>(
-      "SELECT COUNT(*)::int AS c FROM users WHERE role = 'platform_admin'"
-    );
-    if ((rows[0]?.c ?? 0) <= 1) {
-      return { error: "Cannot delete the last platform admin" };
+): Promise<
+  | {
+      ok: true;
+      user: NonNullable<Awaited<ReturnType<typeof getUserById>>>;
+      stripe: {
+        attempted: boolean;
+        canceled: boolean;
+        hadSubscription: boolean;
+      };
     }
-  }
-
-  await getPool().query("DELETE FROM users WHERE id = $1", [targetId]);
-  return { ok: true };
+  | { error: string }
+> {
+  const result = await deleteUserAccount({
+    targetId,
+    actorId,
+    mode: "admin",
+  });
+  if ("error" in result) return result;
+  return {
+    ok: true,
+    user: result.user,
+    stripe: result.stripe,
+  };
 }
 
 export async function updateAdminUser(

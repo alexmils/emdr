@@ -8,6 +8,7 @@ export type CurrentUser = {
   name: string | null;
   avatarUrl: string | null;
   role?: string;
+  hasPassword?: boolean;
 };
 
 const USER_UPDATED = "emdr-user-updated";
@@ -42,6 +43,7 @@ export function useCurrentUser() {
               name: u.name ?? null,
               avatarUrl: u.avatarUrl ?? null,
               role: u.role,
+              hasPassword: Boolean(u.hasPassword),
             }
           : null
       );

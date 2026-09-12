@@ -311,7 +311,10 @@ function SettingsPageContent() {
                 </p>
               )}
             </div>
-            <DeleteAccountZone email={user?.email} />
+            <DeleteAccountZone
+              email={user?.email}
+              hasPassword={Boolean(user?.hasPassword)}
+            />
             </>
           )}
 

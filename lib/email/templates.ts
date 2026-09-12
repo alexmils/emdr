@@ -30,6 +30,8 @@ export type EmailTemplateData = {
     name: string;
     supportEmail: string;
     homeUrl: string;
+    /** Pre-built sentence about subscription cancel outcome */
+    billingNote: string;
   };
 };
 
@@ -84,6 +86,14 @@ function ctaButton(href: string, label: string): string {
   return `<p style="margin:24px 0;">
   <a href="${href}" style="display:inline-block;background:${brandColor};color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 20px;border-radius:8px;">${label}</a>
 </p>`;
+}
+
+function escapeEmailHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export function renderEmailTemplate<T extends EmailTemplateId>(
@@ -148,16 +158,20 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
     }
     case "account_deleted": {
       const d = data as EmailTemplateData["account_deleted"];
+      const safeName = escapeEmailHtml(d.name);
+      const safeSupport = escapeEmailHtml(d.supportEmail);
+      const safeBilling = escapeEmailHtml(d.billingNote);
       const subject = "Your account was deleted";
-      const text = `Hi ${d.name},\n\nYour ${siteName} account and associated session data have been deleted. If you had an active subscription, it was canceled.\n\nIf you did not request this, contact ${d.supportEmail} right away.\n\n${d.homeUrl}`;
+      const text = `Hi ${d.name},\n\nYour ${siteName} account and associated session data have been deleted. ${d.billingNote}\n\nIf you did not request this, contact ${d.supportEmail} right away.\n\n${d.homeUrl}`;
       const html = layout(
         siteName,
         "Account deleted",
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Hi ${d.name},</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Your ${siteName} account and associated session data have been permanently deleted. If you had an active subscription, it was canceled.</p>
-         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Questions? Email <a href="mailto:${d.supportEmail}" style="color:${brandColor};">${d.supportEmail}</a>.</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Hi ${safeName},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Your ${escapeEmailHtml(siteName)} account and associated session data have been permanently deleted.</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">${safeBilling}</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Questions? Email <a href="mailto:${safeSupport}" style="color:${brandColor};">${safeSupport}</a>.</p>
          ${ctaButton(d.homeUrl, "Back to home")}`,
-        `If you did not delete this account, contact ${d.supportEmail} right away.`
+        `If you did not delete this account, contact ${safeSupport} right away.`
       );
       return { subject, html, text };
     }

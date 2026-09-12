@@ -65,6 +65,7 @@ function sampleData(id: EmailTemplateId) {
         name: base.name,
         supportEmail: base.supportEmail,
         homeUrl: base.homeUrl,
+        billingNote: "Your subscription was canceled.",
       };
   }
 }

@@ -6,6 +6,7 @@ import {
 } from "@/lib/api-auth";
 import { listAdminUsers } from "@/lib/admin-stats";
 import { deleteAdminUser, updateAdminUser } from "@/lib/admin-users";
+import { sendAccountDeletedEmails } from "@/lib/account-deleted-emails";
 import { getUserById } from "@/lib/users";
 import { inviteUserByEmail } from "@/lib/invite-user";
 import { clientIp, writeAuditEvent } from "@/lib/audit-log";
@@ -133,20 +134,36 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    await writeAuditEvent({
-      actorUserId: auth.user.id,
-      targetUserId: id,
-      action: "user.deleted",
-      detail: { email: userBefore.email },
-      ip: clientIp(request),
-    });
-
     const result = await deleteAdminUser(id, auth.user.id);
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true });
+    await writeAuditEvent({
+      actorUserId: auth.user.id,
+      targetUserId: null,
+      action: "user.deleted",
+      detail: {
+        self: false,
+        email: userBefore.email,
+        stripeCanceled: result.stripe.canceled,
+        hadSubscription: result.stripe.hadSubscription,
+      },
+      ip: clientIp(request),
+    });
+
+    await sendAccountDeletedEmails({
+      email: userBefore.email,
+      name: userBefore.name,
+      stripe: result.stripe,
+      self: false,
+      actorEmail: auth.user.email,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      stripeCanceled: result.stripe.canceled,
+    });
   } catch (err) {
     console.error("[admin/users DELETE]", err);
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });

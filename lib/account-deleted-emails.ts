@@ -2,6 +2,10 @@ import { getPool } from "@/lib/db";
 import { getAppUrl, sendEmail, sendTemplateEmail } from "@/lib/email";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { BRAND_DOMAIN } from "@/lib/brand";
+import {
+  accountDeletedBillingNote,
+  type StripeCancelResult,
+} from "@/lib/delete-account-shared";
 
 function escapeHtml(value: string): string {
   return value
@@ -11,7 +15,9 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-async function adminRecipientEmails(): Promise<string[]> {
+async function adminRecipientEmails(
+  excludeEmail?: string
+): Promise<string[]> {
   const platform = await getPlatformSettings();
   const { rows } = await getPool().query<{ email: string }>(
     `SELECT email FROM users
@@ -23,17 +29,22 @@ async function adminRecipientEmails(): Promise<string[]> {
   if (platform.supportEmail?.trim()) {
     recipients.add(platform.supportEmail.trim().toLowerCase());
   }
+  const exclude = excludeEmail?.trim().toLowerCase();
+  if (exclude) recipients.delete(exclude);
   return [...recipients];
 }
 
 /**
- * After a successful self-delete: confirm to the user, notify admins.
+ * After a successful account delete: confirm to the user, notify admins.
  * Failures are logged; they must not undo the deletion.
  */
 export async function sendAccountDeletedEmails(input: {
   email: string;
   name: string | null;
-  stripeCanceled: boolean;
+  stripe: StripeCancelResult;
+  /** Self-serve vs admin-initiated */
+  self: boolean;
+  actorEmail?: string | null;
 }): Promise<void> {
   const platform = await getPlatformSettings();
   const displayName =
@@ -41,28 +52,37 @@ export async function sendAccountDeletedEmails(input: {
   const supportEmail =
     platform.supportEmail?.trim() || `hi@contact.${BRAND_DOMAIN}`;
   const homeUrl = await getAppUrl("/");
+  const billingNote = accountDeletedBillingNote(input.stripe);
 
   try {
     await sendTemplateEmail(input.email, "account_deleted", {
       name: displayName,
       supportEmail,
       homeUrl,
+      billingNote,
     });
   } catch (err) {
     console.warn("[account-deleted] user confirmation email failed:", err);
   }
 
-  const recipients = await adminRecipientEmails();
+  const recipients = await adminRecipientEmails(input.email);
   if (!recipients.length) return;
 
   const siteName = platform.siteName?.trim() || "Nura";
   const activityUrl = await getAppUrl("/admin/activity");
-  const stripeLine = input.stripeCanceled
-    ? "Stripe subscription canceled."
-    : "No Stripe subscription canceled (none found or cancel skipped).";
+  const summary = input.self
+    ? `${displayName} (${input.email}) deleted their ${siteName} account.`
+    : `${displayName} (${input.email}) was deleted from ${siteName} by ${
+        input.actorEmail?.trim() || "an administrator"
+      }.`;
+  const stripeLine = input.stripe.hadSubscription
+    ? input.stripe.canceled
+      ? "Stripe subscription canceled."
+      : "Stripe subscription cancel FAILED."
+    : "No Stripe subscription on file.";
   const subject = `Account deleted: ${input.email}`;
-  const text = `${displayName} (${input.email}) deleted their ${siteName} account.\n\n${stripeLine}\n\nActivity: ${activityUrl}`;
-  const html = `<p><strong>${escapeHtml(displayName)}</strong> (${escapeHtml(input.email)}) deleted their ${escapeHtml(siteName)} account.</p><p>${escapeHtml(stripeLine)}</p><p><a href="${escapeHtml(activityUrl)}">Open activity log</a></p>`;
+  const text = `${summary}\n\n${stripeLine}\n\nActivity: ${activityUrl}`;
+  const html = `<p>${escapeHtml(summary)}</p><p>${escapeHtml(stripeLine)}</p><p><a href="${escapeHtml(activityUrl)}">Open activity log</a></p>`;
 
   for (const to of recipients) {
     try {

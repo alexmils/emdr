@@ -165,8 +165,8 @@ export default async function PrivacyPage() {
             <strong>Delete account</strong> — Sign in → Settings → Profile →
             Danger zone → Delete account. Type your account email to confirm.
             This permanently removes your account, sessions, intake notes, and
-            memory sets, and cancels an active Stripe subscription when billing
-            is configured.
+            memory sets. If a Stripe subscription is on file, it must cancel
+            successfully before deletion finishes.
           </li>
         </ul>
         <p>

@@ -206,7 +206,7 @@ function AdminUsersPageInner() {
     setMenuFor(null);
     if (
       !window.confirm(
-        `Delete ${u.email}? All their sessions and data will be removed.`
+        `Delete ${u.email}? All their sessions and data will be removed. An active Stripe subscription must cancel successfully first.`
       )
     ) {
       return;

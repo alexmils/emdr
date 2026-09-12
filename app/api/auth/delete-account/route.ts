@@ -25,9 +25,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { confirmEmail?: unknown };
+  let body: {
+    confirmEmail?: unknown;
+    password?: unknown;
+    confirmPhrase?: unknown;
+  };
   try {
-    body = (await request.json()) as { confirmEmail?: unknown };
+    body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -54,27 +58,36 @@ export async function POST(request: Request) {
   const ip = clientIp(request);
   const deletedEmail = user.email;
   const deletedName = user.name;
+  const deletedId = user.id;
 
-  await writeAuditEvent({
-    actorUserId: user.id,
-    targetUserId: user.id,
-    action: "user.deleted",
-    detail: {
-      self: true,
-      email: deletedEmail,
-    },
-    ip,
-  });
+  const auth = user.passwordHash
+    ? {
+        kind: "password" as const,
+        password: typeof body.password === "string" ? body.password : "",
+      }
+    : {
+        kind: "phrase" as const,
+        phrase:
+          typeof body.confirmPhrase === "string" ? body.confirmPhrase : "",
+      };
 
-  const result = await deleteOwnAccount(user.id);
+  const result = await deleteOwnAccount(user.id, auth);
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
-  await sendAccountDeletedEmails({
-    email: deletedEmail,
-    name: deletedName,
-    stripeCanceled: result.stripe.canceled,
+  await writeAuditEvent({
+    actorUserId: null,
+    targetUserId: null,
+    action: "user.deleted",
+    detail: {
+      self: true,
+      email: deletedEmail,
+      userId: deletedId,
+      stripeCanceled: result.stripe.canceled,
+      hadSubscription: result.stripe.hadSubscription,
+    },
+    ip,
   });
 
   const jar = await cookies();
@@ -89,8 +102,16 @@ export async function POST(request: Request) {
     maxAge: 0,
   });
 
+  await sendAccountDeletedEmails({
+    email: deletedEmail,
+    name: deletedName,
+    stripe: result.stripe,
+    self: true,
+  });
+
   return NextResponse.json({
     ok: true,
     stripeCanceled: result.stripe.canceled,
+    hadSubscription: result.stripe.hadSubscription,
   });
 }

@@ -74,7 +74,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Public sitemap **`lastModified`** dates only (no `changefreq` / `priority` — Google ignores them)
 - Homepage JSON-LD (`Organization` + `SoftwareApplication` + `FAQPage`) matching the visible FAQ accordion; no native-app OS list, no BLS jargon, no `MedicalWebPage` until a clinical reviewer exists
 - **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
-- **Self-serve account deletion**: Settings → Profile → Danger zone deletes the signed-in user (cascaded session/intake/memory data) via `POST /api/auth/delete-account` with email confirm; best-effort Stripe subscription cancel; Privacy §9 + Terms §8 document how to update/delete (store compliance); confirmation email (`account_deleted` template) to the user + notify active admins/support (+ platform support email)
+- **Self-serve account deletion**: Settings → Profile → Danger zone via `POST /api/auth/delete-account` (email confirm + password when set); Stripe subscription must cancel successfully before DB delete (shared with admin delete); Privacy §9 docs; `account_deleted` email uses truthful `billingNote`; admins/support notified
 
 ### Changed
 - **`/terms`**: hosts prepared Termly Terms of Service HTML (`content/legal/terms-of-service.termly.html` → `lib/legal/terms-body.generated.ts`) with in-page TOC jump links + Nura product-notice addendum (not therapy / risk / crisis / agent / account delete); Termly free plan cannot publish a second policy
@@ -388,6 +388,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Home blog byline avatar: replace cropped `BrandMark` wave with sage circle wordmark (`A-white-on-sage-128`, `BRAND_CIRCLE_AVATAR`)
 - Free / set copy: drop default “moving ball” marketing pitch — prefer **visual sets** / **sets you run yourself**; Free showcase title **Sets without an agent**; brand rule bans ball-as-product headlines
 - Blog / EMDR “Keep reading”: three cover-image cards (shared `ClusterKeepReading`) instead of a plain link list
+
+- **Account deletion review fixes**: shared `deleteUserAccount` cancels Stripe (and best-effort deletes the customer) before DB delete for self + admin; block delete when cancel fails; audit only after success; session cookies cleared before email fan-out; user email `billingNote` is truthful; password step-up when account has a password; admin delete sends the same confirmation + ops notify; client-safe `lib/delete-account-shared.ts` so Settings Danger zone does not pull `pg` into the browser bundle
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
