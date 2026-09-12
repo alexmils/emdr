@@ -13,4 +13,5 @@ export type TurnstileAction =
   | "signup"
   | "forgot-password"
   | "reset-password"
-  | "create-password";
+  | "create-password"
+  | "help-guest";

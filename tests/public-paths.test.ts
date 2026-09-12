@@ -84,6 +84,15 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     );
   });
 
+  it("allows guest help chat and transcript cron", () => {
+    assert.equal(isUnauthenticatedPublicPath("/api/help/chat"), true);
+    assert.equal(isUnauthenticatedPublicPath("/api/help/guest-contact"), true);
+    assert.equal(
+      isUnauthenticatedPublicPath("/api/cron/help-guest-transcripts"),
+      true
+    );
+  });
+
   it("allows brand asset routes", () => {
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/favicon"), true);
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/app-logo"), true);

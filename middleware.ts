@@ -223,7 +223,8 @@ export async function middleware(request: NextRequest) {
     const adminAllowed =
       pathname.startsWith("/admin") ||
       pathname.startsWith("/api/admin") ||
-      pathname.startsWith("/api/auth/");
+      pathname.startsWith("/api/auth/") ||
+      pathname.startsWith("/api/help");
     if (!adminAllowed) {
       if (pathname.startsWith("/api/")) {
         return applyCrawlHeaders(

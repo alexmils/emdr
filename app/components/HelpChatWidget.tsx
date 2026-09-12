@@ -12,6 +12,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { APP_BASE, LOGIN_PATH } from "@/lib/app-base";
+import {
+  TurnstileField,
+  type TurnstileFieldHandle,
+} from "@/app/components/TurnstileField";
+import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 
 const OPEN_EVENT = "emdr-open-help";
 const HELP_KEYBOARD_VAR = "--help-keyboard-inset";
@@ -46,6 +51,8 @@ type HelpMessage = {
   createdAt: string;
 };
 
+type HelpMode = "user" | "guest";
+
 type Props = {
   /** Show floating button bottom-right (when path allows). */
   showFab?: boolean;
@@ -54,18 +61,31 @@ type Props = {
 export function HelpChatWidget({ showFab = true }: Props) {
   const pathname = usePathname();
   const titleId = useId();
+  const contactTitleId = useId();
   const [open, setOpen] = useState(false);
   const fabVisible = showFab && shouldShowFab(pathname);
   const [enabled, setEnabled] = useState(true);
-  const [needsSignIn, setNeedsSignIn] = useState(false);
+  const [mode, setMode] = useState<HelpMode>("user");
+  const [adminBlocked, setAdminBlocked] = useState(false);
   const [welcome, setWelcome] = useState("");
   const [messages, setMessages] = useState<HelpMessage[]>([]);
+  const [hasContact, setHasContact] = useState(false);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactError, setContactError] = useState("");
+  const [contactDismissed, setContactDismissed] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const turnstileRef = useRef<TurnstileFieldHandle>(null);
+  const contactTurnstileRef = useRef<TurnstileFieldHandle>(null);
+  const guestSentRef = useRef(false);
 
   const scrollToEnd = () => {
     requestAnimationFrame(() => {
@@ -76,23 +96,31 @@ export function HelpChatWidget({ showFab = true }: Props) {
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
-    setNeedsSignIn(false);
+    setAdminBlocked(false);
     try {
       const res = await fetch("/api/help/chat");
       const data = await res.json();
       if (!res.ok) {
         setEnabled(false);
-        if (res.status === 401) {
-          setNeedsSignIn(true);
-          setError("");
+        if (res.status === 403) {
+          setAdminBlocked(true);
+          setError(data.error ?? "Help chat is unavailable here.");
           return;
         }
         setError(data.error ?? "Help is unavailable");
         return;
       }
       setEnabled(true);
+      setMode(data.mode === "guest" ? "guest" : "user");
       setWelcome(data.welcomeMessage ?? "");
       setMessages(data.messages ?? []);
+      setHasContact(Boolean(data.hasContact));
+      if (typeof data.guestName === "string" && data.guestName) {
+        setContactName(data.guestName);
+      }
+      if (typeof data.guestEmail === "string" && data.guestEmail) {
+        setContactEmail(data.guestEmail);
+      }
       scrollToEnd();
     } catch {
       setError("Could not load help chat");
@@ -114,11 +142,34 @@ export function HelpChatWidget({ showFab = true }: Props) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Escape") return;
+      if (contactOpen) {
+        setContactDismissed(true);
+        setContactOpen(false);
+        setOpen(false);
+        return;
+      }
+      const needsContact =
+        mode === "guest" &&
+        !hasContact &&
+        !contactDismissed &&
+        (messages.length > 0 || guestSentRef.current);
+      if (needsContact) {
+        setContactOpen(true);
+        return;
+      }
+      setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [
+    open,
+    contactOpen,
+    mode,
+    hasContact,
+    messages.length,
+    contactDismissed,
+  ]);
 
   useEffect(() => {
     if (!open) return;
@@ -148,23 +199,55 @@ export function HelpChatWidget({ showFab = true }: Props) {
     };
   }, [open]);
 
-  /** Marketing hides help ≤768px — close so open state is not stuck invisible. */
+  const shouldPromptContact = () =>
+    mode === "guest" &&
+    !hasContact &&
+    !contactDismissed &&
+    (messages.length > 0 || guestSentRef.current);
+
+  const requestClose = () => {
+    if (shouldPromptContact()) {
+      setContactOpen(true);
+      return;
+    }
+    setOpen(false);
+    setContactOpen(false);
+  };
+
   useEffect(() => {
-    if (!open) return;
-    const mq = window.matchMedia("(max-width: 768px)");
-    const maybeClose = () => {
-      if (mq.matches && document.querySelector(".frontend-home")) {
-        setOpen(false);
-      }
+    if (!open || mode !== "guest" || hasContact || contactDismissed) return;
+
+    const needsPrompt = () =>
+      messages.length > 0 || guestSentRef.current;
+
+    const onMouseOut = (e: MouseEvent) => {
+      if (e.clientY > 16) return;
+      if (e.relatedTarget) return;
+      if (!needsPrompt()) return;
+      setContactOpen(true);
     };
-    maybeClose();
-    mq.addEventListener("change", maybeClose);
-    return () => mq.removeEventListener("change", maybeClose);
-  }, [open]);
+
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (!needsPrompt()) return;
+      setContactOpen(true);
+    };
+
+    document.addEventListener("mouseout", onMouseOut);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("mouseout", onMouseOut);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [open, mode, hasContact, contactDismissed, messages.length]);
 
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
+    if (mode === "guest" && !turnstileToken) {
+      setError("Complete the security check, then send.");
+      return;
+    }
     setSending(true);
     setError("");
     setDraft("");
@@ -177,32 +260,87 @@ export function HelpChatWidget({ showFab = true }: Props) {
     setMessages((m) => [...m, optimistic]);
     scrollToEnd();
     try {
+      const payload: Record<string, string> = { message: text };
+      if (mode === "guest" && turnstileToken) {
+        payload[TURNSTILE_TOKEN_FIELD] = turnstileToken;
+      }
       const res = await fetch("/api/help/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Send failed");
         setDraft(text);
         setMessages((m) => m.filter((x) => x.id !== optimistic.id));
-        if (res.status === 401) {
-          setNeedsSignIn(true);
+        turnstileRef.current?.reset();
+        setTurnstileToken(null);
+        if (res.status === 403) {
+          setAdminBlocked(true);
           setEnabled(false);
-          setError("");
         }
         return;
       }
+      guestSentRef.current = true;
       setMessages(data.messages ?? []);
+      if (typeof data.hasContact === "boolean") {
+        setHasContact(data.hasContact);
+      }
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
       scrollToEnd();
     } catch {
       setError("Network error");
       setDraft(text);
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
     } finally {
       setSending(false);
     }
+  };
+
+  const saveContact = async () => {
+    if (contactSaving) return;
+    const token = contactTurnstileRef.current?.getToken() ?? turnstileToken;
+    if (!token) {
+      setContactError("Complete the security check first.");
+      return;
+    }
+    setContactSaving(true);
+    setContactError("");
+    try {
+      const res = await fetch("/api/help/guest-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: contactName,
+          email: contactEmail,
+          [TURNSTILE_TOKEN_FIELD]: token,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setContactError(data.error ?? "Could not save");
+        contactTurnstileRef.current?.reset();
+        return;
+      }
+      setHasContact(true);
+      setContactOpen(false);
+      setOpen(false);
+    } catch {
+      setContactError("Network error");
+      contactTurnstileRef.current?.reset();
+    } finally {
+      setContactSaving(false);
+    }
+  };
+
+  const dismissContact = () => {
+    setContactDismissed(true);
+    setContactOpen(false);
+    setOpen(false);
   };
 
   return (
@@ -226,7 +364,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
             className="help-drawer-backdrop"
             aria-label="Close help"
             tabIndex={-1}
-            onClick={() => setOpen(false)}
+            onClick={() => requestClose()}
           />
           <aside
             className="help-drawer"
@@ -245,7 +383,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
                 ref={closeBtnRef}
                 type="button"
                 className="help-drawer-close"
-                onClick={() => setOpen(false)}
+                onClick={() => requestClose()}
                 aria-label="Close"
               >
                 <X size={18} />
@@ -254,13 +392,15 @@ export function HelpChatWidget({ showFab = true }: Props) {
 
             <div className="help-drawer-body" ref={listRef}>
               {loading && <p className="help-drawer-muted">Loading…</p>}
-              {!loading && needsSignIn && (
+              {!loading && adminBlocked && (
                 <div className="help-bubble help-bubble-assistant">
-                  Sign in to chat with product support about billing, sessions,
-                  or your account.
+                  {error || "Use Admin → Help for support replies."}
+                  <p className="help-drawer-admin-link">
+                    <Link href="/admin/help">Open Admin Help</Link>
+                  </p>
                 </div>
               )}
-              {!loading && !needsSignIn && welcome && messages.length === 0 && (
+              {!loading && !adminBlocked && welcome && messages.length === 0 && (
                 <div className="help-bubble help-bubble-assistant">{welcome}</div>
               )}
               {messages.map((m) => (
@@ -280,16 +420,27 @@ export function HelpChatWidget({ showFab = true }: Props) {
                   {m.content}
                 </div>
               ))}
-              {error && <p className="help-drawer-error">{error}</p>}
+              {error && !adminBlocked && (
+                <p className="help-drawer-error">{error}</p>
+              )}
             </div>
 
             <footer className="help-drawer-foot">
-              {needsSignIn ? (
-                <Link href={LOGIN_PATH} className="btn-primary help-drawer-signin">
-                  Sign in
+              {adminBlocked ? (
+                <Link href="/admin/help" className="btn-primary help-drawer-signin">
+                  Open Admin Help
                 </Link>
               ) : (
                 <>
+                  {mode === "guest" && !hasContact && (
+                    <button
+                      type="button"
+                      className="help-drawer-email-hint"
+                      onClick={() => setContactOpen(true)}
+                    >
+                      Leave your email if you want a reply by mail
+                    </button>
+                  )}
                   <textarea
                     className="help-drawer-input"
                     rows={2}
@@ -304,18 +455,111 @@ export function HelpChatWidget({ showFab = true }: Props) {
                       }
                     }}
                   />
+                  {mode === "guest" && (
+                    <TurnstileField
+                      ref={turnstileRef}
+                      action="help-guest"
+                      onToken={setTurnstileToken}
+                      className="help-drawer-turnstile"
+                    />
+                  )}
                   <button
                     type="button"
                     className="btn-primary"
-                    disabled={!enabled || sending || !draft.trim()}
+                    disabled={
+                      !enabled ||
+                      sending ||
+                      !draft.trim() ||
+                      (mode === "guest" && !turnstileToken)
+                    }
                     onClick={() => void send()}
                   >
                     {sending ? "Sending…" : "Send"}
                   </button>
+                  {mode === "guest" && (
+                    <p className="help-drawer-signin-hint">
+                      Have an account?{" "}
+                      <Link href={LOGIN_PATH}>Sign in</Link>
+                    </p>
+                  )}
                 </>
               )}
             </footer>
           </aside>
+        </div>
+      )}
+
+      {contactOpen && (
+        <div className="help-contact-root" role="presentation">
+          <button
+            type="button"
+            className="help-contact-backdrop"
+            aria-label="Dismiss"
+            tabIndex={-1}
+            onClick={() => dismissContact()}
+          />
+          <div
+            className="help-contact-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={contactTitleId}
+          >
+            <h3 id={contactTitleId} className="help-contact-title">
+              Want a reply by email?
+            </h3>
+            <p className="help-contact-lead">
+              If you leave, we can email you when support replies.
+            </p>
+            <label className="help-contact-label">
+              Name
+              <input
+                className="help-contact-input"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                autoComplete="name"
+              />
+            </label>
+            <label className="help-contact-label">
+              Email
+              <input
+                className="help-contact-input"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </label>
+            <TurnstileField
+              ref={contactTurnstileRef}
+              action="help-guest"
+              onToken={setTurnstileToken}
+              className="help-drawer-turnstile"
+            />
+            {contactError && (
+              <p className="help-drawer-error">{contactError}</p>
+            )}
+            <div className="help-contact-actions">
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={
+                  contactSaving ||
+                  !contactName.trim() ||
+                  !contactEmail.trim()
+                }
+                onClick={() => void saveContact()}
+              >
+                {contactSaving ? "Saving…" : "Send me a reply by email"}
+              </button>
+              <button
+                type="button"
+                className="help-contact-secondary"
+                onClick={() => dismissContact()}
+              >
+                No thanks
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

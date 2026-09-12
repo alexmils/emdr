@@ -7657,22 +7657,34 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-email-preview {
   width: 100%;
-  min-height: 420px;
+  height: 100%;
+  min-height: 0;
   margin-top: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: #fff;
+  pointer-events: none;
 }
 
 .admin-template-editor-wrap {
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 1.1fr);
+  gap: 1rem;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 
 .admin-email-preview-chrome {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 0;
+  min-height: 0;
+  min-width: 0;
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
 }
 
 .admin-email-preview-subject {
@@ -7707,21 +7719,188 @@ body:has(.app-shell.session-immersive) .help-fab {
   line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 10rem;
+  max-height: 6.5rem;
   overflow: auto;
 }
 
-.admin-template-picker {
+.admin-page:has(.admin-main-templates) {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-canvas:has(.admin-main-templates) {
+  overflow: hidden;
+}
+
+.admin-main-templates {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-templates-panel {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-templates-layout {
+  display: grid;
+  grid-template-columns: 11.25rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.85rem;
+  overflow: hidden;
+  overflow-anchor: none;
+}
+
+.admin-templates-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: 0 0.75rem 0 0;
+  border-right: 1px solid var(--border);
+  position: static;
+  overflow-y: auto;
+}
+
+.admin-templates-nav-item {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.48rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--ui-body);
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.admin-templates-nav-item:hover {
+  background: var(--bg-muted);
+  color: var(--text);
+}
+
+.admin-templates-nav-item.is-active {
+  background: var(--accent-subtle);
+  color: var(--text);
+}
+
+.admin-templates-nav-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.admin-templates-main {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-templates-main .admin-template-editor {
+  margin-top: 0;
 }
 
 .admin-template-editor {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.admin-field-grow {
+  flex: 1 1 auto;
+  min-height: 8rem;
+}
+
+.admin-textarea-html {
+  flex: 1 1 auto;
+  min-height: 8rem;
+}
+
+@media (max-width: 1100px) {
+  .admin-template-editor-wrap {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .admin-email-preview-chrome {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-top: 0.85rem;
+    grid-template-rows: auto 420px auto;
+  }
+
+  .admin-email-preview {
+    height: 420px;
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-canvas:has(.admin-main-templates),
+  .admin-page:has(.admin-main-templates) {
+    overflow: auto;
+  }
+
+  .admin-main-templates,
+  .admin-templates-panel,
+  .admin-templates-layout,
+  .admin-templates-main,
+  .admin-template-editor-wrap {
+    overflow: visible;
+    flex: none;
+    height: auto;
+    min-height: 0;
+  }
+
+  .admin-templates-layout {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .admin-templates-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.2rem;
+    height: auto;
+    padding: 0 0 0.65rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    position: static;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-templates-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .admin-template-editor {
+    overflow: visible;
+  }
 }
 
 .admin-provider-grid {
@@ -8273,70 +8452,91 @@ select.field option:disabled {
 
 .frontend-legal h1 {
   margin: 0 0 1rem;
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: clamp(1.75rem, 3vw, 2rem);
+  font-weight: 600;
   letter-spacing: -0.02em;
+  color: var(--fe-fg);
 }
 
 .frontend-legal h2 {
-  margin: 1.75rem 0 0.65rem;
-  font-family: var(--font-display);
+  margin: 2rem 0 0.75rem;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--fe-fg);
+}
+
+/* Win over .frontend-home h1–h6 Fraunces — legal reads as sober document type */
+.frontend-home .frontend-legal h1,
+.frontend-home .frontend-legal h2,
+.frontend-home .frontend-legal h3,
+.frontend-home .frontend-legal h4,
+.frontend-home .frontend-legal-termly h1,
+.frontend-home .frontend-legal-termly h2,
+.frontend-home .frontend-legal-termly h3 {
+  font-family: var(--font-sans) !important;
 }
 
 .frontend-legal ul {
-  margin: 0 0 1rem;
+  margin: 0 0 1.1rem;
   padding-left: 1.25rem;
-  max-width: 40rem;
-  line-height: 1.6;
+  max-width: 42rem;
+  line-height: 1.65;
+  font-size: 1.125rem;
+  color: var(--fe-fg);
 }
 
 .frontend-legal li {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
+  font-weight: 400;
+  color: var(--fe-fg);
 }
 
 .frontend-legal-meta {
   color: var(--fe-muted);
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .frontend-legal-draft-banner {
   margin: 0 0 1.25rem;
   padding: 0.75rem 1rem;
-  max-width: 40rem;
+  max-width: 42rem;
   border: 1px solid color-mix(in srgb, var(--fe-accent) 35%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fe-accent) 12%, transparent);
-  font-size: 0.9375rem;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .frontend-legal-pre {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  max-width: 40rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1.1rem;
+  max-width: 42rem;
   white-space: pre-wrap;
   font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--fe-fg);
   background: color-mix(in srgb, var(--fe-fg) 4%, transparent);
   border-radius: 8px;
 }
 
 .frontend-legal p {
-  margin: 0 0 1rem;
-  max-width: 40rem;
-  line-height: 1.6;
+  margin: 0 0 1.1rem;
+  max-width: 42rem;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.65;
   color: var(--fe-fg);
 }
 
 .frontend-legal-toc {
   margin: 1.5rem 0 2rem;
   padding: 1rem 1.1rem;
-  max-width: 40rem;
+  max-width: 42rem;
   border: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fe-fg) 3%, transparent);
@@ -8388,7 +8588,23 @@ select.field option:disabled {
 }
 
 .frontend-legal-termly {
-  max-width: 40rem;
+  max-width: 42rem;
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--fe-fg);
+}
+
+/* Kill leftover Termly / Word paint: gray 11pt, bold blocks, white span chips */
+.frontend-legal-termly *:not(h1):not(h2):not(h3):not(h4):not(strong):not(b):not(a):not(button) {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .frontend-legal-termly h1 {
@@ -8406,47 +8622,91 @@ select.field option:disabled {
 
 .frontend-legal-termly h2,
 .frontend-legal-termly h3 {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  color: var(--fe-fg) !important;
+  background: transparent !important;
 }
 
 .frontend-legal-termly h2 {
-  margin: 1.75rem 0 0.65rem;
-  font-size: 1.25rem;
+  margin: 2rem 0 0.75rem;
+  font-size: 1.25rem !important;
+  line-height: 1.3 !important;
 }
 
 .frontend-legal-termly h3 {
-  margin: 1.15rem 0 0.5rem;
-  font-size: 1.05rem;
+  margin: 1.35rem 0 0.55rem;
+  font-size: 1.0625rem !important;
+  line-height: 1.35 !important;
 }
 
 .frontend-legal-termly div,
-.frontend-legal-termly span,
 .frontend-legal-termly p,
-.frontend-legal-termly li {
-  line-height: 1.6;
-  color: var(--fe-fg);
+.frontend-legal-termly li,
+.frontend-legal-termly span {
+  margin-block: 0;
+}
+
+.frontend-legal-termly div + div {
+  margin-top: 0;
+}
+
+.frontend-legal-termly p,
+.frontend-legal-termly div[data-custom-class],
+.frontend-legal-termly > div {
+  margin: 0 0 1.1rem;
+}
+
+.frontend-legal-termly strong,
+.frontend-legal-termly b {
+  font-weight: 600 !important;
+  color: inherit !important;
+  background: transparent !important;
+}
+
+.frontend-home .frontend-legal .help-text-link,
+.frontend-home .frontend-legal-termly .help-text-link {
+  color: var(--fe-fg) !important;
+  font-size: inherit !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--fe-accent) 70%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.frontend-home .frontend-legal .help-text-link:hover,
+.frontend-home .frontend-legal-termly .help-text-link:hover {
+  color: var(--fe-fg) !important;
+  text-decoration-color: var(--fe-accent);
 }
 
 .frontend-legal-termly ul,
 .frontend-legal-termly ol {
-  margin: 0 0 1rem;
-  padding-left: 1.25rem;
+  margin: 0 0 1.1rem;
+  padding-left: 1.35rem;
 }
 
 .frontend-legal-termly a {
-  color: var(--fe-fg);
+  color: var(--fe-fg) !important;
+  font-weight: 500 !important;
   text-decoration: underline;
   text-underline-offset: 0.15em;
+  background: transparent !important;
 }
 
 .frontend-legal-termly .legal-addendum {
   margin: 1.5rem 0;
-  padding: 1rem 1.1rem;
+  padding: 1.1rem 1.2rem;
   border-left: 3px solid var(--fe-accent);
-  background: color-mix(in srgb, var(--fe-accent) 8%, transparent);
+  background: color-mix(in srgb, var(--fe-accent) 8%, transparent) !important;
   border-radius: 0 8px 8px 0;
+  color: var(--fe-fg);
+}
+
+.frontend-legal-termly .legal-addendum *:not(h2):not(h3):not(strong):not(a):not(button) {
+  background: transparent !important;
 }
 
 .frontend-legal-termly .legal-addendum h2 {
@@ -9653,6 +9913,145 @@ select.field option:disabled {
 
 .help-drawer-foot .btn-primary {
   width: 100%;
+}
+
+.help-drawer-email-hint {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.55rem;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: var(--ui-caption, 0.9375rem);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.help-drawer-signin-hint {
+  margin: 0.55rem 0 0;
+  font-size: var(--ui-caption, 0.9375rem);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.help-drawer-signin-hint a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.help-drawer-turnstile {
+  margin: 0 0 0.55rem;
+}
+
+.help-drawer-admin-link {
+  margin: 0.5rem 0 0;
+}
+
+.help-drawer-admin-link a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.help-contact-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.help-contact-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(42, 48, 32, 0.28);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.help-contact-modal {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22rem);
+  pointer-events: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.15rem 1.1rem 1.1rem;
+  box-shadow: 0 16px 48px rgba(42, 48, 32, 0.2);
+}
+
+.help-contact-title {
+  margin: 0;
+  font-size: var(--ui-headline, 1.25rem);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.help-contact-lead {
+  margin: 0.4rem 0 0.9rem;
+  font-size: var(--ui-muted, 1rem);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.help-contact-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  font-size: var(--ui-caption, 0.9375rem);
+  color: var(--text-secondary);
+}
+
+.help-contact-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  font-size: var(--ui-body, 1.0625rem);
+  background: var(--bg-page);
+  color: var(--text);
+}
+
+.help-contact-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+.help-contact-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.help-contact-actions .btn-primary {
+  width: 100%;
+}
+
+.help-contact-secondary {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--ui-muted, 1rem);
+  padding: 0.45rem;
+  cursor: pointer;
+}
+
+.help-contact-secondary:hover {
+  color: var(--text);
 }
 
 a.help-drawer-signin.btn-primary {

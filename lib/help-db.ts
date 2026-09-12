@@ -16,7 +16,7 @@ export type HelpMessageRole = "user" | "assistant" | "admin";
 
 export type HelpThread = {
   id: string;
-  userId: string;
+  userId: string | null;
   subject: string;
   status: HelpThreadStatus;
   unreadAdmin: boolean;
@@ -26,6 +26,12 @@ export type HelpThread = {
   updatedAt: string;
   userEmail?: string;
   userName?: string | null;
+  visitorKey?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  lastActivityAt?: string | null;
+  contactCapturedAt?: string | null;
+  transcriptSentAt?: string | null;
 };
 
 export type HelpMessage = {
@@ -59,7 +65,7 @@ export async function ensureHelpSchema(): Promise<void> {
   await db.query(`
     CREATE TABLE IF NOT EXISTS help_threads (
       id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
       subject TEXT NOT NULL DEFAULT 'Help',
       status TEXT NOT NULL DEFAULT 'open',
       unread_admin BOOLEAN NOT NULL DEFAULT TRUE,
@@ -92,6 +98,30 @@ export async function ensureHelpSchema(): Promise<void> {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
+
+  // Guest help: allow null user_id + visitor columns (existing DBs created with NOT NULL).
+  await db.query(`
+    ALTER TABLE help_threads ALTER COLUMN user_id DROP NOT NULL;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS visitor_key TEXT;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS guest_name TEXT;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS guest_email TEXT;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS guest_ip_hash TEXT;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS contact_captured_at TIMESTAMPTZ;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS transcript_sent_at TIMESTAMPTZ;
+  `);
+  await db.query(`
+    UPDATE help_threads
+    SET last_activity_at = COALESCE(last_activity_at, last_message_at, created_at)
+    WHERE last_activity_at IS NULL;
+  `);
+  await db.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_help_threads_visitor_key
+      ON help_threads(visitor_key) WHERE visitor_key IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_help_threads_guest_transcript
+      ON help_threads(transcript_sent_at, last_activity_at)
+      WHERE visitor_key IS NOT NULL AND guest_email IS NOT NULL;
   `);
 
   const { rows } = await db.query<{ count: string }>(
@@ -169,10 +199,19 @@ export async function saveHelpSettings(
   return next;
 }
 
+function isoOrNull(value: unknown): string | null {
+  if (value == null) return null;
+  return new Date(value as string).toISOString();
+}
+
 function rowThread(r: Record<string, unknown>): HelpThread {
+  const guestName = (r.guest_name as string | null) ?? null;
+  const guestEmail = (r.guest_email as string | null) ?? null;
+  const accountEmail = (r.email as string | undefined) ?? undefined;
+  const accountName = (r.name as string | null | undefined) ?? undefined;
   return {
     id: r.id as string,
-    userId: r.user_id as string,
+    userId: (r.user_id as string | null) ?? null,
     subject: r.subject as string,
     status: r.status as HelpThreadStatus,
     unreadAdmin: Boolean(r.unread_admin),
@@ -180,8 +219,14 @@ function rowThread(r: Record<string, unknown>): HelpThread {
     lastMessageAt: new Date(r.last_message_at as string).toISOString(),
     createdAt: new Date(r.created_at as string).toISOString(),
     updatedAt: new Date(r.updated_at as string).toISOString(),
-    userEmail: (r.email as string) ?? undefined,
-    userName: (r.name as string | null) ?? undefined,
+    userEmail: accountEmail ?? guestEmail ?? undefined,
+    userName: accountName ?? guestName ?? undefined,
+    visitorKey: (r.visitor_key as string | null) ?? null,
+    guestName,
+    guestEmail,
+    lastActivityAt: isoOrNull(r.last_activity_at),
+    contactCapturedAt: isoOrNull(r.contact_captured_at),
+    transcriptSentAt: isoOrNull(r.transcript_sent_at),
   };
 }
 
@@ -270,6 +315,7 @@ export async function addHelpMessage(input: {
   await db.query(
     `UPDATE help_threads SET
        last_message_at = NOW(),
+       last_activity_at = NOW(),
        updated_at = NOW(),
        unread_admin = CASE WHEN $2 THEN TRUE ELSE unread_admin END,
        unread_user = CASE WHEN $3 THEN TRUE ELSE unread_user END,
@@ -312,7 +358,7 @@ export async function listAdminThreads(limit = 50): Promise<HelpThread[]> {
   const { rows } = await getPool().query(
     `SELECT t.*, u.email, u.name
      FROM help_threads t
-     JOIN users u ON u.id = t.user_id
+     LEFT JOIN users u ON u.id = t.user_id
      ORDER BY t.unread_admin DESC, t.last_message_at DESC
      LIMIT $1`,
     [limit]
@@ -325,7 +371,7 @@ export async function getThreadById(id: string): Promise<HelpThread | null> {
   const { rows } = await getPool().query(
     `SELECT t.*, u.email, u.name
      FROM help_threads t
-     JOIN users u ON u.id = t.user_id
+     LEFT JOIN users u ON u.id = t.user_id
      WHERE t.id = $1`,
     [id]
   );
@@ -393,4 +439,104 @@ export async function upsertKnowledge(input: {
 export async function deleteKnowledge(id: string) {
   await ensureHelpSchema();
   await getPool().query(`DELETE FROM help_knowledge WHERE id = $1`, [id]);
+}
+
+export async function getOrCreateGuestThread(
+  visitorKey: string
+): Promise<HelpThread> {
+  await ensureHelpSchema();
+  const db = getPool();
+  const existing = await db.query(
+    `SELECT * FROM help_threads
+     WHERE visitor_key = $1 AND status <> 'resolved'
+     ORDER BY last_message_at DESC LIMIT 1`,
+    [visitorKey]
+  );
+  if (existing.rows[0]) return rowThread(existing.rows[0]);
+
+  const id = crypto.randomUUID();
+  const { rows } = await db.query(
+    `INSERT INTO help_threads (
+       id, user_id, visitor_key, subject, status,
+       unread_admin, unread_user, last_message_at, last_activity_at,
+       created_at, updated_at
+     ) VALUES ($1,NULL,$2,'Help','open',FALSE,FALSE,NOW(),NOW(),NOW(),NOW())
+     RETURNING *`,
+    [id, visitorKey]
+  );
+  return rowThread(rows[0]);
+}
+
+export async function attachGuestContact(
+  threadId: string,
+  input: { name: string; email: string; ipHash?: string | null }
+): Promise<HelpThread | null> {
+  await ensureHelpSchema();
+  const { rows } = await getPool().query(
+    `UPDATE help_threads SET
+       guest_name = $2,
+       guest_email = $3,
+       guest_ip_hash = COALESCE($4, guest_ip_hash),
+       contact_captured_at = COALESCE(contact_captured_at, NOW()),
+       last_activity_at = NOW(),
+       updated_at = NOW()
+     WHERE id = $1 AND visitor_key IS NOT NULL
+     RETURNING *`,
+    [threadId, input.name, input.email.trim().toLowerCase(), input.ipHash ?? null]
+  );
+  return rows[0] ? rowThread(rows[0]) : null;
+}
+
+export async function countGuestUserMessagesLastHour(
+  threadId: string
+): Promise<number> {
+  await ensureHelpSchema();
+  const { rows } = await getPool().query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count FROM help_messages
+     WHERE thread_id = $1
+       AND role = 'user'
+       AND created_at >= NOW() - INTERVAL '1 hour'`,
+    [threadId]
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function listGuestThreadsDueForTranscript(
+  limit = 40
+): Promise<HelpThread[]> {
+  await ensureHelpSchema();
+  const { rows } = await getPool().query(
+    `SELECT t.*
+     FROM help_threads t
+     WHERE t.visitor_key IS NOT NULL
+       AND t.guest_email IS NOT NULL
+       AND t.transcript_sent_at IS NULL
+       AND t.last_activity_at IS NOT NULL
+       AND t.last_activity_at <= NOW() - INTERVAL '1 hour'
+       AND EXISTS (
+         SELECT 1 FROM help_messages m
+         WHERE m.thread_id = t.id AND m.role = 'user'
+       )
+     ORDER BY t.last_activity_at ASC
+     LIMIT $1`,
+    [limit]
+  );
+  return rows.map(rowThread);
+}
+
+export async function markGuestTranscriptSent(
+  threadId: string
+): Promise<boolean> {
+  await ensureHelpSchema();
+  const { rowCount } = await getPool().query(
+    `UPDATE help_threads SET
+       transcript_sent_at = NOW(),
+       updated_at = NOW()
+     WHERE id = $1
+       AND visitor_key IS NOT NULL
+       AND guest_email IS NOT NULL
+       AND transcript_sent_at IS NULL`,
+    [threadId]
+  );
+  return (rowCount ?? 0) > 0;
 }

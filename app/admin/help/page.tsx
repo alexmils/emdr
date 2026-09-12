@@ -19,8 +19,11 @@ const TAB_ITEMS = [
 
 type Thread = {
   id: string;
+  userId?: string | null;
   userEmail?: string;
   userName?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
   status: string;
   unreadAdmin: boolean;
   lastMessageAt: string;
@@ -212,7 +215,7 @@ function HelpAdminInner() {
     <div className="admin-page">
       <AdminPageHeader
         title="Help chat"
-        subtitle="Inbox, AI knowledge, and what the assistant may discuss"
+        subtitle="Inbox, knowledge base, and topic settings."
       />
 
       <main
@@ -244,7 +247,12 @@ function HelpAdminInner() {
                 >
                   <span className="help-admin-thread-email">
                     {t.unreadAdmin ? "● " : ""}
-                    {t.userName || t.userEmail}
+                    {!t.userId ? "Guest · " : ""}
+                    {t.userName?.trim() ||
+                      t.userEmail?.trim() ||
+                      t.guestName?.trim() ||
+                      t.guestEmail?.trim() ||
+                      "Guest visitor"}
                   </span>
                   <span className="help-admin-thread-meta">
                     {t.status} · {new Date(t.lastMessageAt).toLocaleString()}

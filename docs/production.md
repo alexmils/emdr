@@ -183,6 +183,7 @@ Set in Coolify → **nurahelp** → Environment (values not in git):
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Public Turnstile sitekey |
 | `TURNSTILE_SECRET` | Turnstile widget secret (Coolify only; never git) |
 | `TURNSTILE_HOSTNAMES` | Prod: `nurahelp.com,www.nurahelp.com` (no localhost) |
+| `CRON_SECRET` | Shared secret for scheduled jobs (e.g. guest help transcript cron) |
 | Email / Stripe | Prefer **Admin → Email / Billing** in DB; optional env bootstrap |
 | `COOLIFY_TOKEN` | Same PAT as GitHub Actions; lets Admin Overview read live app status |
 | `COOLIFY_API_URL` | `https://server.nurahelp.com` (Access must allow `/api/v1*`) |
@@ -212,6 +213,7 @@ Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process o
 - Production admin email historically seeded as platform admin (see Mem0 / ops notes) — password only in operator vault, never in docs.
 - Stripe webhook URL: `https://nurahelp.com/api/webhooks/stripe`
 - Public marketing routes vs `/app` console: middleware + `lib/public-paths.ts`.
+- **Guest help transcript cron:** Coolify (or any scheduler) every **10–15 minutes** → `GET` or `POST` `https://nurahelp.com/api/cron/help-guest-transcripts` with `Authorization: Bearer $CRON_SECRET` (or `x-cron-secret` / `?secret=`). Sends one chat transcript email ~1 hour after last guest activity when email was captured.
 
 ---
 
