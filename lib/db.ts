@@ -139,7 +139,7 @@ async function runSchemaMigrations(db: PoolClient) {
       plan TEXT NOT NULL DEFAULT 'free',
       status TEXT NOT NULL DEFAULT 'active',
       amount_cents INTEGER NOT NULL DEFAULT 0,
-      currency TEXT NOT NULL DEFAULT 'EUR',
+      currency TEXT NOT NULL DEFAULT 'USD',
       renews_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL
@@ -230,7 +230,7 @@ async function runSchemaMigrations(db: PoolClient) {
       event_type TEXT NOT NULL,
       status TEXT NOT NULL,
       amount_cents INTEGER NOT NULL DEFAULT 0,
-      currency TEXT NOT NULL DEFAULT 'EUR',
+      currency TEXT NOT NULL DEFAULT 'USD',
       description TEXT,
       invoice_id TEXT,
       subscription_id TEXT,
@@ -291,7 +291,7 @@ async function runSchemaMigrations(db: PoolClient) {
       INSERT INTO subscriptions (
         user_id, plan, status, amount_cents, currency, access_tier, created_at, updated_at
       )
-      SELECT u.id, 'legacy', 'legacy', 0, 'EUR', 'legacy', NOW(), NOW()
+      SELECT u.id, 'legacy', 'legacy', 0, 'USD', 'legacy', NOW(), NOW()
       FROM users u
       WHERE u.role = 'user'
         AND u.password_hash IS NOT NULL

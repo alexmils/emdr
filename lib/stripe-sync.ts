@@ -19,13 +19,13 @@ export type StripeCatalogSyncResult = {
   scanned: number;
 };
 
-/** Format Stripe unit_amount for admin/UI display (e.g. 499 + eur → €4.99). */
+/** Format Stripe unit_amount for admin/UI display (e.g. 499 + usd → $4.99). */
 export function formatStripeDisplayPrice(
   unitAmount: number | null | undefined,
   currency: string | null | undefined
 ): string {
   if (unitAmount == null || !Number.isFinite(unitAmount)) return "";
-  const cur = (currency || "eur").toLowerCase();
+  const cur = (currency || "usd").toLowerCase();
   const major = unitAmount / 100;
   const formatted =
     Number.isInteger(major) || Math.abs(major * 100 - Math.round(major * 100)) < 1e-6
@@ -100,7 +100,7 @@ function toSynced(price: Stripe.Price): SyncedPlanPrice {
     priceId: price.id,
     displayPrice: formatStripeDisplayPrice(price.unit_amount, price.currency),
     unitAmount: price.unit_amount ?? 0,
-    currency: (price.currency || "eur").toUpperCase(),
+    currency: (price.currency || "usd").toUpperCase(),
     nickname: price.nickname ?? null,
     productId,
   };

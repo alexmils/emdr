@@ -258,7 +258,7 @@ function AdminFinancePageInner() {
     );
   }
 
-  const currency = data.currency || "EUR";
+  const currency = data.currency || "USD";
   const maxSource = Math.max(1, ...data.incomeSources.map((s) => s.amountCents));
 
   return (

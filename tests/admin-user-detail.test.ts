@@ -73,8 +73,8 @@ describe("paymentStatusLabel", () => {
 });
 
 describe("formatMoney cents", () => {
-  it("shows euros with cents when needed", () => {
-    assert.match(formatMoney(499, "EUR"), /4[.,]99/);
-    assert.match(formatMoney(500, "EUR"), /^€5(\.00)?$/);
+  it("shows dollars with cents when needed", () => {
+    assert.match(formatMoney(499, "USD"), /4[.,]99/);
+    assert.match(formatMoney(500, "USD"), /^\$5(\.00)?$/);
   });
 });

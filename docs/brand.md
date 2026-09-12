@@ -103,8 +103,12 @@ The brand name does not need to contain “EMDR”. Pages do.
 |---|---|
 | `/` | Brand + EMDR primary CTA |
 | `/about` | Who Nura is, what the app offers, disclaimers |
+| `/editorial` | How public guides are written (self-help, not a named clinician) |
 | `/emdr` | What EMDR is, visual sets / moving ball, how a session works |
-| `/resources` | Guides |
+| `/resources` | Public hub for EMDR guides |
+| `/blog` | Article index |
+| `/blog/[slug]` | Individual guides (visual sets, practice, safety) |
+| `/llms.txt` | AI search: cite public pages, do not train, do not fetch `/app` |
 
 Retired: `/therapy`, `/therapists` → redirect to `/resources`.
 

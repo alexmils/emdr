@@ -1,3 +1,4 @@
+import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
@@ -13,6 +14,12 @@ export default function TermsPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
+        <FrontendBreadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: "Terms" },
+          ]}
+        />
         <h1>Terms of service</h1>
         <p>
           This is a placeholder terms page for {BRAND_LEGAL}. The product is

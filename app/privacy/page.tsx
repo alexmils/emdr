@@ -1,3 +1,4 @@
+import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { getPlatformSettings } from "@/lib/platform-settings";
@@ -22,6 +23,12 @@ export default async function PrivacyPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
+        <FrontendBreadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: "Privacy" },
+          ]}
+        />
         <h1>Privacy</h1>
         <p>
           This is a placeholder privacy policy. {BRAND_LEGAL} stores account and

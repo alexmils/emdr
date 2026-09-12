@@ -16,7 +16,7 @@ describe("mapStripeSubscription", () => {
               price: {
                 id: "price_month",
                 unit_amount: 1499,
-                currency: "eur",
+                currency: "usd",
               },
             },
           ],
@@ -31,7 +31,7 @@ describe("mapStripeSubscription", () => {
     assert.equal(mapped.status, "trialing");
     assert.equal(mapped.plan, "monthly");
     assert.equal(mapped.amountCents, 1499);
-    assert.equal(mapped.currency, "EUR");
+    assert.equal(mapped.currency, "USD");
     assert.equal(mapped.stripeCustomerId, "cus_1");
     assert.equal(mapped.stripeSubscriptionId, "sub_1");
     assert.ok(mapped.trialEndsAt);
@@ -43,7 +43,7 @@ describe("mapStripeSubscription", () => {
       id: "sub_2",
       status: "canceled",
       customer: "cus_2",
-      items: { data: [{ price: { id: "price_x", unit_amount: 0, currency: "eur" } }] },
+      items: { data: [{ price: { id: "price_x", unit_amount: 0, currency: "usd" } }] },
     });
     assert.equal(mapped.plan, "free");
     assert.equal(mapped.status, "canceled");

@@ -187,6 +187,7 @@ describe("site-seo status", () => {
     const pages = resolveSiteSeoPages(seo, "https://nurahelp.com");
     const status = buildMarketingSeoStatus(seo, pages, "https://nurahelp.com");
     assert.equal(status.canonical, "https://nurahelp.com/");
+    assert.equal(status.llmsTxtUrl, "https://nurahelp.com/llms.txt");
     assert.equal(pages[0]?.ogImageUrl, "https://nurahelp.com/brand/lockup.png");
     const connected = status.connections.filter((c) => c.status === "connected");
     assert.ok(connected.length >= 5);
@@ -248,6 +249,9 @@ describe("marketing consent paths", () => {
     assert.ok(isMarketingPublicPath("/"));
     assert.ok(isMarketingPublicPath("/about"));
     assert.ok(isMarketingPublicPath("/privacy"));
+    assert.ok(isMarketingPublicPath("/blog"));
+    assert.ok(isMarketingPublicPath("/blog/what-is-emdr"));
+    assert.ok(isMarketingPublicPath("/editorial"));
     assert.ok(!isMarketingPublicPath("/app"));
     assert.ok(!isMarketingPublicPath("/app/login"));
     assert.ok(!isMarketingPublicPath("/admin/seo"));

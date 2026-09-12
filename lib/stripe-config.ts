@@ -29,10 +29,17 @@ export const DEFAULT_STRIPE_CREDENTIALS: StripeCredentialSet = {
   priceIdWeekly: "",
   priceIdMonthly: "",
   priceIdYearly: "",
-  displayPriceWeekly: "€4.99",
-  displayPriceMonthly: "€14.99",
-  displayPriceYearly: "€99",
+  displayPriceWeekly: "$4.99",
+  displayPriceMonthly: "$14.99",
+  displayPriceYearly: "$99",
 };
+
+/** Catalog is USD; rewrite leftover euro display strings from older admin saves. */
+function displayPriceAsUsd(raw: unknown, fallback: string): string {
+  const v =
+    typeof raw === "string" && raw.trim() ? raw.trim() : fallback.trim();
+  return v.replace(/^€\s?/, "$");
+}
 
 export const DEFAULT_PLATFORM_STRIPE: PlatformStripeConfig = {
   demoMode: true,
@@ -70,16 +77,16 @@ export function normalizeStripeCredentialSet(
     priceIdWeekly: str(r.priceIdWeekly, fallback.priceIdWeekly),
     priceIdMonthly: str(r.priceIdMonthly, fallback.priceIdMonthly),
     priceIdYearly: str(r.priceIdYearly, fallback.priceIdYearly),
-    displayPriceWeekly: str(
+    displayPriceWeekly: displayPriceAsUsd(
       r.displayPriceWeekly,
       fallback.displayPriceWeekly || DEFAULT_STRIPE_CREDENTIALS.displayPriceWeekly
     ),
-    displayPriceMonthly: str(
+    displayPriceMonthly: displayPriceAsUsd(
       r.displayPriceMonthly,
       fallback.displayPriceMonthly ||
         DEFAULT_STRIPE_CREDENTIALS.displayPriceMonthly
     ),
-    displayPriceYearly: str(
+    displayPriceYearly: displayPriceAsUsd(
       r.displayPriceYearly,
       fallback.displayPriceYearly || DEFAULT_STRIPE_CREDENTIALS.displayPriceYearly
     ),

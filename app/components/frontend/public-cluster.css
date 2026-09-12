@@ -1,0 +1,236 @@
+/** Public /blog + /resources hub — editorial, not the legal stub. */
+
+.fe-cluster {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.fe-crumbs {
+  margin: 0 0 1.25rem;
+}
+
+.fe-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--fe-muted);
+}
+
+.fe-crumbs li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fe-crumbs li:not(:last-child)::after {
+  content: "/";
+  color: color-mix(in srgb, var(--fe-muted) 70%, transparent);
+}
+
+.fe-crumbs a {
+  color: var(--fe-accent);
+  text-decoration: none;
+}
+
+.fe-crumbs a:hover {
+  color: var(--fe-fg);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.fe-crumbs [aria-current="page"] {
+  color: var(--fe-fg);
+}
+
+.fe-cluster-inner {
+  max-width: 42rem;
+}
+
+.fe-cluster-inner--wide {
+  max-width: 48rem;
+}
+
+.fe-cluster-kicker {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-alt);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fe-muted);
+}
+
+.fe-cluster h1 {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--fe-fg);
+}
+
+.fe-cluster-dek {
+  margin: 0 0 2rem;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.4;
+  color: var(--fe-fg);
+}
+
+.fe-cluster-dek a,
+.fe-cluster-body a,
+.fe-cluster-emdr a,
+.fe-cluster-list a,
+.fe-cluster-related a {
+  color: var(--fe-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.fe-cluster-dek a:hover,
+.fe-cluster-body a:hover,
+.fe-cluster-emdr a:hover,
+.fe-cluster-list a:hover,
+.fe-cluster-related a:hover {
+  color: var(--fe-fg);
+}
+
+.fe-cluster-meta {
+  margin: 0 0 2rem;
+  font-size: 0.9375rem;
+  color: var(--fe-muted);
+}
+
+.fe-cluster-body h2 {
+  margin: 2rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.fe-cluster-body p {
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--fe-fg);
+}
+
+.fe-cluster-emdr {
+  margin: 2.25rem 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
+.fe-cluster-note {
+  margin: 0 0 2rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--fe-muted);
+}
+
+.fe-cluster-note--after {
+  margin-top: 2rem;
+}
+
+.frontend-legal .fe-cluster-related {
+  margin-top: 2.5rem;
+  max-width: 40rem;
+}
+
+.fe-cluster-group {
+  margin: 2.25rem 0 0;
+}
+
+.fe-cluster-group h2 {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.fe-cluster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fe-cluster-list li {
+  margin: 0;
+  padding: 0.85rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--fe-fg) 10%, transparent);
+}
+
+.fe-cluster-list li:last-child {
+  border-bottom: 1px solid color-mix(in srgb, var(--fe-fg) 10%, transparent);
+}
+
+.fe-cluster-list a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fe-cluster-list a:hover .fe-cluster-list-title {
+  color: var(--fe-accent);
+}
+
+.fe-cluster-list-title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--fe-fg);
+}
+
+.fe-cluster-list-dek {
+  display: block;
+  margin: 0.3rem 0 0;
+  font-size: 0.975rem;
+  line-height: 1.4;
+  color: var(--fe-muted);
+  text-decoration: none;
+}
+
+.fe-cluster-related {
+  margin: 2.5rem 0 0;
+}
+
+.fe-cluster-related h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+.fe-cluster-related ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.fe-cluster-related li {
+  margin: 0.35rem 0;
+}
+
+.fe-cluster-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+}
+
+@media (max-width: 540px) {
+  .fe-cluster {
+    padding: 0 0 0.25rem;
+  }
+}

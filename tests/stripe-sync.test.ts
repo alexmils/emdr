@@ -14,6 +14,7 @@ describe("formatStripeDisplayPrice", () => {
     assert.equal(formatStripeDisplayPrice(1499, "eur"), "€14.99");
     assert.equal(formatStripeDisplayPrice(9900, "eur"), "€99");
     assert.equal(formatStripeDisplayPrice(999, "usd"), "$9.99");
+    assert.equal(formatStripeDisplayPrice(499, null), "$4.99");
   });
 });
 
@@ -26,7 +27,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "Old Monthly",
         unit_amount: 999,
-        currency: "eur",
+        currency: "usd",
         created: 1_700_000_000,
         recurring: { interval: "month", interval_count: 1 },
         product: "prod_x",
@@ -37,7 +38,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "NuraHelp Monthly",
         unit_amount: 1499,
-        currency: "eur",
+        currency: "usd",
         created: 1_700_000_100,
         recurring: { interval: "month", interval_count: 1 },
         product: {
@@ -53,7 +54,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "NuraHelp Weekly",
         unit_amount: 499,
-        currency: "eur",
+        currency: "usd",
         created: 1_700_000_200,
         recurring: { interval: "week", interval_count: 1 },
         product: {
@@ -69,7 +70,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "Yearly",
         unit_amount: 9900,
-        currency: "eur",
+        currency: "usd",
         created: 1_700_000_300,
         recurring: { interval: "year", interval_count: 1 },
         product: {
@@ -85,7 +86,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "Dead",
         unit_amount: 100,
-        currency: "eur",
+        currency: "usd",
         created: 1_800_000_000,
         recurring: { interval: "week", interval_count: 1 },
         product: "prod_x",
@@ -94,11 +95,11 @@ describe("pickPlanPricesFromStripeList", () => {
 
     const sync = pickPlanPricesFromStripeList(prices);
     assert.equal(sync.weekly?.priceId, "price_week");
-    assert.equal(sync.weekly?.displayPrice, "€4.99");
+    assert.equal(sync.weekly?.displayPrice, "$4.99");
     assert.equal(sync.monthly?.priceId, "price_nura_month");
-    assert.equal(sync.monthly?.displayPrice, "€14.99");
+    assert.equal(sync.monthly?.displayPrice, "$14.99");
     assert.equal(sync.yearly?.priceId, "price_year");
-    assert.equal(sync.yearly?.displayPrice, "€99");
+    assert.equal(sync.yearly?.displayPrice, "$99");
   });
 
   it("prefers newer price when names tie", () => {
@@ -109,7 +110,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "Monthly",
         unit_amount: 1000,
-        currency: "eur",
+        currency: "usd",
         created: 1_000,
         recurring: { interval: "month", interval_count: 1 },
         product: "prod_a",
@@ -120,7 +121,7 @@ describe("pickPlanPricesFromStripeList", () => {
         type: "recurring",
         nickname: "Monthly",
         unit_amount: 2000,
-        currency: "eur",
+        currency: "usd",
         created: 2_000,
         recurring: { interval: "month", interval_count: 1 },
         product: "prod_b",
@@ -136,27 +137,27 @@ describe("applyCatalogSyncToStripeConfig", () => {
     const next = applyCatalogSyncToStripeConfig(DEFAULT_STRIPE_CREDENTIALS, {
       weekly: {
         priceId: "price_w",
-        displayPrice: "€4.99",
+        displayPrice: "$4.99",
         unitAmount: 499,
-        currency: "EUR",
+        currency: "USD",
         nickname: null,
         productId: null,
       },
       monthly: null,
       yearly: {
         priceId: "price_y",
-        displayPrice: "€99",
+        displayPrice: "$99",
         unitAmount: 9900,
-        currency: "EUR",
+        currency: "USD",
         nickname: null,
         productId: null,
       },
       scanned: 3,
     });
     assert.equal(next.priceIdWeekly, "price_w");
-    assert.equal(next.displayPriceWeekly, "€4.99");
+    assert.equal(next.displayPriceWeekly, "$4.99");
     assert.equal(next.priceIdMonthly, "");
-    assert.equal(next.displayPriceMonthly, "€14.99");
+    assert.equal(next.displayPriceMonthly, "$14.99");
     assert.equal(next.priceIdYearly, "price_y");
   });
 });

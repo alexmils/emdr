@@ -1,4 +1,5 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
+import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
@@ -15,6 +16,12 @@ export default function AboutPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
+        <FrontendBreadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: "About" },
+          ]}
+        />
         <h1>About {BRAND_SPOKEN}</h1>
         <p>{BRAND_TAGLINE}</p>
         <p>
@@ -27,7 +34,8 @@ export default function AboutPage() {
           We built Nura for people who want practice between sessions, or a quiet
           place to run sets without a clinical dashboard. It is self-help
           software, not a licensed therapist, not emergency care, and not a
-          medical device.
+          medical device. How the public guides are written is on{" "}
+          <Link href="/editorial">How we write</Link>.
         </p>
         <div className="frontend-hero-actions">
           <Link href={appPath("/create-account")} className="frontend-btn-primary">

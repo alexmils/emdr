@@ -58,10 +58,10 @@ async function stripeBalanceSnapshot(): Promise<{
     }
     const balance = await stripe.balance.retrieve();
     const pick =
-      balance.available.find((b) => b.currency === "eur") ??
+      balance.available.find((b) => b.currency === "usd") ??
       balance.available[0];
     const pending =
-      balance.pending.find((b) => b.currency === (pick?.currency ?? "eur")) ??
+      balance.pending.find((b) => b.currency === (pick?.currency ?? "usd")) ??
       balance.pending[0];
     return {
       availableCents: pick ? pick.amount : null,
@@ -159,7 +159,7 @@ export async function getAdminFinanceDashboard(): Promise<AdminFinanceDashboard>
       renews_at: string;
     }>(
       `SELECT u.id AS user_id, u.email, u.name, s.plan, s.status,
-              s.amount_cents, COALESCE(s.currency, 'EUR') AS currency, s.renews_at
+              s.amount_cents, COALESCE(s.currency, 'USD') AS currency, s.renews_at
        FROM subscriptions s
        JOIN users u ON u.id = s.user_id
        WHERE s.renews_at IS NOT NULL
@@ -311,7 +311,7 @@ export async function getAdminFinanceDashboard(): Promise<AdminFinanceDashboard>
   }
 
   const stripeStatus = stripeAdminStatus(stripeCfg);
-  const currency = (stripeBal.currency || "EUR").toUpperCase();
+  const currency = (stripeBal.currency || "USD").toUpperCase();
   const wallets: AdminFinanceWallet[] = [
     {
       id: "stripe-active",
@@ -334,7 +334,7 @@ export async function getAdminFinanceDashboard(): Promise<AdminFinanceDashboard>
       detail: `${modeCount.sandbox} paid test events`,
       amountLabel: `${(modeSum.sandbox / 100).toFixed(
         modeSum.sandbox % 100 === 0 ? 0 : 2
-      )} EUR`,
+      )} USD`,
       mark: "T",
     },
     {
@@ -343,7 +343,7 @@ export async function getAdminFinanceDashboard(): Promise<AdminFinanceDashboard>
       detail: `${modeCount.live} paid live events`,
       amountLabel: `${(modeSum.live / 100).toFixed(
         modeSum.live % 100 === 0 ? 0 : 2
-      )} EUR`,
+      )} USD`,
       mark: "L",
     },
   ];

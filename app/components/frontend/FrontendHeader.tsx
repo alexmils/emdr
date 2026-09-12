@@ -31,9 +31,12 @@ const NAV_LINKS = [
   { href: "/", label: "Home", id: "home" },
   { href: "/#how-it-works", label: "How it works", id: "how-it-works" },
   { href: "/#prices", label: "Prices", id: "prices" },
-  { href: "/#blog", label: "Blog", id: "blog" },
+  { href: "/blog", label: "Blog", id: "blog" },
   { href: "/#faq", label: "FAQ", id: "faq" },
 ] as const;
+
+/** Real routes — do not hijack as a home hash (Lenis). */
+const PATH_NAV_IDS = new Set<string>(["blog"]);
 
 function HeaderCta({
   href,
@@ -128,6 +131,9 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
     (e: MouseEvent<HTMLAnchorElement>, id: string) => {
       closeMenu();
 
+      // Real routes (Blog, later Resources): let Next navigate.
+      if (PATH_NAV_IDS.has(id)) return;
+
       // Same-page: Lenis smooth scroll (Next soft-nav would not scroll).
       if (pathname === "/") {
         e.preventDefault();
@@ -187,6 +193,12 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
   const label = user ? displayLabel(user) : "";
 
   const isNavCurrent = (id: string) => {
+    if (id === "blog") {
+      return pathname === "/blog" || pathname.startsWith("/blog/");
+    }
+    if (id === "resources") {
+      return pathname === "/resources" || pathname.startsWith("/resources/");
+    }
     if (pathname !== "/") return false;
     if (id === "home") return !activeHash || activeHash === "home";
     return activeHash === id;

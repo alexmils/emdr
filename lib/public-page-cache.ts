@@ -1,4 +1,4 @@
-/** ISR + on-demand revalidation for the six public marketing pages. */
+/** ISR + on-demand revalidation for public marketing pages. */
 
 export const SEO_CACHE_TAG = "seo";
 
@@ -12,8 +12,10 @@ export const PUBLIC_PAGE_REVALIDATE_SECONDS = 3600;
 export const PUBLIC_ISR_PATHS = [
   "/",
   "/about",
+  "/editorial",
   "/emdr",
   "/resources",
+  "/blog",
   "/privacy",
   "/terms",
 ] as const;

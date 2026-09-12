@@ -111,7 +111,7 @@ export default function AdminUserDetailPage() {
     );
   }
 
-  const currency = detail.currency ?? "EUR";
+  const currency = detail.currency ?? "USD";
   const loginHistory = detail.loginHistory ?? [];
   const paymentHistory = detail.paymentHistory ?? [];
 

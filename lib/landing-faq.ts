@@ -1,0 +1,31 @@
+import { TRIAL_DAYS } from "@/lib/billing-constants";
+import { BRAND_SPOKEN } from "@/lib/brand";
+
+export type LandingFaqItem = {
+  q: string;
+  a: string;
+};
+
+/** Visible homepage FAQ — JSON-LD must use these strings verbatim. */
+export const LANDING_FAQ_ITEMS: readonly LandingFaqItem[] = [
+  {
+    q: `What is ${BRAND_SPOKEN}?`,
+    a: `${BRAND_SPOKEN} is a calm self-help workspace for guided EMDR practice and Free visual sets — structured support in the app, on your schedule. It is not a licensed therapist or emergency care.`,
+  },
+  {
+    q: "What is the difference between Guided and Free?",
+    a: "Guided walks you through protocol phases with check-ins. Free is visual sets only — you control the moving ball, speed, and timing yourself.",
+  },
+  {
+    q: "Do I need a therapist to use it?",
+    a: `No. ${BRAND_SPOKEN} is built for practice between sessions or on your own. If you are in crisis, contact local emergency services — the app does not replace professional care.`,
+  },
+  {
+    q: "How does the trial work?",
+    a: `New accounts get a ${TRIAL_DAYS}-day trial with a limited number of guided sessions and Free session time. Paid plans unlock the full app with no trial caps.`,
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes. Manage or cancel billing in the customer portal from your account — no phone calls required.",
+  },
+];

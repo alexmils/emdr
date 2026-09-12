@@ -67,6 +67,32 @@ const ABOUT_IMAGES = [
 
 const ABOUT_COPY = `At ${BRAND_SPOKEN}, we believe therapy support is more than a blank screen — it’s a commitment to calmer sessions and clearer steps. With guided EMDR, Free mode for visual sets, and readable resources, we keep the workspace quiet so you can stay with what matters.`;
 
+/** Decorative photos — native img so next/image does not emit 10+ srcset variants each. */
+function DecorativeImg({
+  src,
+  width,
+  height,
+  className,
+}: {
+  src: string;
+  width: number;
+  height: number;
+  className?: string;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- decorative; avoid srcset HTML bloat
+    <img
+      src={src}
+      alt=""
+      width={width}
+      height={height}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
+  );
+}
+
 const FEATURES = [
   {
     icon: HeartHandshake,
@@ -337,10 +363,9 @@ function StoriesSection() {
           <div className="fe-stories-rating">
             <div className="fe-stories-avatars" aria-hidden>
               {TESTIMONIALS.slice(0, 4).map((t) => (
-                <Image
+                <DecorativeImg
                   key={t.name}
                   src={t.image}
-                  alt=""
                   width={40}
                   height={40}
                   className="fe-stories-avatar-stack"
@@ -406,9 +431,8 @@ function StoriesSection() {
               <p>{t.quote}</p>
               <StoriesStars className="fe-stories-card-stars" />
               <footer>
-                <Image
+                <DecorativeImg
                   src={t.image}
-                  alt=""
                   width={48}
                   height={48}
                   className="fe-stories-card-avatar"
@@ -469,7 +493,7 @@ const PRICING_CARDS: {
     featured: true,
     details:
       "One calm price for a full year — the lowest cost per month if Nura is part of your routine.",
-    periodNote: "≈ €8.25 / month",
+    periodNote: "≈ $8.25 / month",
     features: [
       "Everything in Monthly",
       "Lowest cost per month",
@@ -521,11 +545,10 @@ function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
           </h2>
           <div className="fe-blog-head-aside">
             <p className="fe-blog-head-copy">
-              Short articles for EMDR practice, grounding, and staying safe —
-              written for real people, not jargon.
+              Short articles for EMDR practice, grounding, and when to stop.
             </p>
-            <Link href="/resources" className="fe-blog-cta">
-              View resources
+            <Link href="/blog" className="fe-blog-cta">
+              View all guides
               <ArrowRight size={16} aria-hidden />
             </Link>
           </div>
@@ -535,20 +558,21 @@ function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
           {posts.map((post) => (
             <article key={post.slug} className="fe-blog-card">
               <Link
-                href={appPath(`/resources/${post.slug}`)}
+                href={`/blog/${post.slug}`}
                 className="fe-blog-card-media"
               >
                 <Image
                   src={post.coverUrl || IMG.reading}
                   alt=""
                   fill
+                  priority={false}
                   sizes="(max-width: 900px) 100vw, 33vw"
                   className="fe-blog-card-image"
                 />
               </Link>
               <p className="fe-blog-card-tag">{post.tag}</p>
               <h3 className="fe-blog-card-title">
-                <Link href={appPath(`/resources/${post.slug}`)}>
+                <Link href={`/blog/${post.slug}`}>
                   {post.title}
                 </Link>
               </h3>
@@ -732,9 +756,8 @@ export function HomeLanding({
                         className="fe-hero-video-thumb"
                         aria-label="Browse resources"
                       >
-                        <Image
+                        <DecorativeImg
                           src={HERO_PREVIEW_IMAGE}
-                          alt=""
                           width={160}
                           height={112}
                           className="fe-hero-video-image"
@@ -767,11 +790,10 @@ export function HomeLanding({
           <div className="fe-about-marquee-track">
             {[...ABOUT_IMAGES, ...ABOUT_IMAGES].map((img, i) => (
               <div key={`${img.src}-${i}`} className="fe-about-marquee-item">
-                <Image
+                <DecorativeImg
                   src={img.src}
-                  alt=""
-                  width={400}
-                  height={400}
+                  width={280}
+                  height={280}
                   className="fe-about-marquee-image"
                 />
               </div>
@@ -837,6 +859,7 @@ export function HomeLanding({
                     width={960}
                     height={720}
                     className="fe-showcase-image"
+                    priority={false}
                     sizes="(max-width: 900px) 100vw, 48vw"
                   />
                 </div>
@@ -921,7 +944,7 @@ export function HomeLanding({
                   height={900}
                   className="fe-how-panel-image"
                   sizes="(max-width: 900px) 100vw, 42vw"
-                  priority={activeStep === 0}
+                  priority={false}
                 />
               </div>
             </div>
@@ -951,6 +974,7 @@ export function HomeLanding({
                     width={640}
                     height={420}
                     className="fe-offer-image"
+                    priority={false}
                     sizes="(max-width: 900px) 100vw, 33vw"
                   />
                 </div>

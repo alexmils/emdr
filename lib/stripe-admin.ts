@@ -123,7 +123,7 @@ export async function syncSubscriptionFromStripe(input: SyncSubscriptionInput) {
       input.plan,
       input.status,
       input.amountCents,
-      input.currency ?? "EUR",
+      input.currency ?? "USD",
       input.renewsAt ?? null,
       input.trialEndsAt ?? null,
       accessTier,
@@ -224,7 +224,7 @@ export function mapStripeSubscription(
     plan,
     status,
     amountCents: price?.unit_amount ?? 0,
-    currency: (price?.currency ?? "eur").toUpperCase(),
+    currency: (price?.currency ?? "usd").toUpperCase(),
     renewsAt: sub.current_period_end
       ? new Date(sub.current_period_end * 1000).toISOString()
       : null,
@@ -286,7 +286,7 @@ export async function listAdminBilling(limit = 100): Promise<AdminBillingRow[]> 
             COALESCE(s.plan, 'free') AS plan,
             COALESCE(s.status, 'none') AS status,
             COALESCE(s.amount_cents, 0) AS amount_cents,
-            COALESCE(s.currency, 'EUR') AS currency,
+            COALESCE(s.currency, 'USD') AS currency,
             s.renews_at,
             s.stripe_customer_id,
             s.stripe_subscription_id

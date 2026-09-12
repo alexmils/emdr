@@ -284,7 +284,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     billing: {
       activePaid,
       mrrCents: billing.rows[0]?.mrr_cents ?? 0,
-      currency: "EUR",
+      currency: "USD",
       paidSharePct,
     },
     llm: {

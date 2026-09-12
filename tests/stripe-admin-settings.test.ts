@@ -18,7 +18,7 @@ describe("normalizeStripeConfig", () => {
       secretKey: "sk_test_legacy",
       webhookSecret: "whsec_legacy",
       priceIdMonthly: "price_m",
-      displayPriceMonthly: "€14.99",
+      displayPriceMonthly: "$14.99",
     });
     assert.equal(cfg.demoMode, true);
     assert.equal(cfg.sandbox.secretKey, "sk_test_legacy");
@@ -34,6 +34,20 @@ describe("normalizeStripeConfig", () => {
     });
     assert.equal(cfg.demoMode, false);
     assert.equal(cfg.live.secretKey, "sk_live");
+  });
+
+  it("rewrites leftover euro display prices to dollars", () => {
+    const cfg = normalizeStripeConfig({
+      sandbox: {
+        ...DEFAULT_STRIPE_CREDENTIALS,
+        displayPriceWeekly: "€4.99",
+        displayPriceMonthly: "€14.99",
+        displayPriceYearly: "€99",
+      },
+    });
+    assert.equal(cfg.sandbox.displayPriceWeekly, "$4.99");
+    assert.equal(cfg.sandbox.displayPriceMonthly, "$14.99");
+    assert.equal(cfg.sandbox.displayPriceYearly, "$99");
   });
 });
 

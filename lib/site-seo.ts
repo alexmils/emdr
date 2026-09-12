@@ -21,6 +21,7 @@ import {
   parseAnalyticsIgnoreIps,
 } from "@/lib/analytics-ignore";
 import { getPlatformSettings, getPublicAppUrl } from "@/lib/platform-settings";
+import { localeAlternates } from "@/lib/seo-jsonld";
 import { absoluteOgImageUrl } from "@/lib/seo-og-image";
 import type {
   MarketingSeoStatus,
@@ -62,6 +63,14 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     description: BRAND_DESCRIPTION,
   },
   {
+    id: "editorial",
+    path: "/editorial",
+    label: "Editorial",
+    title: "How we write these guides",
+    description:
+      "Nura public guides are self-help explainers about visual sets and practice. Not signed by a licensed EMDR clinician.",
+  },
+  {
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
@@ -74,7 +83,16 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     path: "/resources",
     label: "Resources",
     title: "Resources",
-    description: "Guides for EMDR and therapy support on Nura.",
+    description:
+      "Public guides on EMDR therapy, visual sets with a moving ball, and practice between sessions.",
+  },
+  {
+    id: "blog",
+    path: "/blog",
+    label: "Blog",
+    title: "EMDR therapy online — guides and visual sets",
+    description:
+      "Articles on EMDR therapy, visual sets with a moving ball, and practice between sessions. Self-help, not a licensed therapist.",
   },
   {
     id: "privacy",
@@ -163,7 +181,10 @@ export function metadataFromResolved(
   pages: SiteSeoPage[],
   seo: PlatformSeoConfig = DEFAULT_PLATFORM_SEO
 ): Metadata {
-  const page = pages.find((p) => p.id === pageId) ?? pages[0];
+  const page =
+    pages.find((p) => p.id === pageId) ??
+    resolveSiteSeoPages(seo).find((p) => p.id === pageId) ??
+    pages[0];
   const verification: Metadata["verification"] = {};
   if (seo.gscVerification.trim()) {
     verification.google = seo.gscVerification.trim();
@@ -176,13 +197,14 @@ export function metadataFromResolved(
   return {
     title: { absolute: page.title },
     description: page.description,
-    alternates: { canonical: page.canonical },
+    alternates: localeAlternates(page.canonical),
     openGraph: {
       title: page.ogTitle,
       description: page.description,
       url: page.canonical,
       siteName: BRAND_LEGAL,
       type: "website",
+      locale: "en",
       images: [{ url: page.ogImageUrl }],
     },
     ...(Object.keys(verification).length ? { verification } : {}),
@@ -301,6 +323,7 @@ export function buildMarketingSeoStatus(
     ogImageUrl: home.ogImageUrl,
     sitemapUrl: `${origin}/sitemap.xml`,
     robotsUrl: `${origin}/robots.txt`,
+    llmsTxtUrl: `${origin}/llms.txt`,
     gscProperty: gscProp || null,
     sitemapNote: gscOn
       ? "Submitted in Search Console when you add it there — Google can take a few days to process it."

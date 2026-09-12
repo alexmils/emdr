@@ -6,6 +6,7 @@ import {
   ROLE_SYNC_COOKIE,
   ROLE_SYNC_MAX_AGE_SEC,
 } from "@/lib/auth/role-sync";
+import { NOINDEX_ROBOTS, shouldNoindexPath } from "@/lib/crawl-headers";
 import {
   isAuthPublicPath,
   isUnauthenticatedPublicPath,
@@ -18,7 +19,6 @@ import {
 } from "@/lib/roles";
 
 const SYNC_SESSION_PATH = "/api/auth/sync-session";
-const NOINDEX_ROBOTS = "noindex, nofollow, noarchive";
 
 /**
  * Internal origin for middleware → route fetches.
@@ -133,11 +133,7 @@ function withCookies(
 }
 
 function applyCrawlHeaders(pathname: string, res: NextResponse): NextResponse {
-  if (
-    isAppConsolePath(pathname) ||
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/")
-  ) {
+  if (shouldNoindexPath(pathname)) {
     res.headers.set("X-Robots-Tag", NOINDEX_ROBOTS);
   }
   return res;

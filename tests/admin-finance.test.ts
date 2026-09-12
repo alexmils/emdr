@@ -45,18 +45,18 @@ describe("finance labels", () => {
 
 describe("finance formatters", () => {
   it("keeps small amounts uncompacted", () => {
-    const out = formatMoneyCompact(1499, "EUR");
+    const out = formatMoneyCompact(1499, "USD");
     assert.equal(/14/.test(out), true);
   });
 
   it("compacts large amounts", () => {
-    const out = formatMoneyCompact(1_284_000, "EUR");
+    const out = formatMoneyCompact(1_284_000, "USD");
     assert.equal(out.includes("K"), true);
   });
 
   it("describes month deltas", () => {
-    assert.equal(formatMoneyDelta(0, "EUR"), "Same as last month");
-    assert.equal(formatMoneyDelta(41000, "EUR").includes("above last month"), true);
+    assert.equal(formatMoneyDelta(0, "USD"), "Same as last month");
+    assert.equal(formatMoneyDelta(41000, "USD").includes("above last month"), true);
   });
 
   it("formats relative updates", () => {

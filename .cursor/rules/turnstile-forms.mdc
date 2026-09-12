@@ -1,0 +1,46 @@
+---
+description: Require Cloudflare Turnstile on every guest-facing form submission
+alwaysApply: true
+---
+
+# EMDR — Turnstile on every form
+
+When you **create or change any form** that submits data to the backend (or any new public POST endpoint meant for bots to hit), **always** wire Cloudflare Turnstile end-to-end. Do not ship the form without it.
+
+## Required pattern
+
+1. **Frontend** — embed `TurnstileField` (`app/components/TurnstileField.tsx`) with a stable `action` (1–32 chars: letters, numbers, `_`, `-`).
+2. **Submit body** — send the token as `cf-turnstile-response` (`TURNSTILE_TOKEN_FIELD` from `lib/turnstile-shared.ts`).
+3. **Backend** — call `verifyTurnstileToken` from `lib/turnstile.ts` **before** existing handler logic. Require `success`, matching `action`, and hostname in `TURNSTILE_HOSTNAMES`.
+4. **Retry** — after a failed or stayed-on-page submit, call `turnstileRef.current?.reset()` (tokens are single-use).
+5. **Disable submit** until a token exists (or show a clear error).
+
+```tsx
+// ✅ GOOD
+<TurnstileField ref={turnstileRef} action="signup" onToken={setTurnstileToken} />
+// body: { ..., [TURNSTILE_TOKEN_FIELD]: turnstileToken }
+
+// ❌ BAD — form POST with no widget / no siteverify
+await fetch("/api/auth/register", { body: JSON.stringify({ email, password }) });
+```
+
+## Surfaces that already use this
+
+login · signup (`register`) · forgot-password · reset-password · create-password
+
+New guest forms (newsletter API, contact, waitlist, etc.) must follow the same contract with a new `action` string.
+
+## Skip (do not add Turnstile)
+
+- Already-authenticated product UI (session chat composer, settings saves, in-app toggles)
+- Admin forms behind platform_admin / support session
+- OAuth / passkey flows (not password form POSTs)
+- Pure client navigations with no backend (e.g. footer email → redirect to create-account)
+
+## Env (do not invent secrets)
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — public sitekey (fallback hardcoded in `lib/turnstile-shared.ts`)
+- `TURNSTILE_SECRET` — server only (`.env` / Coolify; never git / never `NEXT_PUBLIC_*`)
+- `TURNSTILE_HOSTNAMES` — deploy-specific allowlist (local ≠ prod; prod must not include `localhost`)
+
+Siteverify only from the **server**. Never call Cloudflare siteverify from the browser.

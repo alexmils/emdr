@@ -15,8 +15,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_PAGE_FILES = [
   "app/page.tsx",
   "app/about/page.tsx",
+  "app/editorial/page.tsx",
   "app/emdr/page.tsx",
   "app/resources/page.tsx",
+  "app/blog/page.tsx",
   "app/privacy/page.tsx",
   "app/terms/page.tsx",
 ] as const;
@@ -27,14 +29,14 @@ describe("public page ISR", () => {
     assert.equal(PUBLIC_PAGE_REVALIDATE_SECONDS, 3600);
   });
 
-  it("covers the same six paths as site SEO defaults", () => {
+  it("covers the same paths as site SEO defaults", () => {
     assert.deepEqual(
       [...PUBLIC_ISR_PATHS],
       SITE_SEO_DEFAULTS.map((page) => page.path)
     );
   });
 
-  it("does not force-dynamic the six public pages", () => {
+  it("does not force-dynamic the public marketing pages", () => {
     for (const file of PUBLIC_PAGE_FILES) {
       const src = readFileSync(join(root, file), "utf8");
       assert.equal(

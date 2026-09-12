@@ -10,7 +10,7 @@ export async function ensureUserAccessStub(userId: string): Promise<void> {
     `INSERT INTO subscriptions (
        user_id, plan, status, amount_cents, currency, access_tier, created_at, updated_at
      )
-     VALUES ($1, 'free', 'none', 0, 'EUR', 'none', NOW(), NOW())
+     VALUES ($1, 'free', 'none', 0, 'USD', 'none', NOW(), NOW())
      ON CONFLICT (user_id) DO NOTHING`,
     [userId]
   );
@@ -40,7 +40,7 @@ export async function grantInvitedUserLegacyAccess(userId: string): Promise<void
     `INSERT INTO subscriptions (
        user_id, plan, status, amount_cents, currency, access_tier, created_at, updated_at
      )
-     VALUES ($1, 'legacy', 'legacy', 0, 'EUR', 'legacy', NOW(), NOW())
+     VALUES ($1, 'legacy', 'legacy', 0, 'USD', 'legacy', NOW(), NOW())
      ON CONFLICT (user_id) DO UPDATE SET
        plan = CASE
          WHEN subscriptions.stripe_subscription_id IS NULL THEN 'legacy'

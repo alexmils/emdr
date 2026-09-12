@@ -9,7 +9,7 @@ export function describeInvoicePayment(input: {
 }): string {
   const money = `${(input.amountCents / 100).toFixed(
     input.amountCents % 100 === 0 ? 0 : 2
-  )} ${(input.currency || "EUR").toUpperCase()}`;
+  )} ${(input.currency || "USD").toUpperCase()}`;
   if (input.eventType === "invoice.payment_failed") {
     return `Payment failed (${money})`;
   }

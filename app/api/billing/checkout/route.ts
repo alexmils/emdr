@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         plan: existing?.plan ?? "free",
         status: existing?.status ?? "incomplete",
         amountCents: existing?.amount_cents ?? 0,
-        currency: existing?.currency ?? "EUR",
+        currency: existing?.currency ?? "USD",
         accessTier: existing?.access_tier ?? "none",
         stripeCustomerId: customerId,
         stripeSubscriptionId:

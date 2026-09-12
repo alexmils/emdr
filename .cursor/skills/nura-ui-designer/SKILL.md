@@ -35,7 +35,7 @@ Retired for this product: `.cursor/skills/apple-ui`, Apple HIG, Inter, `#007AFF`
 
 | Surface | Where | Type | Layout feel |
 |---|---|---|---|
-| **Marketing** | `/`, `/about`, `/emdr`, `/resources`, legal, `.frontend-home` | Fraunces + Source Sans 3 + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
+| **Marketing** | `/`, `/about`, `/editorial`, `/emdr`, `/resources`, `/blog`, legal, `.frontend-home` | Fraunces + Source Sans 3 + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
 | **Product** | `/app/**` (session, settings, billing, onboarding) | Fraunces + Source Sans 3 | Dark olive sidebar `#3D4129`, mint canvas `#EDF9ED`, flat 1px borders, 6–8px radius |
 | **Admin** | `/admin/**`, `.admin-shell` | **Source Sans 3 only** (no Fraunces) | Same pistachio chrome as product; denser data UI; titles/KPIs at weight 600 |
 

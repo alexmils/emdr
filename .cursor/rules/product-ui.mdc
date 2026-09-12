@@ -17,6 +17,6 @@ When editing **app chrome** (`/app`, `/admin`, shared components except `fronten
 
 4. **Tokens**: CSS variables in `app/globals.css`. **Typography**: Source Sans 3 + Fraunces on `/app`; **admin (`.admin-shell`) is Source Sans 3 only** — no Fraunces on page titles, card titles, or KPIs.
 
-5. **Exclude frontend site**: `app/components/frontend/**`, `app/page.tsx`, `app/privacy/**`, `app/terms/**`, `app/emdr/**`, `app/resources/**` — those use `.frontend-home` with **Fraunces + Source Sans 3 + Roboto Mono** kickers (see `nura-brand.mdc` → Frontend typography).
+5. **Exclude frontend site**: `app/components/frontend/**`, `app/page.tsx`, `app/privacy/**`, `app/terms/**`, `app/emdr/**`, `app/resources/**`, `app/blog/**` — those use `.frontend-home` with **Fraunces + Source Sans 3 + Roboto Mono** kickers (see `nura-brand.mdc` → Frontend typography).
 
 6. **UI/UX work**: load `.cursor/skills/nura-ui-designer/SKILL.md` (`/nura-ui-designer`) before restyling or shipping visual changes.

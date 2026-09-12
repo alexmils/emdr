@@ -18,7 +18,7 @@ export function formatDateTime(iso: string | null) {
   });
 }
 
-export function formatMoney(cents: number, currency = "EUR") {
+export function formatMoney(cents: number, currency = "USD") {
   const fractionDigits = cents % 100 === 0 ? 0 : 2;
   return new Intl.NumberFormat(undefined, {
     style: "currency",

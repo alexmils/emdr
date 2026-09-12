@@ -16,7 +16,7 @@ import {
 /** Tagged fetch so Admin → SEO save can `revalidateTag("seo")`. */
 export const getCachedResolvedSiteSeoPages = unstable_cache(
   async () => getResolvedSiteSeoPages(),
-  ["resolved-site-seo"],
+  ["resolved-site-seo", "pages-v2"],
   { tags: [SEO_CACHE_TAG], revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS }
 );
 
@@ -24,7 +24,11 @@ export async function buildCachedPageMetadata(
   pageId: SeoPageId
 ): Promise<Metadata> {
   try {
-    const resolved = await getCachedResolvedSiteSeoPages();
+    let resolved = await getCachedResolvedSiteSeoPages();
+    if (!resolved.pages.some((page) => page.id === pageId)) {
+      // Stale cache from before a new public page id was added.
+      resolved = await getResolvedSiteSeoPages();
+    }
     return metadataFromResolved(pageId, resolved.pages, resolved.seo);
   } catch {
     return metadataFromResolved(

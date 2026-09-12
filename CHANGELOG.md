@@ -67,6 +67,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Guided Voice Mode**: ChatGPT-style voice in Guided sessions — browser Web Speech mic, ElevenLabs replies, live transcript; interpreter `startSet` auto-starts the moving ball when ready (`AgentOverlay`, `useGuidedVoiceMode`, `lib/browser-speech.ts`)
 - **Help chat widget**: compact bottom-right panel (~360×512 max) instead of full-height side drawer; transparent click-outside; slide-up open
 - **Cloudflare Turnstile** on password auth forms (login, create-account, forgot/reset/create-password): widget embed + canonical siteverify (`lib/turnstile.ts`); env `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAMES`; `TurnstileField` renders after Script `onReady` (no `turnstile.ready()` with async Script)
+- **`/llms.txt`**: public machine-readable note that AI search may crawl, index, ground, summarize, and cite marketing pages — not train, and not fetch `/app`, `/admin`, or `/api`
+- **Public EMDR content cluster**: `/blog` + `/blog/[slug]` (18 guides on visual sets, practice between sessions, and safety), `/resources` as a public hub; every article links to `/emdr` with a descriptive anchor
+- **`/editorial`**: honest “How we write these guides” page — product team self-help explainers, no invented clinical advisor; bylines on cluster articles
+- Public **breadcrumbs** on inner marketing pages (blog, resources, EMDR, about, editorial, legal) plus BlogPosting / BreadcrumbList JSON-LD
+- Public sitemap **`lastModified`** dates only (no `changefreq` / `priority` — Google ignores them)
 
 ### Changed
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
@@ -149,6 +154,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin chrome: drop the pink “Live Stripe is active” top banner; only show the demo/sandbox banner when Demo mode is on (live status stays on Billing → Stripe)
 - Cursor rule `.cursor/rules/turnstile-forms.mdc` (`alwaysApply`) — guest-facing forms must use `TurnstileField` + server `verifyTurnstileToken`
 - Cursor rule `.cursor/rules/admin-settings-selection.mdc` — admin/settings option grids (themes, voices, chrome looks) use AI-Voice-style top-right radio on cards, not border-only
+- Homepage decorative photos (marquee, story avatars, hero thumb) use native lazy `img` so `next/image` does not explode srcsets; below-fold `Image` sets `priority={false}` + sizes
+- `buildPageMetadata` / blog articles emit `hreflang` `en` + `x-default` (ready before a second locale)
+- `/app` crawl: shared `shouldNoindexPath` so `/app/resources` stays behind login + `X-Robots-Tag` + robots `Disallow: /app`
+- Billing display currency: plan prices and money formatters default to **USD** (`$4.99` / `$14.99` / `$99`); leftover `€` display strings from admin settings are rewritten on load
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -348,6 +357,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Free session Speed presets **0.1 · 1 · 5** Hz (was 0.5 · 1 · 2); clamp/migrate in `lib/bls-speed.ts` + prefs; Adjustments sliders match
 - Free session Repeats: numeric count (1–999) + ∞; ArrowUp/Down increment/decrement instead of toggling left/right (`lib/bls-repeats.ts`, dock + Adjustments)
 - **Public marketing ISR**: `/`, `/about`, `/emdr`, `/resources`, `/privacy`, `/terms` use `revalidate = 3600` instead of `force-dynamic` so HTML can be CDN-cached; Admin → SEO save calls `revalidateTag("seo")` + `revalidatePath` for those routes; ignore-IP analytics skip moved off the page render (`/api/marketing/analytics-gate`)
+- **robots.txt**: one `User-agent: *` group (no redundant `/privacy` `/terms` Allows); `Content-Signal: search=yes,ai-input=yes,ai-train=no`; explicit allow for `OAI-SearchBot` / `PerplexityBot` / `ChatGPT-User` on public marketing pages; training crawlers (`GPTBot`, `ClaudeBot`, `CCBot`, …) `Disallow: /`. Served from `app/robots.txt/route.ts`. Cloudflare managed robots.txt must stay off so it does not prepend named-bot blocks.
+- Header **Blog** goes to `/blog` (no longer `/#blog`); home cards and sitemap list `/blog/[slug]`; robots grounding and `llms.txt` allow the cluster
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

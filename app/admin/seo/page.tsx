@@ -1236,7 +1236,25 @@ function AdminSeoPageInner() {
                   {status.robotsUrl}
                 </a>
                 <p className="admin-panel-sub">
-                  Allows the public pages. Disallows /app and /admin.
+                  Public pages for search. Grounding bots (OAI-SearchBot,
+                  PerplexityBot, ChatGPT-User) may fetch Home, EMDR, About,
+                  Resources, and Blog. Training crawlers are disallowed. /app,
+                  /admin, and /api stay closed.
+                </p>
+              </div>
+              <div className="admin-seo-index-row">
+                <p className="admin-panel-title">llms.txt</p>
+                <a
+                  href={status.llmsTxtUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="admin-seo-link"
+                >
+                  {status.llmsTxtUrl}
+                </a>
+                <p className="admin-panel-sub">
+                  Tells AI search systems they may cite public pages, not train
+                  on them, and not fetch the signed-in app.
                 </p>
               </div>
             </div>

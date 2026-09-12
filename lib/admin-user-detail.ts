@@ -157,7 +157,7 @@ export async function getAdminUserDetail(
     plan,
     subscriptionStatus,
     amountCents: subRow?.amount_cents ?? 0,
-    currency: (subRow?.currency ?? "EUR").toUpperCase(),
+    currency: (subRow?.currency ?? "USD").toUpperCase(),
     renewsAt: subRow?.renews_at
       ? new Date(subRow.renews_at).toISOString()
       : null,

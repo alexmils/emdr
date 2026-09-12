@@ -16,6 +16,9 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/about"), true);
     assert.equal(isFrontendPublicPath("/emdr"), true);
     assert.equal(isFrontendPublicPath("/resources"), true);
+    assert.equal(isFrontendPublicPath("/blog"), true);
+    assert.equal(isFrontendPublicPath("/editorial"), true);
+    assert.equal(isFrontendPublicPath("/blog/what-is-emdr"), true);
     assert.equal(isFrontendPublicPath("/therapy"), false);
     assert.equal(isFrontendPublicPath("/therapists"), false);
   });
@@ -23,6 +26,7 @@ describe("isFrontendPublicPath", () => {
   it("does not treat /app as frontend", () => {
     assert.equal(isFrontendPublicPath("/app"), false);
     assert.equal(isFrontendPublicPath("/app/login"), false);
+    assert.equal(isFrontendPublicPath("/app/resources"), false);
   });
 });
 
@@ -40,6 +44,7 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
   it("prefix trap: /app itself is not public", () => {
     assert.equal(isUnauthenticatedPublicPath("/app"), false);
     assert.equal(isUnauthenticatedPublicPath("/app/settings"), false);
+    assert.equal(isUnauthenticatedPublicPath("/app/resources"), false);
     assert.equal(isUnauthenticatedPublicPath("/apple"), false);
   });
 
@@ -78,6 +83,12 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/favicon"), true);
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/app-logo"), true);
   });
+
+  it("allows robots.txt and llms.txt", () => {
+    assert.equal(isUnauthenticatedPublicPath("/robots.txt"), true);
+    assert.equal(isUnauthenticatedPublicPath("/llms.txt"), true);
+    assert.equal(isUnauthenticatedPublicPath("/sitemap.xml"), true);
+  });
 });
 
 describe("shouldRedirectToLoginOn401", () => {
@@ -88,6 +99,7 @@ describe("shouldRedirectToLoginOn401", () => {
     assert.equal(shouldRedirectToLoginOn401("/privacy"), false);
     assert.equal(shouldRedirectToLoginOn401("/emdr"), false);
     assert.equal(shouldRedirectToLoginOn401("/resources"), false);
+    assert.equal(shouldRedirectToLoginOn401("/blog"), false);
     assert.equal(shouldRedirectToLoginOn401("/app/login"), false);
     assert.equal(shouldRedirectToLoginOn401("/apple"), false);
   });

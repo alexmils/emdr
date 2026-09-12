@@ -1,4 +1,6 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
+import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+import { EmdrKeepReading } from "@/app/components/frontend/EmdrKeepReading";
 import { LOGIN_PATH } from "@/lib/app-base";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
@@ -14,6 +16,12 @@ export default function EmdrPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
+        <FrontendBreadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: "EMDR" },
+          ]}
+        />
         <h1>EMDR Support</h1>
         <p>
           EMDR (Eye Movement Desensitization and Reprocessing) is a structured
@@ -39,6 +47,7 @@ export default function EmdrPage() {
             Resources
           </Link>
         </div>
+        <EmdrKeepReading />
       </article>
     </FrontendShell>
   );

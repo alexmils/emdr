@@ -138,10 +138,10 @@ export function sharePct(part: number, total: number): number {
   return Math.round((part / total) * 1000) / 10;
 }
 
-export function formatMoneyCompact(cents: number, currency = "EUR"): string {
+export function formatMoneyCompact(cents: number, currency = "USD"): string {
   const value = (Number(cents) || 0) / 100;
   const abs = Math.abs(value);
-  const code = (currency || "EUR").toUpperCase();
+  const code = (currency || "USD").toUpperCase();
   if (abs >= 10_000) {
     const n = (abs / 1000).toFixed(abs >= 100_000 ? 0 : 1);
     try {
@@ -166,7 +166,7 @@ export function formatMoneyCompact(cents: number, currency = "EUR"): string {
   }).format(value);
 }
 
-export function formatMoneyDelta(cents: number, currency = "EUR"): string {
+export function formatMoneyDelta(cents: number, currency = "USD"): string {
   const formatted = formatMoneyCompact(Math.abs(cents), currency);
   if (cents > 0) return `${formatted} above last month`;
   if (cents < 0) return `${formatted} below last month`;

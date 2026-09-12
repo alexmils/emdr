@@ -48,6 +48,7 @@ describe("isAppConsolePath", () => {
   it("matches /app but not /apple", () => {
     assert.equal(isAppConsolePath("/app"), true);
     assert.equal(isAppConsolePath("/app/login"), true);
+    assert.equal(isAppConsolePath("/app/resources"), true);
     assert.equal(isAppConsolePath("/apple"), false);
     assert.equal(isAppConsolePath("/"), false);
     assert.equal(isAppConsolePath(LOGIN_PATH), true);

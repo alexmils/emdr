@@ -81,4 +81,4 @@ English, sentence case, short. No hype (“revolutionary”, “blockchain”, �
 
 Code/CSS identifiers may stay (`bls`, `TRIAL_BLS_SECONDS`, `.bls-dock`) — that is not user-facing. Prefer **Guided** vs **Free** (session modes already in the product). Extend `rewriteRetiredBrandCopy` if remapping stored help text.
 
-Public routes (must stay in `lib/public-paths.ts` + `app/robots.ts` + `app/sitemap.ts`): `/` `/about` `/emdr` `/resources` `/privacy` `/terms`. Nav: **Home · How it works · Prices · Blog · FAQ** (hash links on `/` with Lenis smooth scroll). Retired: `/therapy` and `/therapists` redirect to `/resources`.
+Public routes (must stay in `lib/public-paths.ts` + `app/robots.txt/route.ts` + `app/sitemap.ts`): `/` `/about` `/editorial` `/emdr` `/resources` `/blog` `/blog/[slug]` `/privacy` `/terms`. Also public: `/llms.txt`. Nav: **Home · How it works · Prices · Blog · FAQ** (hash links on `/` except **Blog** → `/blog`). Inner pages: breadcrumbs. Retired: `/therapy` and `/therapists` redirect to `/resources`.

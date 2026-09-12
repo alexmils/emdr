@@ -3,8 +3,10 @@
 export const SEO_PAGE_IDS = [
   "home",
   "about",
+  "editorial",
   "emdr",
   "resources",
+  "blog",
   "privacy",
   "terms",
 ] as const;

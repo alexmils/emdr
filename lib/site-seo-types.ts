@@ -39,6 +39,7 @@ export type MarketingSeoStatus = {
   ogImageUrl: string;
   sitemapUrl: string;
   robotsUrl: string;
+  llmsTxtUrl: string;
   gscProperty: string | null;
   sitemapNote: string;
   connections: SeoConnection[];

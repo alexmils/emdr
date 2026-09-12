@@ -6,8 +6,10 @@ const FRONTEND_PREFIXES = [
   "/privacy",
   "/terms",
   "/about",
+  "/editorial",
   "/emdr",
   "/resources",
+  "/blog",
 ] as const;
 
 const AUTH_PUBLIC_PREFIXES = [
@@ -32,8 +34,14 @@ const API_PUBLIC_PREFIXES = [
   "/api/marketing/analytics-gate",
 ] as const;
 
-/** Exact paths that never require a session (no file extension). */
-const PUBLIC_EXACT = new Set(["/favicon.ico", "/og-image"]);
+/** Exact paths that never require a session. */
+const PUBLIC_EXACT = new Set([
+  "/favicon.ico",
+  "/og-image",
+  "/llms.txt",
+  "/robots.txt",
+  "/sitemap.xml",
+]);
 
 const PUBLIC_PREFIXES = ["/brand-assets/"] as const;
 

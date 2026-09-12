@@ -19,8 +19,10 @@ const PUBLIC_EXACT = new Set(["/", ""]);
 
 const PUBLIC_PREFIXES = [
   "/about",
+  "/editorial",
   "/emdr",
   "/resources",
+  "/blog",
   "/privacy",
   "/terms",
 ] as const;
