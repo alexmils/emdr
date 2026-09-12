@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
   FIND_A_HELPLINE_URL,
+  safeDefaultCrisisResources,
   type CountryCrisisResources,
 } from "@/lib/emergency-by-country";
 
@@ -13,13 +14,14 @@ type CrisisResourcesPayload = CountryCrisisResources & {
 
 /**
  * Always-available crisis resources in session UI (separate from product Help).
- * Emergency / crisis numbers follow request geo (Cloudflare country or IP).
+ * Starts with a dialable US/CA 988 default; upgrades from geo when available.
  */
 export function CrisisHelpButton() {
   const [open, setOpen] = useState(false);
-  const [resources, setResources] = useState<CrisisResourcesPayload | null>(
-    null
+  const [resources, setResources] = useState<CrisisResourcesPayload>(() =>
+    safeDefaultCrisisResources()
   );
+  const [localized, setLocalized] = useState(false);
   const panelId = useId();
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -45,7 +47,7 @@ export function CrisisHelpButton() {
   }, [open]);
 
   useEffect(() => {
-    if (!open || resources) return;
+    if (!open || localized) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -54,20 +56,25 @@ export function CrisisHelpButton() {
         });
         if (!res.ok) return;
         const data = (await res.json()) as CrisisResourcesPayload;
-        if (!cancelled) setResources(data);
+        if (cancelled) return;
+        setResources({
+          ...data,
+          // Never trust outbound URLs from JSON.
+          findHelplineUrl: FIND_A_HELPLINE_URL,
+        });
+        setLocalized(true);
       } catch {
-        /* keep fallback copy */
+        /* keep safe default */
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, resources]);
+  }, [open, localized]);
 
-  const countryLabel = resources?.countryName ?? null;
-  const emergency = resources?.emergency ?? null;
-  const crisis = resources?.crisis ?? null;
-  const findUrl = resources?.findHelplineUrl ?? FIND_A_HELPLINE_URL;
+  const countryLabel = resources.countryName ?? null;
+  const emergency = resources.emergency ?? null;
+  const crisis = resources.crisis ?? null;
 
   return (
     <div className="crisis-help">
@@ -104,7 +111,9 @@ export function CrisisHelpButton() {
                 <a href={`tel:${crisis.dial}`} className="crisis-help-call">
                   {countryLabel
                     ? `${countryLabel} — ${crisis.display}`
-                    : crisis.display}
+                    : crisis.note.includes("US / Canada")
+                      ? `US / Canada — ${crisis.display}`
+                      : crisis.display}
                 </a>
                 <span>
                   {crisis.note}
@@ -113,7 +122,9 @@ export function CrisisHelpButton() {
                   {crisis.smsDial ? (
                     <>
                       {" or "}
-                      <a href={`sms:${crisis.smsDial}`}>text {crisis.display}</a>
+                      <a href={`sms:${crisis.smsDial}`}>
+                        text {crisis.display}
+                      </a>
                     </>
                   ) : null}
                 </span>
@@ -131,7 +142,7 @@ export function CrisisHelpButton() {
                       : "Emergency"}{" "}
                     {emergency.display}
                   </a>
-                  <span> Police, fire, or ambulance in your area</span>
+                  <span> Local emergency services</span>
                 </>
               ) : (
                 <>
@@ -148,7 +159,7 @@ export function CrisisHelpButton() {
               <span>
                 {" "}
                 <a
-                  href={findUrl}
+                  href={FIND_A_HELPLINE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

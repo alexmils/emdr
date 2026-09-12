@@ -13,44 +13,31 @@ import {
 import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { InviteForm } from "@/app/components/admin/InviteForm";
 import {
-  AdminGauge,
   AdminSegmentBar,
   AdminStackedBars,
   CHART_SLICE_COLORS,
   DeltaBadge,
 } from "@/app/components/admin/AdminCharts";
+import { PlatformHealthCard } from "@/app/components/admin/PlatformHealthCard";
 import { actionLabel, formatDateTime, formatMoney } from "@/lib/admin-format";
 import { formatTokenCount, formatUsdMicros } from "@/lib/admin-llm-format";
 import type { AdminDashboardStats } from "@/lib/admin-stats";
 import type { AuditEvent } from "@/lib/audit-log";
 import { fetchJson } from "@/lib/fetch-json";
 
-type HealthStatus = {
-  gmailConfigured?: boolean;
-  brevoConfigured: boolean;
-  gmailFallbackConfigured?: boolean;
-  primaryProvider?: "gmail" | "brevo" | "none";
-  appUrl: string;
-  fromAddress: string | null;
-  fromName: string | null;
-};
-
 export default function AdminOverviewPage() {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [events, setEvents] = useState<AuditEvent[]>([]);
-  const [health, setHealth] = useState<HealthStatus | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [statsRes, eventsRes, healthRes] = await Promise.all([
+    const [statsRes, eventsRes] = await Promise.all([
       fetchJson<{ stats: AdminDashboardStats }>("/api/admin/stats"),
       fetchJson<{ events: AuditEvent[] }>("/api/admin/events?limit=8"),
-      fetchJson<{ status: HealthStatus }>("/api/admin/email/status"),
     ]);
     setStats(statsRes.stats);
     setEvents(eventsRes.events ?? []);
-    setHealth(healthRes.status);
   }, []);
 
   useEffect(() => {
@@ -114,12 +101,6 @@ export default function AdminOverviewPage() {
   const weekTokens = stats.llm.tokensThisWeek;
   const weekCost = stats.llm.costUsdMicrosThisWeek;
   const weekMessages = stats.series7d.reduce((s, d) => s + d.messages, 0);
-
-  let healthScore = stats.healthScore;
-  if (health?.brevoConfigured) healthScore = Math.min(100, healthScore + 5);
-  if (health?.gmailConfigured || health?.gmailFallbackConfigured) {
-    healthScore = Math.min(100, healthScore + 5);
-  }
 
   return (
     <div className="admin-page">
@@ -289,35 +270,7 @@ export default function AdminOverviewPage() {
             </ul>
           </section>
 
-          <section className="admin-panel admin-dash-gauge-card">
-            <h2 className="admin-panel-title">Platform health</h2>
-            <AdminGauge value={healthScore} label="Operational score" />
-            {health && (
-              <div className="admin-health-chips admin-dash-health-chips">
-                <span
-                  className={`admin-health-chip ${
-                    health.brevoConfigured
-                      ? "admin-health-ok"
-                      : "admin-health-warn"
-                  }`}
-                >
-                  Brevo {health.brevoConfigured ? "ok" : "off"}
-                </span>
-                <span
-                  className={`admin-health-chip ${
-                    health.gmailConfigured || health.gmailFallbackConfigured
-                      ? "admin-health-ok"
-                      : "admin-health-warn"
-                  }`}
-                >
-                  Gmail{" "}
-                  {health.gmailConfigured || health.gmailFallbackConfigured
-                    ? "ok"
-                    : "off"}
-                </span>
-              </div>
-            )}
-          </section>
+          <PlatformHealthCard />
 
           <section className="admin-panel">
             <h2 className="admin-panel-title">Paying share</h2>

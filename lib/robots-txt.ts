@@ -39,12 +39,12 @@ export const AI_GROUNDING_ALLOW = [
   "/sitemap.xml",
 ] as const;
 
-export const ROBOTS_DISALLOW = ["/app", "/admin", "/api"] as const;
+export const ROBOTS_DISALLOW = ["/app", "/admin", "/api", "/health"] as const;
 
 export function buildRobotsTxt(origin: string): string {
   const lines: string[] = [
     "# Nura: crawl public pages for search and AI answers. Do not train.",
-    "# /app, /admin, and /api are the signed-in product — stay out.",
+    "# /app, /admin, /api, and /health are not marketing pages — stay out.",
     "",
     "User-agent: *",
     `Content-Signal: ${ROBOTS_CONTENT_SIGNAL}`,

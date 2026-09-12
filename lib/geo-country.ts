@@ -6,16 +6,49 @@ export type GeoCountryResult = {
   source: "cf-ipcountry" | "ip-lookup" | "none";
 };
 
-const PRIVATE_IP =
-  /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc|fd|fe80)/i;
-
 type CacheEntry = { code: string | null; expires: number };
 const ipCountryCache = new Map<string, CacheEntry>();
 const CACHE_MS = 60 * 60 * 1000;
+const CACHE_MAX = 500;
+
+/** IPv4 dotted-quad only (no hostnames). */
+const IPV4 =
+  /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,9})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,9})$/;
+
+/**
+ * True for publicly routable client IPs we may send to a geo API.
+ * Rejects private, loopback, link-local, CGNAT, and non-IPv4 (keep allowlist tight).
+ */
+export function isPublicClientIp(ip: string): boolean {
+  const raw = ip.trim();
+  if (!IPV4.test(raw)) return false;
+  const parts = raw.split(".").map((p) => Number(p));
+  if (parts.length !== 4 || parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) {
+    return false;
+  }
+  const [a, b] = parts;
+  if (a === 10) return false;
+  if (a === 127) return false;
+  if (a === 0) return false;
+  if (a === 169 && b === 254) return false;
+  if (a === 172 && b >= 16 && b <= 31) return false;
+  if (a === 192 && b === 168) return false;
+  if (a === 100 && b >= 64 && b <= 127) return false; // CGNAT
+  if (a >= 224) return false; // multicast / reserved
+  return true;
+}
+
+function cacheSet(ip: string, code: string | null) {
+  if (ipCountryCache.size >= CACHE_MAX) {
+    const oldest = ipCountryCache.keys().next().value;
+    if (oldest !== undefined) ipCountryCache.delete(oldest);
+  }
+  ipCountryCache.set(ip, { code, expires: Date.now() + CACHE_MS });
+}
 
 /**
  * Prefer Cloudflare `CF-IPCountry` (prod behind CF).
- * Fallback: short IP→country lookup when we have a public client IP.
+ * Fallback: HTTPS IP→country lookup only for validated public IPv4.
  */
 export async function resolveRequestCountry(
   request: Request
@@ -26,7 +59,7 @@ export async function resolveRequestCountry(
   }
 
   const ip = clientIpFromHeaders(request.headers);
-  if (!ip || PRIVATE_IP.test(ip)) {
+  if (!ip || !isPublicClientIp(ip)) {
     return { countryCode: null, source: "none" };
   }
 
@@ -39,7 +72,7 @@ export async function resolveRequestCountry(
   }
 
   const code = await lookupCountryByIp(ip);
-  ipCountryCache.set(ip, { code, expires: Date.now() + CACHE_MS });
+  cacheSet(ip, code);
   return {
     countryCode: code,
     source: code ? "ip-lookup" : "none",
@@ -50,18 +83,14 @@ async function lookupCountryByIp(ip: string): Promise<string | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 2000);
   try {
-    // ip-api.com: free non-commercial, fields-limited JSON over HTTP.
+    // HTTPS JSON; path is a validated IPv4 only.
     const res = await fetch(
-      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,countryCode`,
+      `https://api.country.is/${encodeURIComponent(ip)}`,
       { signal: controller.signal, cache: "no-store" }
     );
     if (!res.ok) return null;
-    const data = (await res.json()) as {
-      status?: string;
-      countryCode?: string;
-    };
-    if (data.status !== "success") return null;
-    return normalizeCountryCode(data.countryCode ?? null);
+    const data = (await res.json()) as { country?: string };
+    return normalizeCountryCode(data.country ?? null);
   } catch {
     return null;
   } finally {

@@ -184,8 +184,25 @@ Set in Coolify → **nurahelp** → Environment (values not in git):
 | `TURNSTILE_SECRET` | Turnstile widget secret (Coolify only; never git) |
 | `TURNSTILE_HOSTNAMES` | Prod: `nurahelp.com,www.nurahelp.com` (no localhost) |
 | Email / Stripe | Prefer **Admin → Email / Billing** in DB; optional env bootstrap |
+| `COOLIFY_TOKEN` | Same PAT as GitHub Actions; lets Admin Overview read live app status |
+| `COOLIFY_API_URL` | `https://server.nurahelp.com` (Access must allow `/api/v1*`) |
+| `COOLIFY_APP_UUID` | `epufvmx1j8jold5gdpfak85m` (optional; this is the default) |
 
 Schema migrates on app start via app DB init (same as local).
+
+---
+
+## Healthcheck (`GET /health`)
+
+Coolify and Docker probe **`GET /health`** (not `/`). It returns JSON `{ ok, status, checks: { app, db } }` — **200** when Postgres answers `SELECT 1`, **503** otherwise. No auth, no schema work, `Cache-Control: no-store`.
+
+| Where | Setting |
+|-------|---------|
+| Dockerfile `HEALTHCHECK` | `http://127.0.0.1:3471/health` (node `fetch`; image also has `curl`) |
+| Coolify → Configuration → Healthcheck | Type **HTTP**, method `GET`, path `/health`, port **3471**, host `localhost` |
+| Admin Overview | Platform health card polls `GET /api/admin/health` every 10s (local `/health` + Coolify `GET /api/v1/applications/{uuid}` when `COOLIFY_TOKEN` is set) |
+
+Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process only).
 
 ---
 
@@ -203,10 +220,12 @@ Schema migrates on app start via app DB init (same as local).
 ```bash
 # From laptop
 curl -sS -o /dev/null -w "%{http_code}\n" https://nurahelp.com/
+curl -sS https://nurahelp.com/health
 curl -sS https://nurahelp.com/ | findstr /C:"frontend-home" /C:"Support for therapy"
 
 # On VPS
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3471/
+curl -sS http://127.0.0.1:3471/health
 docker ps --filter publish=3471 --format '{{.Image}} {{.Status}} {{.Ports}}'
 ```
 

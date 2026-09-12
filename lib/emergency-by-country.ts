@@ -223,8 +223,8 @@ const CRISIS_LINES: Record<
     note: "National suicide prevention",
   },
   NL: {
-    dial: "08000113",
-    display: "0800-0113",
+    dial: "113",
+    display: "113",
     note: "113 Suicide Prevention",
   },
   BE: {
@@ -341,6 +341,25 @@ const CRISIS_LINES: Record<
 
 export const FIND_A_HELPLINE_URL =
   "https://www.iasp.info/suicidalthoughts/";
+
+/**
+ * Safe panel default before geo resolves: dialable US/CA crisis line + IASP.
+ * Does not claim the visitor's country; emergency stays generic until localized.
+ */
+export function safeDefaultCrisisResources(): CountryCrisisResources {
+  return {
+    countryCode: null,
+    countryName: null,
+    emergency: null,
+    crisis: {
+      dial: "988",
+      display: "988",
+      note: "Suicide & Crisis Lifeline (US / Canada)",
+      smsDial: "988",
+    },
+    findHelplineUrl: FIND_A_HELPLINE_URL,
+  };
+}
 
 export function countryDisplayName(
   countryCode: string | null,

@@ -28,7 +28,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3471
 ENV HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs \
+RUN apk add --no-cache curl \
+  && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /nura/public ./public
@@ -38,5 +39,5 @@ COPY --from=builder --chown=nextjs:nodejs /nura/.next/static ./.next/static
 USER nextjs
 EXPOSE 3471
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3471)+'/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3471)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "server.js"]

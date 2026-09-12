@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, ChevronDown, Home, Plus, X, Zap } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  Plus,
+  X,
+  Zap,
+} from "lucide-react";
 import { useApp } from "./AppProvider";
 import { ThreadEditMenu } from "./ThreadEditMenu";
 import { ThreadContextMenu } from "./ThreadContextMenu";
@@ -43,10 +51,12 @@ export function Sidebar() {
   const { user } = useCurrentUser();
   const { closeSidebar, closeSidebarDrawer } = useSidebarNav();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [upgradeDismissed, setUpgradeDismissed] = useState(false);
   const [editThreadId, setEditThreadId] = useState<string | null>(null);
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
   const accountFootRef = useRef<HTMLDivElement>(null);
+  const helpCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressClickRef = useRef(false);
   const longPressRef = useRef<{
     timer: ReturnType<typeof setTimeout>;
@@ -65,14 +75,23 @@ export function Sidebar() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!accountOpen) return;
+    if (!accountOpen) {
+      setHelpOpen(false);
+      return;
+    }
     const onPointer = (e: MouseEvent) => {
       if (!accountFootRef.current?.contains(e.target as Node)) {
         setAccountOpen(false);
+        setHelpOpen(false);
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAccountOpen(false);
+      if (e.key !== "Escape") return;
+      if (helpOpen) {
+        setHelpOpen(false);
+        return;
+      }
+      setAccountOpen(false);
     };
     document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
@@ -80,11 +99,37 @@ export function Sidebar() {
       document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [accountOpen]);
+  }, [accountOpen, helpOpen]);
 
   useEffect(() => {
     setAccountOpen(false);
+    setHelpOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (helpCloseTimerRef.current) clearTimeout(helpCloseTimerRef.current);
+    };
+  }, []);
+
+  const openHelpMenu = () => {
+    if (helpCloseTimerRef.current) {
+      clearTimeout(helpCloseTimerRef.current);
+      helpCloseTimerRef.current = null;
+    }
+    setHelpOpen(true);
+  };
+
+  const scheduleCloseHelpMenu = () => {
+    if (helpCloseTimerRef.current) clearTimeout(helpCloseTimerRef.current);
+    helpCloseTimerRef.current = setTimeout(() => setHelpOpen(false), 120);
+  };
+
+  const closeAccountMenus = () => {
+    setHelpOpen(false);
+    setAccountOpen(false);
+    closeSidebarDrawer();
+  };
 
   const dismissUpgrade = () => {
     setUpgradeDismissed(true);
@@ -332,11 +377,66 @@ export function Sidebar() {
               role="menuitem"
               onClick={() => {
                 setAccountOpen(false);
+                setHelpOpen(false);
                 closeSidebarDrawer();
               }}
             >
               Billing
             </Link>
+            <div
+              className="sidebar-help-wrap"
+              onMouseEnter={openHelpMenu}
+              onMouseLeave={scheduleCloseHelpMenu}
+            >
+              <button
+                type="button"
+                className={`dropdown-item sidebar-help-trigger w-full text-left${helpOpen ? " is-open" : ""}`}
+                role="menuitem"
+                aria-expanded={helpOpen}
+                aria-haspopup="menu"
+                onClick={() => setHelpOpen((o) => !o)}
+              >
+                Help
+                <ChevronRight
+                  size={14}
+                  strokeWidth={2}
+                  className="sidebar-help-chevron"
+                  aria-hidden
+                />
+              </button>
+              {helpOpen ? (
+                <div
+                  className="sidebar-help-submenu"
+                  role="menu"
+                  aria-label="Help"
+                >
+                  <Link
+                    href="/privacy"
+                    className="dropdown-item"
+                    role="menuitem"
+                    onClick={closeAccountMenus}
+                  >
+                    Privacy policy
+                  </Link>
+                  <Link
+                    href="/privacy#cookies"
+                    className="dropdown-item"
+                    role="menuitem"
+                    onClick={closeAccountMenus}
+                  >
+                    Cookie policy
+                  </Link>
+                  <Link
+                    href="/terms"
+                    className="dropdown-item"
+                    role="menuitem"
+                    onClick={closeAccountMenus}
+                  >
+                    Terms of service
+                  </Link>
+                </div>
+              ) : null}
+            </div>
             <button
               type="button"
               className="dropdown-item w-full text-left text-[var(--destructive)]"
@@ -349,7 +449,12 @@ export function Sidebar() {
         ) : null}
         <button
           type="button"
-          onClick={() => setAccountOpen((o) => !o)}
+          onClick={() =>
+            setAccountOpen((o) => {
+              if (o) setHelpOpen(false);
+              return !o;
+            })
+          }
           className="sidebar-account-btn"
           aria-expanded={accountOpen}
           aria-haspopup="menu"

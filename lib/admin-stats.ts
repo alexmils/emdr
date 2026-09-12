@@ -59,7 +59,6 @@ export type AdminDashboardStats = {
   series7d: AdminDayPoint[];
   llmByPurpose: AdminLlmSlice[];
   llmByProvider: AdminLlmSlice[];
-  healthScore: number;
 };
 
 export type AdminUserRow = {
@@ -297,13 +296,6 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const paidSharePct =
     totalUsers > 0 ? Math.round((activePaid / totalUsers) * 1000) / 10 : 0;
 
-  let healthScore = 40;
-  if (totalUsers > 0) healthScore += 15;
-  if (activePaid > 0) healthScore += 20;
-  if (llmMonth.callCount > 0) healthScore += 15;
-  if ((messages.rows[0]?.c ?? 0) > 0) healthScore += 10;
-  healthScore = Math.min(100, healthScore);
-
   return {
     users: {
       total: totalUsers,
@@ -358,7 +350,6 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       costUsdMicros: Number(r.cost),
       callCount: r.calls,
     })),
-    healthScore,
   };
 }
 

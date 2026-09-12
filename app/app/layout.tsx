@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppAccessGate } from "@/app/components/AppAccessGate";
+import { FeedbackPromptHost } from "@/app/components/FeedbackPromptHost";
 import { HelpChatWidget } from "@/app/components/HelpChatWidget";
 import { ToastProvider } from "@/app/components/Toast";
 import { BRAND_PRODUCT, BRAND_SPOKEN } from "@/lib/brand";
@@ -23,6 +24,7 @@ export default function AppConsoleLayout({
     <AppAccessGate>
       <ToastProvider>
         {children}
+        <FeedbackPromptHost />
         <HelpChatWidget showFab />
       </ToastProvider>
     </AppAccessGate>

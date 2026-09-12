@@ -75,10 +75,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Homepage JSON-LD (`Organization` + `SoftwareApplication` + `FAQPage`) matching the visible FAQ accordion; no native-app OS list, no BLS jargon, no `MedicalWebPage` until a clinical reviewer exists
 - **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
 - **Self-serve account deletion**: Settings → Profile → Danger zone via `POST /api/auth/delete-account` (email confirm + password when set); Stripe subscription must cancel successfully before DB delete (shared with admin delete); Privacy §9 docs; `account_deleted` email uses truthful `billingNote`; admins/support notified
-- **Admin weekly AI cost + ElevenLabs voice usage**: Overview KPI for AI cost (week); Billing → Usage cards for week/month/all-time + ElevenLabs voice (month); per-user Voice chars / est. voice cost columns; TTS calls via /api/voice (and admin preview) record purpose=voice in llm_usage_events with list-price estimates (.10/1K multilingual, .05/1K flash)
+- **Private NPS feedback**: soft 1–10 popup after session closure (or ~4 days from signup), optional comment step, Ask me later snoozes **7 days**; tied to account email/name; admin inbox at `/admin/feedback` (not public Stories)
+- **Admin weekly AI cost + ElevenLabs voice usage**: Overview KPI for AI cost (week); Billing → Usage cards for week/month/all-time + ElevenLabs voice (month); per-user Voice chars / est. voice cost columns; TTS calls via `/api/voice` (and admin preview) record `purpose=voice` in `llm_usage_events` with list-price estimates ($0.10/1K multilingual, $0.05/1K flash)
+- Public **`GET /health`**: cheap app + Postgres probe (200/503 JSON) for Coolify and Docker; Dockerfile `HEALTHCHECK` hits `/health` instead of `/`
 
 ### Changed
+- **Admin Overview Platform health**: live `GET /health` + Coolify app status (poll every 10s) replaces the fake operational score and Brevo/Gmail chips; `lib/health-shared.ts` stays client-safe so the card does not bundle `pg`
+- **Feedback NPS review fixes**: immersive guard uses `.app-shell.session-immersive`; session_end only on same-thread phase transition; submit/snooze require `res.ok`; server rejects duplicate submit (409) and derives `source` (ignore client)
+- **Feedback NPS overlay**: stronger olive dim (~62% ink) + frosted `backdrop-filter` blur so content behind the modal stays unreadable
+- **Admin shell spacing**: wider canvas gutters (topbar / banner / page header / main ~2rem), slightly roomier sidebar inset; Feedback page wraps content in `admin-main` (was flush to the edge)
+- **Feedback NPS thanks step**: after Submit/Skip, “Thank you” note with **Done** only (no auto-close)
 - **`/terms`**: hosts prepared Termly Terms of Service HTML (`content/legal/terms-of-service.termly.html` → `lib/legal/terms-body.generated.ts`) with in-page TOC jump links + Nura product-notice addendum (not therapy / risk / crisis / agent / account delete); Termly free plan cannot publish a second policy
+- **App account menu**: Help flyout opens on hover — plain list (Privacy policy, Cookie policy, Terms of service), no icons; tap toggles on mobile
 - **18+ age confirm**: moved off create-account into first onboarding step after signup (`POST /api/consents` `age_18`); create-account keeps Terms/Privacy only; age copy “Are you 18 or older?”; **all** onboarding titles use Source Sans (no Fraunces); larger wave lockup; plan step drops “Getting started” kicker; trial note leads with **AI-guided** sessions + Free session time, card saved, no charge for N days (explicit AI override vs usual nura-brand “don’t lead with AI”)
 - **Informed consent gate**: Source Sans title (no Fraunces); larger lead + checklist type; session header trail (Charges + “I need help now”) vertically centered with title + not-therapy strip; mobile trail no longer `display: contents` (was escaping to the top)
 - **/app typography**: Fraunces removed from product chrome (`.app-shell` remaps `--font-display` → Source Sans); Fraunces stays marketing-only (`.frontend-home` hero / sections)
@@ -95,6 +103,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Session header**: not-therapy strip back under the title; “Need help” vertically centers with the left stack
 - **Crisis panel**: US — 988 is a `tel:988` link; supporting line has call / text (`sms:988`) links
 - **Localized crisis numbers**: `GET /api/crisis-resources` uses Cloudflare `CF-IPCountry` (else IP lookup) to show country emergency + verified crisis lines; Find a Helpline fallback
+- **Crisis / delete hardening**: panel keeps dialable US/CA 988 until geo returns; HTTPS geo + public-IP allowlist; delete runs DB first then Stripe/audit; password or typed `DELETE` step-up
 - **Brand lockup**: public name is **Nura** only (drop “NuraHelp” from UI/legal copy; domain `nurahelp.com` unchanged). Operator **Receptly LLC**, 30 N Gould St, Sheridan, WY 82801 — Terms/Privacy, footer copyright, JSON-LD `legalName`
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
 - **Start a session**: mode picker only — removed Learn teaser; keyboard hint fades out after ~2.5s
@@ -182,6 +191,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Billing display currency: plan prices and money formatters default to **USD** (`$4.99` / `$14.99` / `$99`); leftover `€` display strings from admin settings are rewritten on load
 
 ### Fixed
+- App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
+- App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
 - Guided chat phases: hide BLS toolbar / gear until a set is ready or running (chat sits lower without the dock)
 - Guided canvas: removed idle placeholder “The guide will invite you when it is time for a set”
@@ -389,7 +400,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Home blog byline avatar: replace cropped `BrandMark` wave with sage circle wordmark (`A-white-on-sage-128`, `BRAND_CIRCLE_AVATAR`)
 - Free / set copy: drop default “moving ball” marketing pitch — prefer **visual sets** / **sets you run yourself**; Free showcase title **Sets without an agent**; brand rule bans ball-as-product headlines
 - Blog / EMDR “Keep reading”: three cover-image cards (shared `ClusterKeepReading`) instead of a plain link list
-
 - **Account deletion review fixes**: shared `deleteUserAccount` cancels Stripe (and best-effort deletes the customer) before DB delete for self + admin; block delete when cancel fails; audit only after success; session cookies cleared before email fan-out; user email `billingNote` is truthful; password step-up when account has a password; admin delete sends the same confirmation + ops notify; client-safe `lib/delete-account-shared.ts` so Settings Danger zone does not pull `pg` into the browser bundle
 - **Admin Last 7 days chart**: bars sit on a shared baseline (no floating stacks); hover/focus tooltip shows exact messages, tokens, and new users
 

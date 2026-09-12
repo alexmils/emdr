@@ -7,6 +7,7 @@ export function shouldNoindexPath(pathname: string): boolean {
   return (
     isAppConsolePath(pathname) ||
     pathname === "/admin" ||
-    pathname.startsWith("/admin/")
+    pathname.startsWith("/admin/") ||
+    pathname === "/health"
   );
 }

@@ -43,7 +43,7 @@ export type LegalDocType =
 
 /** Bump when Terms / Privacy / informed-consent copy materially changes. */
 export const LEGAL_DOC_VERSION = {
-  terms: "terms@2026-09-12b",
+  terms: "terms@2026-09-12c",
   privacy: "privacy@2026-09-12d",
   informed_session: "informed_session@2026-09-12",
   age_18: "age_18@2026-09-12",

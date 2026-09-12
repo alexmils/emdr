@@ -22,6 +22,7 @@ describe("robots.txt", () => {
     assert.match(body, /^Disallow: \/app$/m);
     assert.match(body, /^Disallow: \/admin$/m);
     assert.match(body, /^Disallow: \/api$/m);
+    assert.match(body, /^Disallow: \/health$/m);
   });
 
   it("allows search and AI answers, forbids training", () => {
@@ -78,5 +79,6 @@ describe("llms.txt", () => {
     assert.match(body, /nurahelp\.com\/blog/);
     assert.match(body, /nurahelp\.com\/editorial/);
     assert.match(body, /Do not fetch \/app/);
+    assert.match(body, /\/health/);
   });
 });

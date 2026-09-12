@@ -41,6 +41,7 @@ const PUBLIC_EXACT = new Set([
   "/llms.txt",
   "/robots.txt",
   "/sitemap.xml",
+  "/health",
 ]);
 
 const PUBLIC_PREFIXES = ["/brand-assets/"] as const;

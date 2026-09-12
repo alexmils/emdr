@@ -217,7 +217,7 @@ const graph = {
   "@context": "https://schema.org",
   "@graph": [
     { "@type": "Organization", "@id": "https://nurahelp.com/#org",
-      name: "NuraHelp", url: "https://nurahelp.com/",
+      name: "Nura", url: "https://nurahelp.com/",
       logo: "https://nurahelp.com/brand/lockup.png" },
 
     { "@type": "SoftwareApplication", name: "Nura — AI Guided EMDR",

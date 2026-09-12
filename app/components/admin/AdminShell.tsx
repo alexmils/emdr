@@ -12,6 +12,7 @@ import {
   Wallet,
   LifeBuoy,
   Mail,
+  MessageSquareQuote,
   Search,
   Settings2,
   Sparkles,
@@ -51,6 +52,7 @@ const NAV_ICONS: Record<AdminNavIcon, LucideIcon> = {
   analytics: BarChart3,
   users: Users,
   help: LifeBuoy,
+  feedback: MessageSquareQuote,
   resources: BookOpen,
   billing: CreditCard,
   finance: Wallet,
@@ -75,12 +77,14 @@ function NavItemLink({
   item,
   isPlatformAdmin,
   helpUnread,
+  feedbackUnread,
   pathname,
   search,
 }: {
   item: AdminNavItem;
   isPlatformAdmin: boolean;
   helpUnread: number;
+  feedbackUnread: number;
   pathname: string;
   search: string;
 }) {
@@ -104,6 +108,9 @@ function NavItemLink({
           <span className="admin-nav-label">{item.label}</span>
           {item.badge === "help" && helpUnread > 0 && (
             <span className="admin-nav-badge">{helpUnread}</span>
+          )}
+          {item.badge === "feedback" && feedbackUnread > 0 && (
+            <span className="admin-nav-badge">{feedbackUnread}</span>
           )}
         </span>
         {children.length > 0 && (
@@ -146,9 +153,11 @@ function NavItemLink({
 function AdminShellNav({
   user,
   helpUnread,
+  feedbackUnread,
 }: {
   user: AdminUser | null;
   helpUnread: number;
+  feedbackUnread: number;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -173,6 +182,7 @@ function AdminShellNav({
                 item={item}
                 isPlatformAdmin={isPlatformAdmin}
                 helpUnread={helpUnread}
+                feedbackUnread={feedbackUnread}
                 pathname={pathname}
                 search={search}
               />
@@ -283,6 +293,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [helpUnread, setHelpUnread] = useState(0);
+  const [feedbackUnread, setFeedbackUnread] = useState(0);
   const [demoMode, setDemoMode] = useState<boolean | null>(null);
 
   const loadUser = useCallback(async () => {
@@ -319,9 +330,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     const pull = async () => {
       try {
-        const res = await fetch("/api/admin/help?view=unread");
-        const data = await res.json();
-        if (!cancelled && res.ok) setHelpUnread(Number(data.unread ?? 0));
+        const [helpRes, feedbackRes] = await Promise.all([
+          fetch("/api/admin/help?view=unread"),
+          fetch("/api/admin/feedback?view=unread"),
+        ]);
+        const helpData = await helpRes.json();
+        const feedbackData = await feedbackRes.json();
+        if (!cancelled && helpRes.ok) {
+          setHelpUnread(Number(helpData.unread ?? 0));
+        }
+        if (!cancelled && feedbackRes.ok) {
+          setFeedbackUnread(Number(feedbackData.unread ?? 0));
+        }
       } catch {
         /* ignore */
       }
@@ -374,7 +394,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <Suspense
           fallback={<nav className="admin-sidebar-nav" aria-hidden="true" />}
         >
-          <AdminShellNav user={user} helpUnread={helpUnread} />
+          <AdminShellNav
+            user={user}
+            helpUnread={helpUnread}
+            feedbackUnread={feedbackUnread}
+          />
         </Suspense>
         <AdminAccountMenu user={user} onLogout={() => void logout()} />
       </aside>

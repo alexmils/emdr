@@ -22,6 +22,7 @@ describe("console crawl leak", () => {
     assert.equal(shouldNoindexPath("/resources"), false);
     assert.equal(shouldNoindexPath("/blog"), false);
     assert.equal(shouldNoindexPath("/editorial"), false);
+    assert.equal(shouldNoindexPath("/health"), true);
   });
 
   it("robots Disallow: /app is a prefix — /app/resources is not crawlable", () => {

@@ -185,14 +185,20 @@ export function AdminSegmentBar({
 export function AdminGauge({
   value,
   label,
+  display,
+  tone = "ok",
 }: {
   value: number;
   label: string;
+  display?: string;
+  tone?: "ok" | "warn" | "down";
 }) {
   const pct = Math.max(0, Math.min(100, value));
   const r = 54;
   const circ = Math.PI * r;
   const dash = (pct / 100) * circ;
+  const stroke =
+    tone === "down" ? "#A65D4A" : tone === "warn" ? "#948F4E" : "#84B067";
   return (
     <div className="admin-gauge">
       <svg viewBox="0 0 140 90" className="admin-gauge-svg" aria-hidden>
@@ -206,14 +212,14 @@ export function AdminGauge({
         <path
           d="M 16 78 A 54 54 0 0 1 124 78"
           fill="none"
-          stroke="#84B067"
+          stroke={stroke}
           strokeWidth="12"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${circ}`}
         />
       </svg>
       <div className="admin-gauge-center">
-        <p className="admin-gauge-value">{Math.round(pct)}%</p>
+        <p className="admin-gauge-value">{display ?? `${Math.round(pct)}%`}</p>
         <p className="admin-gauge-label">{label}</p>
       </div>
     </div>

@@ -73,6 +73,10 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     assert.equal(isUnauthenticatedPublicPath("/og-image"), true);
   });
 
+  it("allows GET /health for Coolify and Docker probes", () => {
+    assert.equal(isUnauthenticatedPublicPath("/health"), true);
+  });
+
   it("allows the marketing analytics-gate", () => {
     assert.equal(
       isUnauthenticatedPublicPath("/api/marketing/analytics-gate"),

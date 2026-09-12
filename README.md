@@ -1,6 +1,6 @@
-# NuraHelp
+# Nura
 
-Next.js web app for **EMDR Support** with bilateral stimulation (BLS), a guided session, and memory sets. Brand: **Nura** (spoken) · Legal: **NuraHelp** · Site: [nurahelp.com](https://nurahelp.com). See `docs/brand.md`.
+Next.js web app for **EMDR Support** with guided sessions, visual sets, and memory sets. Brand: **Nura** · Operator: **Receptly LLC** · Site: [nurahelp.com](https://nurahelp.com). See `docs/brand.md`.
 
 ## Features
 

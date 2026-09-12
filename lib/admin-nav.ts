@@ -10,6 +10,7 @@ export type AdminNavIcon =
   | "overview"
   | "users"
   | "help"
+  | "feedback"
   | "resources"
   | "billing"
   | "finance"
@@ -26,7 +27,7 @@ export type AdminNavItem = {
   icon: AdminNavIcon;
   exact?: boolean;
   adminOnly?: boolean;
-  badge?: "help";
+  badge?: "help" | "feedback";
   children?: AdminNavChild[];
 };
 
@@ -114,6 +115,12 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
             tab: "settings",
           },
         ],
+      },
+      {
+        href: "/admin/feedback",
+        label: "Feedback",
+        icon: "feedback",
+        badge: "feedback",
       },
     ],
   },
