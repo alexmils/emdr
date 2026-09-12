@@ -181,6 +181,18 @@ async function runSchemaMigrations(db: PoolClient) {
       intake_completed_at TIMESTAMPTZ,
       updated_at TIMESTAMPTZ NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS consents (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      doc_type TEXT NOT NULL,
+      doc_version TEXT NOT NULL,
+      accepted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      ip TEXT,
+      user_agent TEXT,
+      detail JSONB NOT NULL DEFAULT '{}'::jsonb
+    );
+    CREATE INDEX IF NOT EXISTS idx_consents_user_type
+      ON consents(user_id, doc_type, accepted_at DESC);
   `);
 
   await db.query(`

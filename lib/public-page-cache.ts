@@ -12,6 +12,7 @@ export const PUBLIC_PAGE_REVALIDATE_SECONDS = 3600;
 export const PUBLIC_ISR_PATHS = [
   "/",
   "/about",
+  "/about/clinical-team",
   "/editorial",
   "/emdr",
   "/resources",

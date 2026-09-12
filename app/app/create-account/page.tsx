@@ -38,6 +38,7 @@ function CreateAccountForm() {
   const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const turnstileRef = useRef<TurnstileFieldHandle>(null);
 
   useEffect(() => {
@@ -68,6 +69,11 @@ function CreateAccountForm() {
 
     if (password !== confirm) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (!ageConfirmed) {
+      setError("Confirm that you are 18 or older to continue.");
       return;
     }
 
@@ -115,6 +121,17 @@ function CreateAccountForm() {
     </p>
   );
 
+  const ageGate = (
+    <label className="auth-age-gate">
+      <input
+        type="checkbox"
+        checked={ageConfirmed}
+        onChange={(e) => setAgeConfirmed(e.target.checked)}
+      />
+      <span>I am 18 years of age or older</span>
+    </label>
+  );
+
   const legal = (
     <p className="auth-method-legal">
       By continuing you agree to our{" "}
@@ -132,16 +149,19 @@ function CreateAccountForm() {
         footer={footer}
       >
         {error ? <AuthError message={error} /> : null}
+        {ageGate}
         <div className="auth-method-stack">
           <GoogleAuthButton
             next={next ?? undefined}
             from="create-account"
             variant="ink"
+            disabled={!ageConfirmed}
           />
           <button
             type="button"
             className="auth-method-btn auth-method-btn--muted"
             onClick={goEmail}
+            disabled={!ageConfirmed}
           >
             <Mail size={18} strokeWidth={2} aria-hidden />
             Continue with email
@@ -200,6 +220,7 @@ function CreateAccountForm() {
         <p className="text-caption mb-4 text-left">
           Use at least 8 characters with a letter and a number.
         </p>
+        {ageGate}
         <TurnstileField
           ref={turnstileRef}
           action="signup"
@@ -207,7 +228,7 @@ function CreateAccountForm() {
         />
         <button
           type="submit"
-          disabled={loading || !turnstileToken}
+          disabled={loading || !turnstileToken || !ageConfirmed}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
           {loading ? "Creating…" : "Create account"}

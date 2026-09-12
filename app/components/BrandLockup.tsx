@@ -66,7 +66,7 @@ export function BrandMark({
   );
 }
 
-/** Wave wordmark only — no “help” suffix (legal name stays NuraHelp in aria/copy). */
+/** Wave wordmark only — brand is Nura (operator: Receptly LLC). */
 export function BrandLockup({
   href = null,
   tone = "color",

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the NuraHelp project are documented here.
+All notable changes to the Nura project are documented here.
 New entries are appended at the bottom of each section (newest last under `[Unreleased]`).
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -73,8 +73,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Public **breadcrumbs** on inner marketing pages (blog, resources, EMDR, about, editorial, legal) plus BlogPosting / BreadcrumbList JSON-LD
 - Public sitemap **`lastModified`** dates only (no `changefreq` / `priority` — Google ignores them)
 - Homepage JSON-LD (`Organization` + `SoftwareApplication` + `FAQPage`) matching the visible FAQ accordion; no native-app OS list, no BLS jargon, no `MedicalWebPage` until a clinical reviewer exists
+- **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate + 18+ on create-account; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
 
 ### Changed
+- **Brand lockup**: public name is **Nura** only (drop “NuraHelp” from UI/legal copy; domain `nurahelp.com` unchanged). Operator **Receptly LLC**, 30 N Gould St, Sheridan, WY 82801 — Terms/Privacy, footer copyright, JSON-LD `legalName`
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
 - **Start a session**: mode picker only — removed Learn teaser; keyboard hint fades out after ~2.5s
 - Email: **Brevo is primary**; Gmail API is fallback on missing Brevo config or quota (send-as default `hi@contact.nurahelp.com`, editable in Admin → Email)

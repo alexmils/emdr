@@ -101,7 +101,7 @@ export async function ensureHelpSchema(): Promise<void> {
     const seeds: { title: string; body: string; tags: string[] }[] = [
       {
         title: "What Nura is",
-        body: "Nura (NuraHelp) is a self-help wellness tool with agent-guided sessions and Free visual sets. It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
+        body: "Nura is a self-help wellness tool with agent-guided sessions and Free visual sets. It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
         tags: ["product", "safety"],
       },
       {

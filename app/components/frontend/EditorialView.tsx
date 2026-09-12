@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
-import { BRAND_LEGAL, BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_SPOKEN } from "@/lib/brand";
 import "./public-cluster.css";
 
 export function EditorialView() {
@@ -33,9 +33,9 @@ export function EditorialView() {
               Tuesday night can meet the same honest sentences.
             </p>
             <p>
-              They are written by the {BRAND_SPOKEN} product team
-              ({BRAND_LEGAL}). Dates on each article are when that page was last
-              edited, not a medical review stamp.
+              They are written by the {BRAND_SPOKEN} product team. Dates on each
+              article are when that page was last edited, not a medical review
+              stamp.
             </p>
           </section>
 

@@ -211,7 +211,7 @@ function AdminPlatformPageInner() {
                 />
               </label>
               <p className="admin-panel-sub">
-                Spoken name shown in the app (Nura). Legal lockup is NuraHelp.
+                Spoken name shown in the app (Nura). Operator is Receptly LLC.
               </p>
 
               <BrandAssetField

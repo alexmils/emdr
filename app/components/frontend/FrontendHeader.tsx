@@ -212,7 +212,7 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
             <Link
               href="/"
               className="frontend-header-brand"
-              aria-label="NuraHelp home"
+              aria-label="Nura home"
               onClick={closeMenu}
             >
               <BrandLockup

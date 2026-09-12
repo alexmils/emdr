@@ -157,6 +157,16 @@ interface AppState {
   guidedChatChromeId: number;
   /** Platform free session chrome theme id (1–10). */
   freeSessionChromeId: number;
+  /** null = loading; false = must show informed consent gate. */
+  consentOk: boolean | null;
+  refreshConsent: () => Promise<boolean>;
+  /**
+   * SessionWorkspace registers a leave guard. Return true if the leave was
+   * deferred (modal shown); call proceed() when the user confirms.
+   */
+  registerLeaveGuard: (
+    guard: ((proceed: () => void) => boolean) | null
+  ) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -173,6 +183,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
   const [freeSessionChromeId, setFreeSessionChromeId] = useState(
     DEFAULT_FREE_SESSION_CHROME_ID
+  );
+  const [consentOk, setConsentOk] = useState<boolean | null>(null);
+  const leaveGuardRef = useRef<((proceed: () => void) => boolean) | null>(
+    null
   );
   const [threadMemorySets, setThreadMemorySets] = useState<ThreadMemorySet[]>(
     []
@@ -277,6 +291,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [adUserId]);
 
+  const refreshConsent = useCallback(async () => {
+    try {
+      const data = await fetchJson<{ requiredOk?: boolean }>("/api/consents");
+      const ok = Boolean(data.requiredOk);
+      setConsentOk(ok);
+      return ok;
+    } catch (err) {
+      console.error("refreshConsent failed:", err);
+      setConsentOk(false);
+      return false;
+    }
+  }, []);
+
+  const registerLeaveGuard = useCallback(
+    (guard: ((proceed: () => void) => boolean) | null) => {
+      leaveGuardRef.current = guard;
+    },
+    []
+  );
+
+  const runWithLeaveGuard = useCallback((proceed: () => void) => {
+    const guard = leaveGuardRef.current;
+    if (guard && guard(proceed)) return;
+    proceed();
+  }, []);
+
   const refreshThreads = useCallback(async () => {
     try {
       const data = await fetchJson<{ threads?: Thread[] }>("/api/threads");
@@ -286,7 +326,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const selectThread = useCallback(async (id: string) => {
+  const selectThreadRaw = useCallback(async (id: string) => {
     try {
       const data = await fetchJson<{
         messages?: Message[];
@@ -302,42 +342,81 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const clearActiveThread = useCallback(() => {
-    setActiveThreadId(null);
-    setMessages([]);
-    setThreadMemorySets([]);
-    setSessionMode("idle");
-  }, []);
-
-  const createThread = useCallback(async () => {
-    try {
-      const res = await fetch("/api/threads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "create", title: "New session" }),
-      });
-      const data = (await res.json()) as {
-        thread?: Thread;
-        code?: string;
-        entitlement?: EntitlementPublic;
-      };
-      if (!res.ok) {
-        if (data.entitlement) setEntitlement(data.entitlement);
-        if (data.code === "trial_limit_reached" || data.code === "needs_payment") {
-          openUpgradeModal(
-            data.code === "trial_limit_reached"
-              ? "trial_limit_reached"
-              : "generic"
-          );
-        }
+  const selectThread = useCallback(
+    async (id: string) => {
+      if (id === activeThreadId) {
+        await selectThreadRaw(id);
         return;
       }
-      await refreshThreads();
-      if (data.thread?.id) await selectThread(data.thread.id);
-    } catch (err) {
-      console.error("createThread failed:", err);
-    }
-  }, [refreshThreads, selectThread, openUpgradeModal]);
+      runWithLeaveGuard(() => {
+        void selectThreadRaw(id);
+      });
+    },
+    [activeThreadId, runWithLeaveGuard, selectThreadRaw]
+  );
+
+  const clearActiveThread = useCallback(() => {
+    runWithLeaveGuard(() => {
+      setActiveThreadId(null);
+      setMessages([]);
+      setThreadMemorySets([]);
+      setSessionMode("idle");
+    });
+  }, [runWithLeaveGuard]);
+
+  const createThread = useCallback(async () => {
+    const go = async () => {
+      const ok = consentOk === true ? true : await refreshConsent();
+      if (!ok) {
+        setConsentOk(false);
+        return;
+      }
+      try {
+        const res = await fetch("/api/threads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", title: "New session" }),
+        });
+        const data = (await res.json()) as {
+          thread?: Thread;
+          code?: string;
+          entitlement?: EntitlementPublic;
+        };
+        if (!res.ok) {
+          if (data.code === "needs_consent") {
+            setConsentOk(false);
+            return;
+          }
+          if (data.entitlement) setEntitlement(data.entitlement);
+          if (
+            data.code === "trial_limit_reached" ||
+            data.code === "needs_payment"
+          ) {
+            openUpgradeModal(
+              data.code === "trial_limit_reached"
+                ? "trial_limit_reached"
+                : "generic"
+            );
+          }
+          return;
+        }
+        await refreshThreads();
+        if (data.thread?.id) await selectThreadRaw(data.thread.id);
+      } catch (err) {
+        console.error("createThread failed:", err);
+      }
+    };
+    runWithLeaveGuard(() => {
+      void go();
+    });
+  }, [
+    consentOk,
+    refreshConsent,
+    refreshThreads,
+    openUpgradeModal,
+    runWithLeaveGuard,
+    selectThreadRaw,
+  ]);
 
   const updateThreadLocal = useCallback(
     async (id: string, patch: Partial<Thread>) => {
@@ -362,13 +441,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (data.entitlement) setEntitlement(data.entitlement);
         if (data.thread) {
           setThreads((t) => t.map((x) => (x.id === id ? data.thread! : x)));
-          if (activeThreadId === id) await selectThread(id);
+          if (activeThreadId === id) await selectThreadRaw(id);
         }
       } catch (err) {
         console.error("updateThreadLocal failed:", err);
       }
     },
-    [activeThreadId, selectThread, openUpgradeModal]
+    [activeThreadId, selectThreadRaw, openUpgradeModal]
   );
 
   const chooseSessionMode = useCallback(
@@ -393,6 +472,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           entitlement?: EntitlementPublic;
         };
         if (!res.ok) {
+          if (data.code === "needs_consent") {
+            setConsentOk(false);
+            return false;
+          }
           if (data.entitlement) setEntitlement(data.entitlement);
           if (
             data.code === "trial_limit_reached" ||
@@ -411,7 +494,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setThreads((t) =>
             t.map((x) => (x.id === activeThreadId ? data.thread! : x))
           );
-          await selectThread(activeThreadId);
+          await selectThreadRaw(activeThreadId);
         }
         return true;
       } catch (err) {
@@ -419,7 +502,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
     },
-    [activeThreadId, selectThread, openUpgradeModal]
+    [activeThreadId, selectThreadRaw, openUpgradeModal]
   );
 
   const leaseBlsSeconds = useCallback(
@@ -627,7 +710,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     void refreshThreads();
     void refreshSettings();
     void refreshEntitlement();
-  }, [refreshThreads, refreshSettings, refreshEntitlement]);
+    void refreshConsent();
+  }, [refreshThreads, refreshSettings, refreshEntitlement, refreshConsent]);
 
   useEffect(() => {
     // Hydrate BLS Adjustments before auth resolves (anon key).
@@ -656,8 +740,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const id = new URLSearchParams(window.location.search).get("thread");
-    if (id) void selectThread(id);
-  }, [selectThread]);
+    if (id) void selectThreadRaw(id);
+  }, [selectThreadRaw]);
 
   useEffect(() => {
     const thread = threads.find((t) => t.id === activeThreadId);
@@ -709,6 +793,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       voiceEnabled,
       guidedChatChromeId,
       freeSessionChromeId,
+      consentOk,
+      refreshConsent,
+      registerLeaveGuard,
     }),
     [
       threads,
@@ -747,6 +834,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       noteAdSetCompleted,
       adsConfig,
       adsReady,
+      consentOk,
+      refreshConsent,
+      registerLeaveGuard,
     ]
   );
 

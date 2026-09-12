@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { buildHomeJsonLd, serializeJsonLd } from "../lib/json-ld.ts";
 import { LANDING_FAQ_ITEMS } from "../lib/landing-faq.ts";
-import { BRAND_LEGAL, BRAND_SPOKEN } from "../lib/brand.ts";
+import { BRAND_SPOKEN } from "../lib/brand.ts";
 
 describe("homepage JSON-LD", () => {
   it("emits Organization, SoftwareApplication, and FAQPage", () => {
@@ -13,8 +13,8 @@ describe("homepage JSON-LD", () => {
       "SoftwareApplication",
       "FAQPage",
     ]);
-    assert.equal(data["@graph"][0]?.name, BRAND_LEGAL);
-    assert.equal(data["@graph"][0]?.alternateName, BRAND_SPOKEN);
+    assert.equal(data["@graph"][0]?.name, BRAND_SPOKEN);
+    assert.equal(data["@graph"][0]?.legalName, "Receptly LLC");
     assert.equal(data["@graph"][1]?.operatingSystem, "Web");
     assert.equal(data["@graph"][1]?.name, BRAND_SPOKEN);
   });

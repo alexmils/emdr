@@ -13,13 +13,20 @@ import { GearPanel } from "./GearPanel";
 import { SessionStatusBar } from "./SessionStatusBar";
 import { SessionStartScreen } from "./SessionStartScreen";
 import { SessionDescription } from "./SessionDescription";
+import { InformedConsentGate } from "./InformedConsentGate";
+import {
+  CrisisHelpButton,
+  SessionNotTherapyStrip,
+} from "./CrisisHelpButton";
+import {
+  ResumeClosureBanner,
+  SessionClosureModal,
+} from "./SessionClosureModal";
 import { startGamepadLoop, stopGamepadLoop } from "@/lib/gamepad";
 import { displayNameFor, useCurrentUser } from "./useCurrentUser";
 import {
   adjustBlsToolbarField,
   moveBlsToolbarField,
-  normalizeBlsToolbarField,
-  speedFieldIndex,
   type BlsToolbarField,
 } from "@/lib/bls-toolbar-nav";
 import { getActiveSpeedHz } from "@/lib/bls-speed";
@@ -36,6 +43,10 @@ import { WorkspaceMenuButton } from "./SidebarNavContext";
 import { LearnTeaser } from "./LearnTeaser";
 import { BillingChargeHint } from "./BillingChargeHint";
 import { useGuidedVoiceMode } from "./useGuidedVoiceMode";
+import {
+  shouldOfferResumeClosure,
+  shouldPromptSessionClosure,
+} from "@/lib/session-closure";
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -69,6 +80,10 @@ export function SessionWorkspace() {
     voiceEnabled,
     guidedChatChromeId,
     freeSessionChromeId,
+    consentOk,
+    refreshConsent,
+    registerLeaveGuard,
+    updateThreadLocal,
   } = useApp();
   const { user: currentUser } = useCurrentUser();
 
@@ -76,6 +91,9 @@ export function SessionWorkspace() {
   const [gearOpen, setGearOpen] = useState(false);
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
   const [focusedField, setFocusedField] = useState<BlsToolbarField>("speed1");
+  const [closureOpen, setClosureOpen] = useState(false);
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+  const pendingLeaveRef = useRef<(() => void) | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playResolveRef = useRef<(() => void) | null>(null);
   const playGenRef = useRef(0);
@@ -86,7 +104,6 @@ export function SessionWorkspace() {
   const navigateToolbarRef = useRef<
     (direction: "left" | "right" | "up" | "down") => void
   >(() => {});
-  const sendUserMessageRef = useRef<(text: string) => Promise<void>>(async () => {});
   const gamepadConnected = useGamepadConnected();
   const focusedFieldRef = useRef(focusedField);
   const gamepadConnectedRef = useRef(gamepadConnected);
@@ -122,6 +139,93 @@ export function SessionWorkspace() {
       phase: thread.phase,
       sessionMode,
     });
+
+  const stopSetForLeave = useCallback(() => {
+    if (freeLeaseTimerRef.current) {
+      clearTimeout(freeLeaseTimerRef.current);
+      freeLeaseTimerRef.current = null;
+    }
+    runningRef.current = false;
+    setRunning(false);
+    setSessionMode("idle");
+  }, [setSessionMode]);
+
+  useEffect(() => {
+    registerLeaveGuard((proceed) => {
+      if (
+        !shouldPromptSessionClosure({
+          thread,
+          setRunning: runningRef.current,
+        })
+      ) {
+        return false;
+      }
+      pendingLeaveRef.current = proceed;
+      setClosureOpen(true);
+      return true;
+    });
+    return () => registerLeaveGuard(null);
+  }, [registerLeaveGuard, thread]);
+
+  useEffect(() => {
+    setResumeDismissed(false);
+  }, [thread?.id]);
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (
+        shouldPromptSessionClosure({
+          thread,
+          setRunning: runningRef.current,
+        })
+      ) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [thread]);
+
+  const handleDoClosure = useCallback(() => {
+    setClosureOpen(false);
+    stopSetForLeave();
+    if (thread) {
+      void updateThreadLocal(thread.id, {
+        phase: "closure",
+        incomplete: false,
+      });
+    }
+    pendingLeaveRef.current = null;
+  }, [thread, updateThreadLocal, stopSetForLeave]);
+
+  const handleLeaveAnyway = useCallback(() => {
+    setClosureOpen(false);
+    stopSetForLeave();
+    const proceed = pendingLeaveRef.current;
+    pendingLeaveRef.current = null;
+    if (thread) {
+      void updateThreadLocal(thread.id, { incomplete: true }).then(() => {
+        proceed?.();
+      });
+      return;
+    }
+    proceed?.();
+  }, [thread, updateThreadLocal, stopSetForLeave]);
+
+  const handleClosureCancel = useCallback(() => {
+    setClosureOpen(false);
+    pendingLeaveRef.current = null;
+  }, []);
+
+  const handleResumeClosure = useCallback(() => {
+    if (!thread) return;
+    void updateThreadLocal(thread.id, {
+      phase: "closure",
+      incomplete: false,
+    });
+    setResumeDismissed(true);
+  }, [thread, updateThreadLocal]);
 
   const clearFreeLeaseTimer = useCallback(() => {
     if (freeLeaseTimerRef.current) {
@@ -169,7 +273,6 @@ export function SessionWorkspace() {
 
   const toggleRunning = useCallback(() => {
     if (!blsActive || !thread) return;
-    // Always allow stopping a running set (safety).
     if (runningRef.current) {
       clearFreeLeaseTimer();
       runningRef.current = false;
@@ -317,113 +420,42 @@ export function SessionWorkspace() {
 
   const navigateToolbar = useCallback(
     (direction: "left" | "right" | "up" | "down") => {
-      if (!blsActive || !toolbarVisible || toolbarCollapsed) return;
-
-      const connected = gamepadConnectedRef.current;
-
-      if (direction === "left" || direction === "right") {
-        setFocusedField((field) => {
-          const next = moveBlsToolbarField(
-            field,
-            direction === "left" ? -1 : 1,
-            connected
-          );
-          const speedIndex = speedFieldIndex(next);
-          if (speedIndex !== null) {
-            setBls({ activeSpeedPreset: speedIndex });
-          }
-          return next;
-        });
-        return;
-      }
-
-      const active = normalizeBlsToolbarField(focusedFieldRef.current, connected);
-      focusedFieldRef.current = active;
-      setFocusedField(active);
-
-      const delta = direction === "up" ? 1 : -1;
-      setBls((current) => adjustBlsToolbarField(current, active, delta));
+      setFocusedField((prev) => moveBlsToolbarField(prev, direction));
     },
-    [blsActive, toolbarVisible, toolbarCollapsed, setBls]
+    []
   );
 
   toggleRunningRef.current = toggleRunning;
   navigateToolbarRef.current = navigateToolbar;
-  sendUserMessageRef.current = sendUserMessage;
 
   useEffect(() => {
-    setFocusedField((field) => normalizeBlsToolbarField(field, gamepadConnected));
-  }, [gamepadConnected]);
-
-  useEffect(() => {
-    setRunning(false);
-    runningRef.current = false;
-    setSessionMode("idle");
-    setGearOpen(false);
-  }, [activeThreadId, setSessionMode]);
-
-  useEffect(() => {
-    if (!blsActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target)) return;
-
-      if (e.code === "Space" && !e.repeat) {
+      if (e.code === "Space") {
         e.preventDefault();
-        toggleRunning();
-        return;
-      }
-
-      if (e.code === "ArrowUp") {
-        e.preventDefault();
-        navigateToolbar("up");
-        return;
-      }
-
-      if (e.code === "ArrowDown") {
-        e.preventDefault();
-        navigateToolbar("down");
-        return;
-      }
-
-      if (e.code === "ArrowLeft") {
-        e.preventDefault();
-        navigateToolbar("left");
-        return;
-      }
-
-      if (e.code === "ArrowRight") {
-        e.preventDefault();
-        navigateToolbar("right");
+        toggleRunningRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [blsActive, toggleRunning, navigateToolbar]);
+  }, []);
 
   useEffect(() => {
-    if (!blsActive) {
-      stopGamepadLoop();
-      return;
-    }
-    startGamepadLoop((action) => {
-      if (action === "toggle") toggleRunningRef.current();
-      if (action === "safe_place") {
-        if (!guided) return;
-        void sendUserMessageRef.current("I need my safe place for a moment.");
-      }
-      if (action === "nav_up") navigateToolbarRef.current("up");
-      if (action === "nav_down") navigateToolbarRef.current("down");
-      if (action === "nav_left") navigateToolbarRef.current("left");
-      if (action === "nav_right") navigateToolbarRef.current("right");
+    startGamepadLoop({
+      onToggle: () => toggleRunningRef.current(),
+      onNavigate: (d) => navigateToolbarRef.current(d),
+      getFocused: () => focusedFieldRef.current,
+      adjustField: (field, delta) => {
+        setBls((prev) => {
+          const next = { ...prev };
+          adjustBlsToolbarField(next, field, delta);
+          return next;
+        });
+      },
+      connectedRef: gamepadConnectedRef,
     });
     return () => stopGamepadLoop();
-  }, [blsActive, guided]);
-
-  useEffect(() => {
-    if (running && audioRef.current) {
-      audioRef.current.pause();
-    }
-  }, [running]);
+  }, [setBls]);
 
   useEffect(() => {
     if (!toolbarVisible) {
@@ -491,6 +523,39 @@ export function SessionWorkspace() {
 
   useEffect(() => () => stopPlayback(), [stopPlayback]);
 
+  const showConsent = consentOk === false;
+  const showResume =
+    Boolean(thread) &&
+    shouldOfferResumeClosure(thread) &&
+    !resumeDismissed &&
+    !showConsent;
+
+  if (showConsent) {
+    return (
+      <main className="workspace-main flex min-h-0 flex-1 flex-col">
+        <header className="workspace-header">
+          <div className="workspace-header-row">
+            <div className="workspace-header-lead">
+              <WorkspaceMenuButton />
+              <div className="min-w-0">
+                <h1 className="workspace-title">Safety consent</h1>
+              </div>
+            </div>
+            <CrisisHelpButton />
+          </div>
+          <SessionNotTherapyStrip />
+        </header>
+        <div className="flex flex-1 flex-col items-center justify-center px-4 py-6">
+          <InformedConsentGate
+            onCompleted={() => {
+              void refreshConsent();
+            }}
+          />
+        </div>
+      </main>
+    );
+  }
+
   if (!thread) {
     return (
       <main className="workspace-main flex min-h-0 flex-1 flex-col">
@@ -502,14 +567,16 @@ export function SessionWorkspace() {
                 <h1 className="workspace-title">Nura</h1>
               </div>
             </div>
-            <BillingChargeHint />
+            <div className="workspace-header-trail">
+              <BillingChargeHint />
+              <CrisisHelpButton />
+            </div>
           </div>
+          <SessionNotTherapyStrip />
         </header>
         <div className="workspace-home-empty flex flex-1 flex-col items-center justify-center gap-6 px-6 py-8">
           <div className="workspace-home-empty-top flex flex-col items-center gap-4 text-center">
-            <h2 className="session-start-title">
-              Start a session
-            </h2>
+            <h2 className="session-start-title">Start a session</h2>
             <p className="session-start-subtitle max-w-md">
               Open a new chat to choose agent-guided or Free.
             </p>
@@ -525,6 +592,12 @@ export function SessionWorkspace() {
             <LearnTeaser />
           </div>
         </div>
+        <SessionClosureModal
+          open={closureOpen}
+          onDoClosure={handleDoClosure}
+          onLeaveAnyway={handleLeaveAnyway}
+          onCancel={handleClosureCancel}
+        />
       </main>
     );
   }
@@ -541,10 +614,20 @@ export function SessionWorkspace() {
                 <p className="workspace-hint">Choose a session type to begin</p>
               </div>
             </div>
-            <BillingChargeHint />
+            <div className="workspace-header-trail">
+              <BillingChargeHint />
+              <CrisisHelpButton />
+            </div>
           </div>
+          <SessionNotTherapyStrip />
         </header>
         <SessionStartScreen />
+        <SessionClosureModal
+          open={closureOpen}
+          onDoClosure={handleDoClosure}
+          onLeaveAnyway={handleLeaveAnyway}
+          onCancel={handleClosureCancel}
+        />
       </main>
     );
   }
@@ -588,9 +671,19 @@ export function SessionWorkspace() {
                 target={thread.target}
               />
             ) : null}
+            {!running ? <CrisisHelpButton /> : null}
           </div>
         </div>
+        {!running ? <SessionNotTherapyStrip /> : null}
       </header>
+
+      {showResume ? (
+        <ResumeClosureBanner
+          open
+          onResume={handleResumeClosure}
+          onDismiss={() => setResumeDismissed(true)}
+        />
+      ) : null}
 
       <div
         ref={stageRef}
@@ -676,6 +769,13 @@ export function SessionWorkspace() {
           onClose={() => setGearOpen(false)}
         />
       )}
+
+      <SessionClosureModal
+        open={closureOpen}
+        onDoClosure={handleDoClosure}
+        onLeaveAnyway={handleLeaveAnyway}
+        onCancel={handleClosureCancel}
+      />
     </main>
   );
 }

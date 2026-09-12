@@ -257,14 +257,14 @@ Ovo je istovremeno i pravna zaštita i SEO (§Tier 5 strategije):
 ## 6. Prioritizacija
 
 ### 🔴 P0 — prije naplate korisnicima
-1. `/terms` — pravi ToS
-2. `/privacy` — pravi Privacy Policy (GDPR čl. 9)
-3. Informisani pristanak (odvojen od ToS) + `consents` tabela
-4. Age gate 18+
-5. Imenovani klinički savjetnik
-6. Osiguranje (E&O + cyber)
-7. Perzistentno crisis dugme u session UI
-8. Obavezna Faza 7 (closure)
+1. `/terms` — pravi ToS — **code: draft shipped** (pending attorney — see [launch-blockers.md](./launch-blockers.md))
+2. `/privacy` — pravi Privacy Policy (GDPR čl. 9) — **code: draft shipped** (pending attorney)
+3. Informisani pristanak (odvojen od ToS) + `consents` tabela — **code: done**
+4. Age gate 18+ — **code: done** (signup + informed consent)
+5. Imenovani klinički savjetnik — **human pending** (`CLINICAL_ADVISOR` + `/about/clinical-team`)
+6. Osiguranje (E&O + cyber) — **human pending** (launch-blockers)
+7. Perzistentno crisis dugme u session UI — **code: done**
+8. Obavezna Faza 7 (closure) — **code: done** (exit modal + resume banner)
 
 ### 🟠 P1 — prvi mjesec
 9. DES-II / DES-T screening

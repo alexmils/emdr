@@ -1,12 +1,17 @@
-/** Spoken name — UI chrome, email from-name, Stripe Checkout. */
+/** Spoken + product name — UI chrome, email from-name, Stripe Checkout, lockup. */
 export const BRAND_SPOKEN = "Nura";
 
-/** Legal lockup — logo, Terms, copyright, App Store, Stripe legal. */
-export const BRAND_LEGAL = "NuraHelp";
+/**
+ * Public brand lockup (same as spoken). The registered operator is Receptly LLC
+ * (`lib/legal-entity.ts`). Domain stays nurahelp.com — do not write “NuraHelp”
+ * in user-facing copy.
+ */
+export const BRAND_LEGAL = BRAND_SPOKEN;
 
 /** Current product line — a feature, not the company name. */
 export const BRAND_PRODUCT = "EMDR Support";
 
+/** Site host only — not a brand word for UI. */
 export const BRAND_DOMAIN = "nurahelp.com";
 
 export const BRAND_TAGLINE = "Support for therapy. Starting with EMDR.";
@@ -36,10 +41,12 @@ const LEGACY_CHROME_NAMES = new Set([
   "NuraHelp AI",
   "NuraHelpAI",
   "Nura Help AI",
+  "NuraHelp",
+  "Nura Help",
 ]);
 
 /**
- * Map leftover “NuraHelp AI” defaults to the spoken name.
+ * Map leftover “NuraHelp” / “NuraHelp AI” defaults to Nura.
  * Custom admin names are kept.
  */
 export function chromeBrandName(raw?: string | null): string {
@@ -48,7 +55,7 @@ export function chromeBrandName(raw?: string | null): string {
   return v;
 }
 
-/** Rewrite leftover “NuraHelp AI” (and a few old help defaults) in stored copy. */
+/** Rewrite leftover “NuraHelp” branding (and a few old help defaults) in stored copy. */
 export function rewriteRetiredBrandCopy(text: string): string {
   return text
     .replaceAll("NuraHelp AI", BRAND_SPOKEN)
@@ -57,6 +64,8 @@ export function rewriteRetiredBrandCopy(text: string): string {
     .replaceAll("NuraHelp assistant", "Nura assistant")
     .replaceAll("NuraHelp product", "Nura product")
     .replaceAll("What NuraHelp is", "What Nura is")
+    .replaceAll("Nura Help", BRAND_SPOKEN)
+    .replaceAll("NuraHelp", BRAND_SPOKEN)
     .replaceAll(
       "guided sessions and bilateral stimulation (BLS)",
       "guided sessions and visual sets"

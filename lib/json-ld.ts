@@ -1,15 +1,15 @@
 import {
-  BILLING_PLANS,
-} from "@/lib/billing-constants";
-import {
   BRAND_DESCRIPTION,
   BRAND_DOMAIN,
-  BRAND_LEGAL,
   BRAND_PRODUCT,
   BRAND_SPOKEN,
   brandMetadataBase,
 } from "@/lib/brand";
+import { legalEntityDisplayName } from "@/lib/legal-entity";
 import { LANDING_FAQ_ITEMS } from "@/lib/landing-faq";
+import {
+  BILLING_PLANS,
+} from "@/lib/billing-constants";
 
 function jsonLdOrigin(): string {
   try {
@@ -41,8 +41,9 @@ export function buildHomeJsonLd(origin = jsonLdOrigin()) {
       {
         "@type": "Organization",
         "@id": orgId,
-        name: BRAND_LEGAL,
-        alternateName: BRAND_SPOKEN,
+        name: BRAND_SPOKEN,
+        legalName: legalEntityDisplayName(),
+        alternateName: legalEntityDisplayName(),
         url: `${origin}/`,
         logo: {
           "@type": "ImageObject",

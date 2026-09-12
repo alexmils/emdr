@@ -66,7 +66,9 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
   "A calm place for guided EMDR sessions, therapy resources, and support. Self-help — not a licensed therapist.",
   "What EMDR is, how visual sets work, and how a Nura session is structured.",
   "Guides for EMDR and therapy support on Nura.",
+  "Privacy policy for Nura",
   "Privacy policy for NuraHelp",
+  "Terms of service for Nura",
   "Terms of service for NuraHelp",
 ]);
 
@@ -106,7 +108,15 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "About",
     title: "About the EMDR therapy online app",
     description:
-      "NuraHelp builds Nura, an online app for guided EMDR therapy between sessions. Self-help software — not a licensed therapist or emergency care.",
+      "Nura is an online app for guided EMDR therapy between sessions. Self-help software — not a licensed therapist or emergency care.",
+  },
+  {
+    id: "clinical-team",
+    path: "/about/clinical-team",
+    label: "Clinical team",
+    title: "Clinical review for Nura",
+    description:
+      "How clinical review works for Nura’s self-help EMDR Support app — named advisor listed when configured.",
   },
   {
     id: "editorial",
@@ -145,14 +155,14 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     path: "/privacy",
     label: "Privacy",
     title: "Privacy",
-    description: `How ${BRAND_LEGAL} handles account, session, and billing data for the Nura EMDR therapy app — what we store, why, and how to reach support.`,
+    description: `How Receptly LLC handles account, session, and billing data for the Nura EMDR therapy app — what we store, why, and how to reach support.`,
   },
   {
     id: "terms",
     path: "/terms",
     label: "Terms",
     title: "Terms of service",
-    description: `Terms for using Nura, the online EMDR therapy app from ${BRAND_LEGAL}. Self-help software — not a substitute for professional clinical care.`,
+    description: `Terms for using Nura, the online EMDR therapy app operated by Receptly LLC. Self-help software — not a substitute for professional clinical care.`,
   },
 ];
 

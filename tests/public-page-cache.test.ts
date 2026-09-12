@@ -15,6 +15,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_PAGE_FILES = [
   "app/page.tsx",
   "app/about/page.tsx",
+  "app/about/clinical-team/page.tsx",
   "app/editorial/page.tsx",
   "app/emdr/page.tsx",
   "app/resources/page.tsx",

@@ -414,7 +414,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
       {
         heading: "What “online” does not mean",
         paragraphs: [
-          "It does not mean a video visit with an EMDR-certified clinician. NuraHelp does not match you to a therapist. The product is the workspace.",
+          "It does not mean a video visit with an EMDR-certified clinician. Nura does not match you to a therapist. The product is the workspace.",
           "If you want a licensed person on a call, that is a different search. This one is for visual sets you run yourself.",
         ],
       },
@@ -593,7 +593,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
         heading: "What a person can do",
         paragraphs: [
           "Assess whether EMDR is even the right method. Catch dissociation you cannot name. Change the target. Sit in the silence after a hard set. Call a plan if you are unsafe.",
-          "None of that fits in a browser tab. NuraHelp does not find you a therapist. We will not pretend the lockup is a credential.",
+          "None of that fits in a browser tab. Nura does not find you a therapist. We will not pretend the lockup is a credential.",
         ],
       },
       {

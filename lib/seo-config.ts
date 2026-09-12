@@ -3,6 +3,7 @@
 export const SEO_PAGE_IDS = [
   "home",
   "about",
+  "clinical-team",
   "editorial",
   "emdr",
   "resources",

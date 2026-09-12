@@ -9,8 +9,9 @@ const STATIC_LASTMOD: Record<string, string> = {
   "/about": "2026-09-12",
   "/editorial": "2026-09-12",
   "/emdr": "2026-09-12",
-  "/privacy": "2026-09-08",
-  "/terms": "2026-09-08",
+  "/privacy": "2026-09-12",
+  "/terms": "2026-09-12",
+  "/about/clinical-team": "2026-09-12",
 };
 
 function atUtc(isoDate: string): Date {
@@ -27,6 +28,7 @@ export function buildPublicSitemap(origin: string): MetadataRoute.Sitemap {
   const staticPaths = [
     "/",
     "/about",
+    "/about/clinical-team",
     "/editorial",
     "/emdr",
     "/resources",

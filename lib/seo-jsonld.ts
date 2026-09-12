@@ -1,4 +1,5 @@
-import { BRAND_LEGAL, BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_SPOKEN } from "@/lib/brand";
+import { legalEntityDisplayName } from "@/lib/legal-entity";
 
 export const SITE_CONTENT_LANGUAGE = "en";
 
@@ -40,8 +41,9 @@ export function organizationJsonLd(origin: string) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: BRAND_LEGAL,
-    alternateName: BRAND_SPOKEN,
+    name: BRAND_SPOKEN,
+    legalName: legalEntityDisplayName(),
+    alternateName: legalEntityDisplayName(),
     url: `${base}/`,
     email: "hello@nurahelp.com",
     description:

@@ -1,21 +1,22 @@
-# Nura / NuraHelp — brand system
+# Nura — brand system
 
 Use this file as the source of truth for naming, color, type, and voice.
 Agents: follow `.cursor/rules/nura-brand.mdc` (always on). Code constants live in `lib/brand.ts`.
+Operator entity: `lib/legal-entity.ts` (**Receptly LLC**).
 
 **Shareable PDF:** [`docs/nura-brand-guidelines.pdf`](nura-brand-guidelines.pdf) — regenerate from this doc when the system changes.
 
 ## Name
 
-**Say Nura. Write NuraHelp. URL is nurahelp.com.**
+**Say and write Nura. URL is nurahelp.com (domain only — not a brand word).**
 
 | Layer | Name | Where |
 |---|---|---|
-| Spoken / UI chrome | Nura | Header, sidebar, email from-name, Stripe Checkout |
-| Lockup / legal | NuraHelp | Logo, Terms, copyright, App Store, Stripe legal |
-| Domain | nurahelp.com | Keep. Do not buy nura.com. |
-| Current product | Nura · EMDR Support | Feature, not the company name |
-| Never in public | NuraHelp AI | Sounds like a ChatGPT clone |
+| Brand / UI chrome | Nura | Header, sidebar, email from-name, Stripe Checkout, lockup |
+| Legal operator | Receptly LLC | Terms, Privacy, footer copyright, JSON-LD `legalName` |
+| Domain | nurahelp.com | Host only. Do not write “NuraHelp” in UI copy. |
+| Current product | Nura · EMDR Support | Feature, not a second company name |
+| Never in public | NuraHelp / NuraHelp AI / Nura Help | Retired; rewrite via `rewriteRetiredBrandCopy` |
 
 Do not lead with “AI” in titles, hero copy, or the wordmark.
 
@@ -74,7 +75,7 @@ Do not use Inter on any surface. Avoid rounded soft grotesks (Nunito, Manrope, r
 
 ## Logo
 
-- **Wordmark**: wave ribbon flowing into lowercase **nura** (green→gold gradient). UI chrome shows the wave wordmark only — no “help” suffix next to the logo (legal name remains NuraHelp in copy/aria).
+- **Wordmark**: wave ribbon flowing into lowercase **nura** (green→gold gradient). UI chrome shows the wave wordmark only.
 - **Mark**: single mint→sage stroke wave with round tips and padding (not a flat crop into “n”). Files: `mark.png` / `mark-black.png` / `mark-white.png` (+ `mark.svg`).
 - Favicon / apple-touch: same stroke wave on near-black `#0E100E`, generous inset so both round caps clear the frame. Files: `favicon.png`, `favicon-32.png`, `apple-touch-icon.png`, `app/icon.svg`, `app/icon.png`, `app/apple-icon.png`.
 - Square lockups (500 / 2500):

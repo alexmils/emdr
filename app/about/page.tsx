@@ -36,7 +36,8 @@ export default function AboutPage() {
           place to run sets without a clinical dashboard. It is self-help
           software, not a licensed therapist, not emergency care, and not a
           medical device. How the public guides are written is on{" "}
-          <Link href="/editorial">How we write</Link>.
+          <Link href="/editorial">How we write</Link>. Clinical review status is
+          on <Link href="/about/clinical-team">Clinical review</Link>.
         </p>
         <div className="frontend-hero-actions">
           <Link href={appPath("/create-account")} className="frontend-btn-primary">
