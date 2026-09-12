@@ -29,6 +29,7 @@ const API_PUBLIC_PREFIXES = [
   "/api/auth/google",
   "/api/auth/passkey/login",
   "/api/webhooks/stripe",
+  "/api/marketing/analytics-gate",
 ] as const;
 
 /** Exact paths that never require a session (no file extension). */

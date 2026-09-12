@@ -18,6 +18,9 @@ export type SeoPageOverride = {
   ogImageUrl?: string;
 };
 
+/** Max length for OG image data URLs (~375KB binary). */
+export const SEO_OG_IMAGE_MAX_CHARS = 500_000;
+
 export type PlatformSeoConfig = {
   pages: Partial<Record<SeoPageId, SeoPageOverride>>;
   ga4MeasurementId: string;
@@ -31,6 +34,12 @@ export type PlatformSeoConfig = {
   googleServiceAccountJson: string;
   /** Numeric GA4 property id, or `properties/123…`. */
   ga4PropertyId: string;
+  /**
+   * Site-wide default Open Graph / share image.
+   * https URL, root-relative path, or jpeg/png/webp data URL.
+   * Empty → `/brand/lockup.png`.
+   */
+  defaultOgImageUrl: string;
 };
 
 export const DEFAULT_PLATFORM_SEO: PlatformSeoConfig = {
@@ -44,6 +53,7 @@ export const DEFAULT_PLATFORM_SEO: PlatformSeoConfig = {
   ignoreIps: "",
   googleServiceAccountJson: "",
   ga4PropertyId: "",
+  defaultOgImageUrl: "",
 };
 
 function str(raw: unknown, max = 500): string {
@@ -58,7 +68,7 @@ function normalizePageOverride(raw: unknown): SeoPageOverride | null {
   const title = str(o.title, 200);
   const description = str(o.description, 500);
   const ogTitle = str(o.ogTitle, 200);
-  const ogImageUrl = str(o.ogImageUrl, 2000);
+  const ogImageUrl = str(o.ogImageUrl, SEO_OG_IMAGE_MAX_CHARS);
   if (title) out.title = title;
   if (description) out.description = description;
   if (ogTitle) out.ogTitle = ogTitle;
@@ -91,6 +101,10 @@ export function normalizeSeoConfig(raw: unknown): PlatformSeoConfig {
     ignoreIps: str(r.ignoreIps, 2000),
     googleServiceAccountJson: str(r.googleServiceAccountJson, 200_000),
     ga4PropertyId: str(r.ga4PropertyId, 80),
+    defaultOgImageUrl: (() => {
+      const t = str(r.defaultOgImageUrl, SEO_OG_IMAGE_MAX_CHARS);
+      return t && isAllowedOgImageUrl(t) ? t : "";
+    })(),
   };
 }
 
@@ -105,7 +119,8 @@ export function isSeoConfigEmpty(seo: PlatformSeoConfig): boolean {
     !seo.bingVerification &&
     !seo.ignoreIps &&
     !seo.googleServiceAccountJson &&
-    !seo.ga4PropertyId
+    !seo.ga4PropertyId &&
+    !seo.defaultOgImageUrl
   );
 }
 
@@ -126,16 +141,40 @@ export function isValidClarityId(id: string): boolean {
   return t.length >= 4 && CLARITY_ID_RE.test(t);
 }
 
-/** Allow https URLs or same-origin paths for OG images. */
+/**
+ * Allow https URLs, same-origin paths, or jpeg/png/webp data URLs
+ * (under size cap) for Open Graph / share images.
+ */
 export function isAllowedOgImageUrl(url: string): boolean {
   const t = url.trim();
   if (!t) return false;
+  if (t.startsWith("data:image/")) {
+    if (t.length > SEO_OG_IMAGE_MAX_CHARS) return false;
+    return /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(t);
+  }
   if (t.startsWith("/") && !t.startsWith("//")) return true;
   try {
     const u = new URL(t);
     return u.protocol === "https:";
   } catch {
     return false;
+  }
+}
+
+/** Decode a stored OG data URL for the public `/og-image` route. */
+export function parseOgImageDataUrl(
+  raw: string
+): { contentType: string; body: Buffer } | null {
+  const t = raw.trim();
+  const m = /^data:(image\/(?:jpeg|jpg|png|webp));base64,(.+)$/i.exec(t);
+  if (!m) return null;
+  try {
+    const body = Buffer.from(m[2]!, "base64");
+    if (!body.length) return null;
+    const contentType = m[1]!.toLowerCase() === "image/jpg" ? "image/jpeg" : m[1]!;
+    return { contentType, body };
+  } catch {
+    return null;
   }
 }
 

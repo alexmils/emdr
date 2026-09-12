@@ -67,6 +67,13 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     assert.equal(isUnauthenticatedPublicPath("/og-image"), true);
   });
 
+  it("allows the marketing analytics-gate", () => {
+    assert.equal(
+      isUnauthenticatedPublicPath("/api/marketing/analytics-gate"),
+      true
+    );
+  });
+
   it("allows brand asset routes", () => {
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/favicon"), true);
     assert.equal(isUnauthenticatedPublicPath("/brand-assets/app-logo"), true);

@@ -22,6 +22,7 @@ import {
 } from "../lib/seo-admin-settings.ts";
 import {
   buildMarketingSeoStatus,
+  publicMarketingTags,
   resolveSiteSeoPages,
   siteOrigin,
 } from "../lib/site-seo.ts";
@@ -56,6 +57,9 @@ describe("seo-config", () => {
   it("allows only https or root-relative OG URLs", () => {
     assert.ok(isAllowedOgImageUrl("https://nurahelp.com/og.png"));
     assert.ok(isAllowedOgImageUrl("/brand/lockup.png"));
+    assert.ok(
+      isAllowedOgImageUrl("data:image/jpeg;base64,/9j/4AAQ")
+    );
     assert.ok(!isAllowedOgImageUrl("http://insecure.example/x.png"));
     assert.ok(!isAllowedOgImageUrl("javascript:alert(1)"));
     assert.ok(!isAllowedOgImageUrl("//cdn.example/x.png"));
@@ -66,6 +70,13 @@ describe("seo-config", () => {
       pages: { home: { ogImageUrl: "javascript:alert(1)" } },
     });
     assert.equal(seo.pages.home, undefined);
+  });
+
+  it("keeps defaultOgImageUrl when valid", () => {
+    const seo = normalizeSeoConfig({
+      defaultOgImageUrl: "/brand/custom-og.png",
+    });
+    assert.equal(seo.defaultOgImageUrl, "/brand/custom-og.png");
   });
 
   it("parses service account email", () => {
@@ -176,14 +187,47 @@ describe("site-seo status", () => {
     const pages = resolveSiteSeoPages(seo, "https://nurahelp.com");
     const status = buildMarketingSeoStatus(seo, pages, "https://nurahelp.com");
     assert.equal(status.canonical, "https://nurahelp.com/");
+    assert.equal(pages[0]?.ogImageUrl, "https://nurahelp.com/brand/lockup.png");
     const connected = status.connections.filter((c) => c.status === "connected");
     assert.ok(connected.length >= 5);
     const meta = status.connections.find((c) => c.id === "meta");
     assert.equal(meta?.status, "via_tag_manager");
   });
 
+  it("maps data URL OG images to the public /og-image route", () => {
+    const seo = normalizeSeoConfig({
+      defaultOgImageUrl: "data:image/jpeg;base64,/9j/4AAQ",
+      pages: {
+        about: { ogImageUrl: "data:image/png;base64,iVBORw0KGgo=" },
+      },
+    });
+    const pages = resolveSiteSeoPages(seo, "https://nurahelp.com");
+    const home = pages.find((p) => p.id === "home");
+    const about = pages.find((p) => p.id === "about");
+    assert.equal(home?.ogImageUrl, "https://nurahelp.com/og-image?scope=default");
+    assert.equal(about?.ogImageUrl, "https://nurahelp.com/og-image?page=about");
+  });
+
   it("uses publicAppUrl for site origin", () => {
     assert.equal(siteOrigin("https://dev.nurahelp.com/app"), "https://dev.nurahelp.com");
+  });
+
+  it("flags ignore-IP checks without skipping tags at render", () => {
+    const empty = publicMarketingTags(DEFAULT_PLATFORM_SEO, false);
+    assert.equal(empty.checkIgnoreIps, false);
+    assert.equal(empty.skipAnalytics, false);
+    const withIgnore = publicMarketingTags(
+      { ...DEFAULT_PLATFORM_SEO, ignoreIps: "10.0.0.1" },
+      false
+    );
+    assert.equal(withIgnore.checkIgnoreIps, true);
+    assert.equal(withIgnore.skipAnalytics, false);
+    const skipped = publicMarketingTags(
+      { ...DEFAULT_PLATFORM_SEO, ignoreIps: "10.0.0.1" },
+      true
+    );
+    assert.equal(skipped.skipAnalytics, true);
+    assert.equal(skipped.checkIgnoreIps, false);
   });
 });
 

@@ -21,18 +21,22 @@ import {
   parseAnalyticsIgnoreIps,
 } from "@/lib/analytics-ignore";
 import { getPlatformSettings, getPublicAppUrl } from "@/lib/platform-settings";
+import { absoluteOgImageUrl } from "@/lib/seo-og-image";
+import type {
+  MarketingSeoStatus,
+  PublicMarketingTags,
+  SeoConnection,
+  SiteSeoPage,
+} from "@/lib/site-seo-types";
 
-export type SiteSeoPage = {
-  id: SeoPageId;
-  path: string;
-  label: string;
-  title: string;
-  description: string;
-  ogTitle: string;
-  ogImageUrl: string;
-  canonical: string;
-  indexable: boolean;
-};
+export type {
+  ConnectionStatus,
+  MarketingSeoStatus,
+  PublicMarketingTags,
+  SeoConnection,
+  SiteSeoPage,
+} from "@/lib/site-seo-types";
+export { absoluteOgImageUrl, displayOgImageUrl } from "@/lib/seo-og-image";
 
 type PageDefault = {
   id: SeoPageId;
@@ -106,13 +110,22 @@ export function resolveSiteSeoPages(
   publicAppUrl?: string
 ): SiteSeoPage[] {
   const origin = siteOrigin(publicAppUrl);
-  const defaultOg = `${origin}/brand/lockup.png`;
+  const builtInDefault = `${origin}/brand/lockup.png`;
+  const siteDefault = seo.defaultOgImageUrl.trim();
   return SITE_SEO_DEFAULTS.map((def) => {
     const o = seo.pages[def.id];
     const title = o?.title?.trim() || def.title;
     const description = o?.description?.trim() || def.description;
     const ogTitle = o?.ogTitle?.trim() || title;
-    const ogImageUrl = o?.ogImageUrl?.trim() || defaultOg;
+    const pageOg = o?.ogImageUrl?.trim() || "";
+    const stored = pageOg || siteDefault;
+    const ogImageUrl = absoluteOgImageUrl({
+      stored,
+      origin,
+      pageId: def.id,
+      hasPageOverride: Boolean(pageOg),
+      fallback: builtInDefault,
+    });
     const path = def.path;
     const canonical = path === "/" ? `${origin}/` : `${origin}${path}`;
     return {
@@ -145,17 +158,11 @@ export async function getResolvedSiteSeoPages(): Promise<{
   };
 }
 
-export async function buildPageMetadata(pageId: SeoPageId): Promise<Metadata> {
-  let pages: SiteSeoPage[];
-  let seo: PlatformSeoConfig = DEFAULT_PLATFORM_SEO;
-  try {
-    const resolved = await getResolvedSiteSeoPages();
-    pages = resolved.pages;
-    seo = resolved.seo;
-  } catch {
-    // Docker/CI builds have no DATABASE_URL — use static defaults.
-    pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO);
-  }
+export function metadataFromResolved(
+  pageId: SeoPageId,
+  pages: SiteSeoPage[],
+  seo: PlatformSeoConfig = DEFAULT_PLATFORM_SEO
+): Metadata {
   const page = pages.find((p) => p.id === pageId) ?? pages[0];
   const verification: Metadata["verification"] = {};
   if (seo.gscVerification.trim()) {
@@ -182,33 +189,18 @@ export async function buildPageMetadata(pageId: SeoPageId): Promise<Metadata> {
   };
 }
 
-export type ConnectionStatus =
-  | "connected"
-  | "not_connected"
-  | "via_tag_manager";
-
-export type SeoConnection = {
-  id: string;
-  name: string;
-  status: ConnectionStatus;
-  publicIdMasked: string | null;
-  detail: string | null;
-  hint: string;
-};
-
-export type MarketingSeoStatus = {
-  siteUrl: string;
-  title: string;
-  description: string;
-  canonical: string;
-  ogTitle: string;
-  ogImageUrl: string;
-  sitemapUrl: string;
-  robotsUrl: string;
-  gscProperty: string | null;
-  sitemapNote: string;
-  connections: SeoConnection[];
-};
+export async function buildPageMetadata(pageId: SeoPageId): Promise<Metadata> {
+  try {
+    const resolved = await getResolvedSiteSeoPages();
+    return metadataFromResolved(pageId, resolved.pages, resolved.seo);
+  } catch {
+    // Docker/CI builds have no DATABASE_URL — use static defaults.
+    return metadataFromResolved(
+      pageId,
+      resolveSiteSeoPages(DEFAULT_PLATFORM_SEO)
+    );
+  }
+}
 
 export function buildMarketingSeoStatus(
   seo: PlatformSeoConfig,
@@ -317,18 +309,11 @@ export function buildMarketingSeoStatus(
   };
 }
 
-/** Public tag IDs safe to expose to the marketing shell (not verification secrets). */
-export type PublicMarketingTags = {
-  ga4MeasurementId: string;
-  gtmId: string;
-  clarityId: string;
-  skipAnalytics: boolean;
-};
-
 export function publicMarketingTags(
   seo: PlatformSeoConfig,
   skipAnalytics: boolean
 ): PublicMarketingTags {
+  const ignoreList = parseAnalyticsIgnoreIps(seo.ignoreIps);
   return {
     ga4MeasurementId: isValidGa4Id(seo.ga4MeasurementId)
       ? seo.ga4MeasurementId.trim()
@@ -336,5 +321,6 @@ export function publicMarketingTags(
     gtmId: isValidGtmId(seo.gtmId) ? seo.gtmId.trim() : "",
     clarityId: isValidClarityId(seo.clarityId) ? seo.clarityId.trim() : "",
     skipAnalytics,
+    checkIgnoreIps: ignoreList.length > 0 && !skipAnalytics,
   };
 }

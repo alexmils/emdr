@@ -1,13 +1,13 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { LOGIN_PATH } from "@/lib/app-base";
-import { buildPageMetadata } from "@/lib/site-seo";
+import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
 import Link from "next/link";
 
+export const revalidate = 3600; // ISR: static HTML, revalidated hourly
+
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPageMetadata("emdr");
+  return buildCachedPageMetadata("emdr");
 }
 
 export default function EmdrPage() {

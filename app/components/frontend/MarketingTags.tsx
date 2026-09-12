@@ -9,11 +9,12 @@ import {
   isGtmAllowedPath,
   readConsent,
 } from "@/lib/marketing-consent";
-import type { PublicMarketingTags } from "@/lib/site-seo";
+import type { PublicMarketingTags } from "@/lib/site-seo-types";
 
 /**
  * GA4 loads with Google Consent Mode (storage denied until analytics cookies).
- * Clarity / GTM still wait for consent. Skipped when ignored IPs match.
+ * Clarity / GTM still wait for consent. Ignored IPs skip via analytics-gate
+ * (not `headers()` in the page — that would force dynamic HTML).
  */
 export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   const pathname = usePathname() || "/";
@@ -21,6 +22,8 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   const [consent, setConsent] = useState(() =>
     typeof window !== "undefined" ? readConsent() : null
   );
+  const [ipSkip, setIpSkip] = useState(tags.skipAnalytics);
+  const [ipChecked, setIpChecked] = useState(!tags.checkIgnoreIps);
 
   useEffect(() => {
     setConsent(readConsent());
@@ -30,7 +33,33 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
     return () => window.removeEventListener(CONSENT_UPDATE_EVENT, onUpdate);
   }, []);
 
-  if (tags.skipAnalytics || !allowed) return null;
+  useEffect(() => {
+    if (!tags.checkIgnoreIps) {
+      setIpSkip(tags.skipAnalytics);
+      setIpChecked(true);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/marketing/analytics-gate")
+      .then((res) => res.json() as Promise<{ skip?: boolean }>)
+      .then((data) => {
+        if (!cancelled) {
+          setIpSkip(data.skip === true);
+          setIpChecked(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIpSkip(false);
+          setIpChecked(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tags.checkIgnoreIps, tags.skipAnalytics]);
+
+  if (!ipChecked || ipSkip || tags.skipAnalytics || !allowed) return null;
 
   const analyticsOk = consent?.analytics === true;
   const marketingOk = consent?.marketing === true;

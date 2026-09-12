@@ -1,13 +1,13 @@
 import { HomeLanding } from "@/app/components/frontend/HomeLanding";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { getLandingBlogPosts } from "@/lib/landing-blog-server";
-import { buildPageMetadata } from "@/lib/site-seo";
+import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: static HTML, revalidated hourly
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPageMetadata("home");
+  return buildCachedPageMetadata("home");
 }
 
 export default async function HomePage() {

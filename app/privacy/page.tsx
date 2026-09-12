@@ -1,13 +1,13 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { getPlatformSettings } from "@/lib/platform-settings";
-import { buildPageMetadata } from "@/lib/site-seo";
+import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: static HTML, revalidated hourly
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPageMetadata("privacy");
+  return buildCachedPageMetadata("privacy");
 }
 
 export default async function PrivacyPage() {

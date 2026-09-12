@@ -19,6 +19,7 @@ import {
   buildMarketingSeoStatus,
   resolveSiteSeoPages,
 } from "@/lib/site-seo";
+import { revalidatePublicSeo } from "@/lib/site-seo-cache";
 import { clientIp, writeAuditEvent } from "@/lib/audit-log";
 
 export async function GET() {
@@ -71,6 +72,8 @@ export async function PUT(request: Request) {
     const publicAppUrl = await getPublicAppUrl();
     const pages = resolveSiteSeoPages(next.seo, publicAppUrl);
     const status = buildMarketingSeoStatus(next.seo, pages, publicAppUrl);
+
+    revalidatePublicSeo();
 
     await writeAuditEvent({
       actorUserId: auth.user.id,

@@ -347,6 +347,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Free session Adjustments persist across refresh via `localStorage` (`emdr_bls_prefs_v1:<userId>`) — speed, repeats, sound, animation, vibration, look (ball/bg/size); Reset clears stored prefs (`lib/bls-prefs.ts`, `AppProvider`)
 - Free session Speed presets **0.1 · 1 · 5** Hz (was 0.5 · 1 · 2); clamp/migrate in `lib/bls-speed.ts` + prefs; Adjustments sliders match
 - Free session Repeats: numeric count (1–999) + ∞; ArrowUp/Down increment/decrement instead of toggling left/right (`lib/bls-repeats.ts`, dock + Adjustments)
+- **Public marketing ISR**: `/`, `/about`, `/emdr`, `/resources`, `/privacy`, `/terms` use `revalidate = 3600` instead of `force-dynamic` so HTML can be CDN-cached; Admin → SEO save calls `revalidateTag("seo")` + `revalidatePath` for those routes; ignore-IP analytics skip moved off the page render (`/api/marketing/analytics-gate`)
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
