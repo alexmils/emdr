@@ -438,15 +438,6 @@ export function HelpChatWidget({ showFab = true }: Props) {
                 </Link>
               ) : (
                 <>
-                  {mode === "guest" && !hasContact && (
-                    <button
-                      type="button"
-                      className="help-drawer-email-hint"
-                      onClick={() => setContactOpen(true)}
-                    >
-                      Leave your email if you want a reply by mail
-                    </button>
-                  )}
                   <textarea
                     className="help-drawer-input"
                     rows={2}
