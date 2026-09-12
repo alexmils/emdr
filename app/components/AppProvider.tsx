@@ -383,7 +383,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             id: activeThreadId,
             patch: {
               mode: kind,
-              title: kind === "free" ? "Free session" : "Guided session",
+              title: kind === "free" ? "Free session" : "Agent-guided session",
             },
           }),
         });

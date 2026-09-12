@@ -30,14 +30,14 @@ export default function EmdrPage() {
         </p>
         <p>
           Nura offers a calm workspace for EMDR Support: a moving ball for
-          visual sets, optional voice, and a guided session that follows a clear
-          protocol. It is a self-help tool, not a licensed therapist or
+          visual sets, optional voice, and an agent-guided session that follows a
+          clear protocol. It is a self-help tool, not a licensed therapist or
           emergency care.
         </p>
         <p>
-          A typical session starts with intake and grounding, then sets with the
-          moving ball, then a short check-in. You can also use Free mode for the
-          ball only.
+          A typical agent-guided session starts with intake and grounding, then
+          sets with the moving ball, then a short check-in. You can also use Free
+          for the ball only — no agent, no chat.
         </p>
         <div className="frontend-hero-actions">
           <Link href={LOGIN_PATH} className="frontend-btn-primary">

@@ -364,6 +364,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Free/Guided set: **Space while running stops** instead of restarting from the first beat — canvas `role="button"` was firing a synthetic click on Space keyup after keydown already stopped (`BallCanvas` + `runningRef` sync on stop)
 - Free/Guided ball motion: smoother display refresh — delta-time steps (not fixed 60fps) + GPU `translate3d` paints without React re-render every frame (`lib/bls-ball-motion.ts`, `BallCanvas`)
 - Docker build: public pages/`robots.txt`/`llms.txt` use literal `revalidate = 3600` (Next rejects imported identifiers for segment config); export `isSeoPageId` from `lib/seo-config.ts` for `/og-image`
+- Marketing + mode picker: bare “Guided or Free” → **agent-guided** (session agent) vs **Free** (moving ball only, no agent); FAQ, How it works, SessionStartScreen, brand rule
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

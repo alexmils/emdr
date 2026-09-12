@@ -66,7 +66,7 @@ const ABOUT_IMAGES = [
   { src: IMG.quietHands, alt: "Quiet hands at rest" },
 ];
 
-const ABOUT_COPY = `At ${BRAND_SPOKEN}, we believe therapy support is more than a blank screen — it’s a commitment to calmer sessions and clearer steps. With guided EMDR, Free mode for visual sets, and readable resources, we keep the workspace quiet so you can stay with what matters.`;
+const ABOUT_COPY = `At ${BRAND_SPOKEN}, we believe therapy support is more than a blank screen — it’s a commitment to calmer sessions and clearer steps. Agent-guided EMDR when you want a session agent with you, Free sessions for the moving ball alone, and readable resources — we keep the workspace quiet so you can stay with what matters.`;
 
 /** Decorative photos — native img so next/image does not emit 10+ srcset variants each. */
 function DecorativeImg({
@@ -102,8 +102,8 @@ const FEATURES = [
   },
   {
     icon: Waves,
-    title: "Guided or Free mode",
-    body: "Follow a structured EMDR protocol with a session guide, or use the moving ball on your own.",
+    title: "Agent-guided or Free",
+    body: "A session agent walks you through EMDR phases and check-ins — or Free, where you run the moving ball with no agent and no chat.",
   },
   {
     icon: Shield,
@@ -120,23 +120,23 @@ const FEATURES = [
 /** Large alternating image + copy blocks (fills the page between about and how-it-works). */
 const SHOWCASES = [
   {
-    kicker: "Guided sessions",
+    kicker: "Agent-guided",
     title: "A quiet workspace for difficult moments",
-    body: "Start with intake and grounding, then move through protocol phases with a guide that stays with you — check-ins after each set, not a rush to finish.",
+    body: "Start with intake and grounding, then move through protocol phases with a session agent — check-ins after each set, not a rush to finish.",
     points: [
       "Structured phases from intake through closure",
-      "Check-ins after visual sets in Guided mode",
+      "Check-ins after visual sets with the session agent",
       "Clear copy when you need a pause or grounding",
     ],
     image: IMG.practiceSpace,
     alt: "Quiet practice space with soft light",
   },
   {
-    kicker: "Free mode",
+    kicker: "Free session",
     title: "The moving ball, on your terms",
-    body: "When you already know what you need, Free mode gives you the visual set without chat — adjust speed and sound, then go fullscreen when you are ready.",
+    body: "When you already know what you need, Free is the visual set without an agent — adjust speed and sound, then go fullscreen when you are ready.",
     points: [
-      "Moving ball for visual bilateral sets",
+      "Moving ball for visual sets — no agent, no chat",
       "Controls for speed, sound, and repeats",
       "Immersive fullscreen while a set is running",
     ],
@@ -173,13 +173,13 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Choose Guided or Free",
-    summary: "Pick the mode that fits today.",
-    body: "Guided walks you through protocol phases with a session guide. Free mode is the moving ball only — useful when you already know your target.",
+    title: "Choose agent-guided or Free",
+    summary: "One path with a session agent. One with just the ball.",
+    body: "Agent-guided sessions use a session agent through protocol phases, grounding, and check-ins. Free is the moving ball only — no agent, no chat — when you already know your target.",
     bullets: [
-      "Guided: phases, check-ins, and grounding",
-      "Free: visual sets without chat",
-      "Switch modes when you start a new session",
+      "Agent-guided: phases, check-ins, and grounding",
+      "Free: moving ball only, no agent",
+      "Pick again whenever you start a new session",
     ],
     image: IMG.supportTalk,
     alt: "Supportive conversation in a calm setting",
@@ -188,10 +188,10 @@ const STEPS = [
     n: "03",
     title: "Run your sets",
     summary: "Ground, then start visual sets.",
-    body: "Follow grounding and intake, then run sets with the moving ball when you are ready. Adjust the controls bar, then go immersive while a set runs.",
+    body: "In agent-guided, follow grounding and intake, then run sets with the moving ball when you are ready. In Free, start the ball anytime. Adjust the controls bar, then go immersive while a set runs.",
     bullets: [
       "Speed, sound, and repeats in session controls",
-      "Check in after each set in Guided mode",
+      "Check in after each set when you use the agent",
       "Fullscreen while a set is running",
     ],
     image: IMG.greenLandscape,
@@ -201,9 +201,9 @@ const STEPS = [
     n: "04",
     title: "Stay supported",
     summary: "Resources and plans when you need more.",
-    body: "Browse guides, track trial time, and upgrade when you want unlimited guided sessions and full Free mode — cancel anytime in the portal.",
+    body: "Browse guides, track trial time, and upgrade when you want unlimited agent-guided sessions and full Free session time — cancel anytime in the portal.",
     bullets: [
-      `${TRIAL_DAYS}-day trial with guided sessions included`,
+      `${TRIAL_DAYS}-day trial with agent-guided sessions included`,
       "Weekly, monthly, or yearly billing",
       "Customer portal for billing anytime",
     ],
@@ -216,8 +216,8 @@ const OFFERS = [
   {
     href: appPath("/create-account"),
     tag: "Now",
-    title: "Guided sessions",
-    body: "Visual sets with a moving ball, optional voice, and an on-protocol guide — built for practice between sessions.",
+    title: "Agent-guided sessions",
+    body: "Visual sets with a moving ball, optional voice, and a session agent on protocol — built for practice between sessions.",
     image: IMG.supportTalk,
   },
   {
@@ -231,7 +231,7 @@ const OFFERS = [
     href: "/about",
     tag: "About",
     title: "About Nura",
-    body: "How guided support fits into your practice — and what comes next as we grow the product.",
+    body: "How agent-guided support fits into your practice — and what comes next as we grow the product.",
     image: IMG.careDesk,
   },
 ];
@@ -239,14 +239,14 @@ const OFFERS = [
 const TESTIMONIALS = [
   {
     quote:
-      "The interface feels calm enough to actually stay with a difficult memory. Free mode lets me practice without pressure.",
+      "The interface feels calm enough to actually stay with a difficult memory. Free sessions let me practice with just the ball.",
     name: "Maya L.",
     role: "Trial member",
     image: IMG.avatarMaya,
   },
   {
     quote:
-      "Guided mode walks me through phases instead of dumping me into a blank screen.",
+      "The session agent walks me through phases instead of dumping me into a blank screen.",
     name: "James R.",
     role: "Monthly plan",
     image: IMG.avatarJames,
@@ -267,7 +267,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "I open Free mode when I need a quiet visual set — no chat, no pressure, just the moving ball.",
+      "I open Free when I need a quiet visual set — no agent, no pressure, just the moving ball.",
     name: "Elena P.",
     role: "Weekly plan",
     image: IMG.avatarMaya,
@@ -455,10 +455,10 @@ const HERO_IMAGE = IMG.supportTalk;
 const HERO_PREVIEW_IMAGE = IMG.calmRest;
 
 const STATS = [
-  { target: 8, suffix: "", label: "Protocol phases in Guided mode" },
-  { target: 2, suffix: "", label: "Session modes — Guided & Free" },
+  { target: 8, suffix: "", label: "Protocol phases with the session agent" },
+  { target: 2, suffix: "", label: "Session modes — agent-guided & Free" },
   { target: TRIAL_DAYS, suffix: " days", label: "Trial to explore Nura" },
-  { target: TRIAL_GUIDED_SESSIONS, suffix: "", label: "Guided sessions in trial" },
+  { target: TRIAL_GUIDED_SESSIONS, suffix: "", label: "Agent-guided sessions in trial" },
 ];
 
 const PRICING_CARDS: {
@@ -479,8 +479,8 @@ const PRICING_CARDS: {
     details:
       "Flexible billing if you want to stay light — same full app, billed each week.",
     features: [
-      "Unlimited guided sessions",
-      "Full Free mode (moving ball)",
+      "Unlimited agent-guided sessions",
+      "Full Free sessions (moving ball)",
       "No ads on paid plans",
       "Cancel anytime in the portal",
       "Same session workspace as other plans",
@@ -511,7 +511,7 @@ const PRICING_CARDS: {
     details:
       "The everyday plan for practice between sessions — billed monthly, cancel anytime.",
     features: [
-      "Unlimited guided + Free mode",
+      "Unlimited agent-guided + Free sessions",
       "Full protocol phases & check-ins",
       "Resources library access",
       "Customer portal for billing",
@@ -800,9 +800,9 @@ export function HomeLanding({
             <p className="fe-section-kicker">Why {BRAND_SPOKEN}</p>
             <h2 className="fe-section-title">Support crafted around your pace</h2>
             <p className="fe-section-body">
-              Every surface is built for calm focus — guided protocol when you want
-              structure, Free mode when you just need the moving ball, and resources
-              you can finish in one sitting.
+              Every surface is built for calm focus — a session agent when you want
+              structure, Free when you just need the moving ball, and resources you
+              can finish in one sitting.
             </p>
           </div>
           <div className="fe-feature-grid">
@@ -873,8 +873,8 @@ export function HomeLanding({
             </p>
             <h2 className="fe-how-title">Personalized care, every step</h2>
             <p className="fe-how-sub">
-              Four calm steps from signup to ongoing support — same guided sessions
-              and Free mode once you are in.
+              Four calm steps from signup to ongoing support — same agent-guided
+              sessions and Free once you are in.
             </p>
           </div>
 
@@ -1001,7 +1001,8 @@ export function HomeLanding({
             <h2 className="fe-pricing-title">Plans tailored to your pace</h2>
             <p className="fe-pricing-sub">
               Start with a {TRIAL_DAYS}-day trial. Every paid plan unlocks the same
-              guided sessions and Free mode — pick how often you want to be billed.
+              agent-guided sessions and Free sessions — pick how often you want to
+              be billed.
             </p>
           </div>
 

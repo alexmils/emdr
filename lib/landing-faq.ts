@@ -10,11 +10,11 @@ export type LandingFaqItem = {
 export const LANDING_FAQ_ITEMS: readonly LandingFaqItem[] = [
   {
     q: `What is ${BRAND_SPOKEN}?`,
-    a: `${BRAND_SPOKEN} is a calm self-help workspace for guided EMDR practice and Free visual sets — structured support in the app, on your schedule. It is not a licensed therapist or emergency care.`,
+    a: `${BRAND_SPOKEN} is a calm self-help workspace for agent-guided EMDR practice and Free visual sets — structured support in the app, on your schedule. It is not a licensed therapist or emergency care.`,
   },
   {
-    q: "What is the difference between Guided and Free?",
-    a: "Guided walks you through protocol phases with check-ins. Free is visual sets only — you control the moving ball, speed, and timing yourself.",
+    q: "What is the difference between agent-guided and Free?",
+    a: "Agent-guided sessions use a session agent through protocol phases and check-ins. Free is the moving ball only — you control speed and timing yourself, with no agent and no chat.",
   },
   {
     q: "Do I need a therapist to use it?",
@@ -22,7 +22,7 @@ export const LANDING_FAQ_ITEMS: readonly LandingFaqItem[] = [
   },
   {
     q: "How does the trial work?",
-    a: `New accounts get a ${TRIAL_DAYS}-day trial with a limited number of guided sessions and Free session time. Paid plans unlock the full app with no trial caps.`,
+    a: `New accounts get a ${TRIAL_DAYS}-day trial with a limited number of agent-guided sessions and Free session time. Paid plans unlock the full app with no trial caps.`,
   },
   {
     q: "Can I cancel anytime?",

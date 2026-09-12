@@ -111,7 +111,7 @@ export async function ensureHelpSchema(): Promise<void> {
       },
       {
         title: "Session modes",
-        body: "Guided mode uses an AI guide through wellness phases with check-ins. Free mode is the moving ball only — you control start, stop, and adjustments. Start a session with New chat, then choose Guided or Free.",
+        body: "Agent-guided sessions use a session agent through wellness phases with check-ins. Free sessions are the moving ball only — you control start, stop, and adjustments, with no agent. Start with New chat, then choose agent-guided or Free.",
         tags: ["sessions"],
       },
       {

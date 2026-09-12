@@ -79,6 +79,20 @@ English, sentence case, short. No hype (“revolutionary”, “blockchain”, �
 | BLS bar / BLS controls | **Controls bar** / **Session controls** / **moving ball** |
 | BLS preview | **Free session time** (or “live preview” for the gear sheet) |
 
-Code/CSS identifiers may stay (`bls`, `TRIAL_BLS_SECONDS`, `.bls-dock`) — that is not user-facing. Prefer **Guided** vs **Free** (session modes already in the product). Extend `rewriteRetiredBrandCopy` if remapping stored help text.
+Code/CSS identifiers may stay (`bls`, `TRIAL_BLS_SECONDS`, `.bls-dock`) — that is not user-facing. Extend `rewriteRetiredBrandCopy` if remapping stored help text.
+
+### Session modes (marketing + first-run copy)
+
+Never use bare **“Choose Guided or Free”** on the homepage or other marketing — newcomers do not know what those words mean.
+
+| Instead of | Write |
+|---|---|
+| Guided / Guided mode (alone) | **Agent-guided** / **agent-guided session** / **session agent** |
+| Free mode (alone on marketing) | **Free session** / **Free (moving ball only)** |
+| Choose Guided or Free | **Choose agent-guided or Free** — then one line: agent walks phases; Free is ball only, no agent |
+
+Product chrome can keep short labels (**Agent-guided session** · **Free session**) if the subtitle or card description explains the difference. Do **not** lead headlines with “AI”; prefer **session agent** / **agent-guided**. Internal code may stay `guided` / `free`.
+
+Prefer **Guided** vs **Free** only in admin/internal tooling where the audience already knows the modes.
 
 Public routes (must stay in `lib/public-paths.ts` + `app/robots.txt/route.ts` + `app/sitemap.ts`): `/` `/about` `/editorial` `/emdr` `/resources` `/blog` `/blog/[slug]` `/privacy` `/terms`. Also public: `/llms.txt`. Nav: **Home · How it works · Prices · Blog · FAQ** (hash links on `/` except **Blog** → `/blog`). Inner pages: breadcrumbs. Retired: `/therapy` and `/therapists` redirect to `/resources`.

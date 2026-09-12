@@ -511,7 +511,7 @@ export function SessionWorkspace() {
               Start a session
             </h2>
             <p className="session-start-subtitle max-w-md">
-              Open a new chat to choose Guided or Free mode.
+              Open a new chat to choose agent-guided or Free.
             </p>
             <button
               type="button"

@@ -95,6 +95,8 @@ English, sentence case, short sentences. No hype (“revolutionary”, “neural
 
 **Never say BLS to users.** Prefer **Free** / **Free mode** / **Set running** / **moving ball**. Internal code names (`bls`, `TRIAL_BLS_SECONDS`) are fine. See `.cursor/rules/nura-brand.mdc`.
 
+**Session modes on marketing:** do not say bare “Guided or Free.” Prefer **agent-guided** (session agent through phases) vs **Free** (moving ball only, no agent). Do not lead headlines with “AI.”
+
 ## SEO
 
 The brand name does not need to contain “EMDR”. Pages do.

@@ -103,8 +103,8 @@ export function Sidebar() {
     );
 
   const upgradeBannerBody = entitlement?.isTrialLimited
-    ? `Unlimited guided sessions and Free mode. Trial left: ${Math.max(0, entitlement.guidedRemaining)} guided · ${Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m free.`
-    : "Unlock unlimited guided sessions and Free mode with a paid plan.";
+    ? `Unlimited agent-guided sessions and Free sessions. Trial left: ${Math.max(0, entitlement.guidedRemaining)} agent-guided · ${Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m free.`
+    : "Unlock unlimited agent-guided sessions and Free sessions with a paid plan.";
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
