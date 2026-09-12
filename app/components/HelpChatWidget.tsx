@@ -538,11 +538,12 @@ export function HelpChatWidget({ showFab = true }: Props) {
             aria-labelledby={contactTitleId}
           >
             <h3 id={contactTitleId} className="help-contact-title">
-              Want a reply by email?
+              Before you leave
             </h3>
             <p className="help-contact-lead">
-              Leave your email and we’ll send a copy of this chat about an hour
-              after you’re done, and reply here if you still need us.
+              If you close this chat without an email, we can’t follow up. Leave
+              your name and email so we can stay in touch — we’ll reply when we
+              can, and send a copy of this chat after you’re done.
             </p>
             <label className="help-contact-label">
               Name
@@ -557,8 +558,8 @@ export function HelpChatWidget({ showFab = true }: Props) {
               Email
               <input
                 className="help-contact-input"
-                type="email"
                 value={contactEmail}
+                type="email"
                 onChange={(e) => setContactEmail(e.target.value)}
                 autoComplete="email"
               />
@@ -584,7 +585,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
                 }
                 onClick={() => void saveContact()}
               >
-                {contactSaving ? "Saving…" : "Send me a reply by email"}
+                {contactSaving ? "Saving…" : "Keep in touch by email"}
               </button>
               <button
                 type="button"

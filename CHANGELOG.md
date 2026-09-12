@@ -421,6 +421,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Help guest contact**: drop in-chat “Leave your email…” link — name/email modal only on close chat / leave tab (after they messaged)
 - **Help chat chrome**: sage circle mark (`A-white-on-sage`) in header; 3-dot typing bubble while waiting for the assistant reply
 - **Help reply sound**: soft Web Audio bubble-pop when the assistant message arrives
+- **Help leave-chat modal copy**: “Before you leave” — without email we can’t follow up; CTA “Keep in touch by email” (support exit-intent pattern)
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
