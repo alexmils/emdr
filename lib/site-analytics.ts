@@ -9,6 +9,17 @@ import {
   parseServiceAccountEmail,
   type PlatformSeoConfig,
 } from "@/lib/seo-config";
+import type {
+  SiteAnalytics,
+  SiteAnalyticsRange,
+  SiteAnalyticsSource,
+} from "@/lib/site-analytics-types";
+
+export type {
+  SiteAnalytics,
+  SiteAnalyticsRange,
+  SiteAnalyticsSource,
+} from "@/lib/site-analytics-types";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const GA4_SCOPES = [
@@ -27,38 +38,6 @@ const EVENT_LABELS: Record<string, string> = {
   view_search_results: "Site search",
   form_start: "Form started",
   form_submit: "Form sent",
-};
-
-export type SiteAnalyticsRange = "7d" | "28d";
-
-export type SiteAnalyticsSource = {
-  connected: boolean;
-  detail: string | null;
-};
-
-export type SiteAnalytics = {
-  connected: boolean;
-  range: SiteAnalyticsRange;
-  ga4: SiteAnalyticsSource;
-  gsc: SiteAnalyticsSource;
-  visits: { sessions: number; users: number; pageviews: number };
-  countries: { country: string; sessions: number }[];
-  events: { name: string; label: string; count: number }[];
-  indexedPages: {
-    url: string;
-    clicks: number;
-    impressions: number;
-    isNew: boolean;
-  }[];
-  queries: {
-    query: string;
-    clicks: number;
-    impressions: number;
-    ctr: number | null;
-    position: number | null;
-  }[];
-  serviceAccountEmail: string | null;
-  setupNote: string | null;
 };
 
 type CacheEntry = { at: number; data: SiteAnalytics };

@@ -8,9 +8,18 @@ import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
 import { fetchJson } from "@/lib/fetch-json";
 import { BRAND_DOMAIN } from "@/lib/brand";
 import type { SeoAdminView, SeoConfigPatch } from "@/lib/seo-admin-settings";
-import type { SiteSeoPage, MarketingSeoStatus, ConnectionStatus } from "@/lib/site-seo";
-import type { SiteAnalytics, SiteAnalyticsRange } from "@/lib/site-analytics";
+import type {
+  SiteSeoPage,
+  MarketingSeoStatus,
+  ConnectionStatus,
+} from "@/lib/site-seo-types";
+import { displayOgImageUrl } from "@/lib/seo-og-image";
+import type {
+  SiteAnalytics,
+  SiteAnalyticsRange,
+} from "@/lib/site-analytics-types";
 import type { SeoPageId } from "@/lib/seo-config";
+import { fileToOgImageDataUrl } from "@/lib/avatar-client";
 
 const TABS = [
   "overview",
@@ -591,6 +600,99 @@ function SeoSnippetPreview({
   );
 }
 
+function SeoOgImageField({
+  label,
+  hint,
+  value,
+  previewUrl,
+  disabled,
+  busy,
+  clearLabel = "Use default",
+  onChange,
+  onClear,
+  onBusy,
+  onError,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  previewUrl: string;
+  disabled: boolean;
+  busy: boolean;
+  clearLabel?: string;
+  onChange: (next: string) => void;
+  onClear: () => void;
+  onBusy: (busy: boolean) => void;
+  onError: (message: string) => void;
+}) {
+  return (
+    <div className="admin-seo-og-field">
+      <p className="admin-field-label" style={{ marginBottom: 0 }}>
+        {label}
+      </p>
+      <p className="admin-panel-sub">{hint}</p>
+      <div className="admin-seo-og-row">
+        <div className="admin-seo-og-preview">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="" />
+        </div>
+        <div className="admin-seo-og-actions">
+          <label className="admin-btn-edit admin-seo-upload-label">
+            {busy ? "Uploading…" : "Upload image"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={disabled || busy}
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                e.target.value = "";
+                if (!file) return;
+                void (async () => {
+                  onBusy(true);
+                  onError("");
+                  try {
+                    const url = await fileToOgImageDataUrl(file);
+                    onChange(url);
+                  } catch (err) {
+                    onError(
+                      err instanceof Error ? err.message : "Image upload failed"
+                    );
+                  } finally {
+                    onBusy(false);
+                  }
+                })();
+              }}
+            />
+          </label>
+          <button
+            type="button"
+            className="admin-btn-edit"
+            disabled={disabled || busy || !value}
+            onClick={onClear}
+          >
+            {clearLabel}
+          </button>
+        </div>
+      </div>
+      <label className="admin-field-label">
+        Or paste URL
+        <input
+          className="field"
+          value={value.startsWith("data:image/") ? "" : value}
+          placeholder={
+            value.startsWith("data:image/")
+              ? "Uploaded image (saved on Save)"
+              : "https://… or /brand/…"
+          }
+          disabled={disabled || busy}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </label>
+    </div>
+  );
+}
+
 function SeoAnalyticsPanel() {
   const [range, setRange] = useState<SiteAnalyticsRange>("7d");
   const [data, setData] = useState<SiteAnalytics | null>(null);
@@ -836,6 +938,8 @@ function AdminSeoPageInner() {
     ogTitle: "",
     ogImageUrl: "",
   });
+  const [draftDefaultOg, setDraftDefaultOg] = useState("");
+  const [ogBusy, setOgBusy] = useState(false);
 
   const [connDraft, setConnDraft] = useState<ConnFormState>({
     ga4MeasurementId: "",
@@ -868,6 +972,7 @@ function AdminSeoPageInner() {
       ignoreIps: res.seo.ignoreIps,
       ...emptySecretFields(),
     });
+    setDraftDefaultOg(res.seo.defaultOgImageUrl || "");
   }, []);
 
   useEffect(() => {
@@ -888,15 +993,16 @@ function AdminSeoPageInner() {
   );
 
   useEffect(() => {
-    if (!activePage) return;
+    if (!activePage || !seo) return;
+    const pageOverride = seo.pages[activePage.id]?.ogImageUrl || "";
     setDraftPage({
       title: activePage.title,
       description: activePage.description,
       ogTitle:
         activePage.ogTitle === activePage.title ? "" : activePage.ogTitle,
-      ogImageUrl: activePage.ogImageUrl,
+      ogImageUrl: pageOverride,
     });
-  }, [activePage]);
+  }, [activePage, seo]);
 
   const setPage = (id: string) => {
     router.replace(`/admin/seo?tab=pages&page=${encodeURIComponent(id)}`, {
@@ -924,6 +1030,7 @@ function AdminSeoPageInner() {
       setSeo(res.seo);
       setPages(res.pages);
       setStatus(res.status);
+      setDraftDefaultOg(res.seo.defaultOgImageUrl || "");
       setMsg(okMsg);
       return true;
     } catch (e) {
@@ -969,7 +1076,12 @@ function AdminSeoPageInner() {
               title={home.title}
               description={home.description}
               ogTitle={home.ogTitle}
-              ogImageUrl={home.ogImageUrl}
+              ogImageUrl={displayOgImageUrl(
+                seo.defaultOgImageUrl ||
+                  seo.pages.home?.ogImageUrl ||
+                  undefined,
+                home.ogImageUrl
+              )}
             />
             <dl className="admin-seo-stat-grid">
               <div className="admin-panel">
@@ -993,6 +1105,46 @@ function AdminSeoPageInner() {
               <p className="admin-panel-sub">
                 Title, description, and share image for each public page.
               </p>
+
+              <form
+                className="admin-form-stack admin-panel admin-seo-default-og"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void savePatch(
+                    { defaultOgImageUrl: draftDefaultOg || "clear" },
+                    "Default share image saved."
+                  );
+                }}
+              >
+                <SeoOgImageField
+                  label="Default share image (Open Graph)"
+                  hint="Used on every public page unless that page sets its own image. Built-in fallback is the Nura lockup."
+                  value={draftDefaultOg}
+                  previewUrl={displayOgImageUrl(
+                    draftDefaultOg,
+                    "/brand/lockup.png"
+                  )}
+                  disabled={!canEdit}
+                  busy={busy || ogBusy}
+                  clearLabel="Use lockup"
+                  onChange={(next) => setDraftDefaultOg(next)}
+                  onClear={() => setDraftDefaultOg("")}
+                  onBusy={setOgBusy}
+                  onError={setMsg}
+                />
+                {canEdit ? (
+                  <div className="admin-form-actions">
+                    <button
+                      type="submit"
+                      className="admin-btn-edit"
+                      disabled={busy || ogBusy}
+                    >
+                      {busy ? "Saving…" : "Save default image"}
+                    </button>
+                  </div>
+                ) : null}
+              </form>
+
               <div className="admin-seo-page-picker">
                 {pages.map((p) => (
                   <button
@@ -1066,26 +1218,31 @@ function AdminSeoPageInner() {
                     }
                   />
                 </label>
-                <label className="admin-field-label">
-                  Share image URL
-                  <input
-                    className="field"
-                    value={draftPage.ogImageUrl}
-                    disabled={!canEdit || busy}
-                    onChange={(e) =>
-                      setDraftPage((d) => ({
-                        ...d,
-                        ogImageUrl: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
+                <SeoOgImageField
+                  label="Share image for this page"
+                  hint="Leave empty to use the default share image above."
+                  value={draftPage.ogImageUrl}
+                  previewUrl={displayOgImageUrl(
+                    draftPage.ogImageUrl || draftDefaultOg,
+                    "/brand/lockup.png"
+                  )}
+                  disabled={!canEdit}
+                  busy={busy || ogBusy}
+                  onChange={(next) =>
+                    setDraftPage((d) => ({ ...d, ogImageUrl: next }))
+                  }
+                  onClear={() =>
+                    setDraftPage((d) => ({ ...d, ogImageUrl: "" }))
+                  }
+                  onBusy={setOgBusy}
+                  onError={setMsg}
+                />
                 {canEdit ? (
                   <div className="admin-form-actions">
                     <button
                       type="submit"
                       className="admin-btn-edit"
-                      disabled={busy}
+                      disabled={busy || ogBusy}
                     >
                       {busy ? "Saving…" : "Save page"}
                     </button>
@@ -1098,7 +1255,10 @@ function AdminSeoPageInner() {
               title={draftPage.title || activePage.title}
               description={draftPage.description || activePage.description}
               ogTitle={draftPage.ogTitle || draftPage.title || activePage.title}
-              ogImageUrl={draftPage.ogImageUrl || activePage.ogImageUrl}
+              ogImageUrl={displayOgImageUrl(
+                draftPage.ogImageUrl || draftDefaultOg,
+                "/brand/lockup.png"
+              )}
             />
           </div>
         ) : null}

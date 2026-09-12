@@ -3,7 +3,8 @@ import {
   BRAND_DESCRIPTION,
   BRAND_DOMAIN,
   BRAND_LEGAL,
-  BRAND_TITLE,
+  BRAND_SPOKEN,
+  BRAND_TITLE_STEM,
   brandMetadataBase,
 } from "@/lib/brand";
 import {
@@ -47,20 +48,65 @@ type PageDefault = {
   description: string;
 };
 
+/**
+ * Admin → SEO once saved the then-current defaults into `app_settings.seo.pages`.
+ * Treat those stems as empty so copy updates ship without a manual clear.
+ * Custom titles/descriptions that are not in this set stay.
+ */
+export const RETIRED_SEO_TITLES = new Set([
+  "About",
+  "EMDR Support",
+  "Resources",
+  "Terms",
+  "Nura — guided EMDR, therapy resources, and support",
+  "guided EMDR, therapy resources, and support",
+]);
+
+export const RETIRED_SEO_DESCRIPTIONS = new Set([
+  "A calm place for guided EMDR sessions, therapy resources, and support. Self-help — not a licensed therapist.",
+  "What EMDR is, how visual sets work, and how a Nura session is structured.",
+  "Guides for EMDR and therapy support on Nura.",
+  "Privacy policy for NuraHelp",
+  "Terms of service for NuraHelp",
+]);
+
+/** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
+export const SEO_COPY_REVISION = "emdr-therapy-online-app-1";
+
+export function documentTitle(pageTitle: string): string {
+  const suffix = ` — ${BRAND_SPOKEN}`;
+  const t = pageTitle.trim();
+  if (!t) return `${BRAND_TITLE_STEM}${suffix}`;
+  if (t === BRAND_SPOKEN || t.endsWith(suffix)) return t;
+  return `${t}${suffix}`;
+}
+
+function effectiveSeoText(
+  raw: string | undefined,
+  fallback: string,
+  retired: ReadonlySet<string>,
+  extraReject?: ReadonlySet<string>
+): string {
+  const t = (raw || "").trim();
+  if (!t || retired.has(t) || extraReject?.has(t)) return fallback;
+  return t;
+}
+
 export const SITE_SEO_DEFAULTS: PageDefault[] = [
   {
     id: "home",
     path: "/",
     label: "Home",
-    title: BRAND_TITLE,
+    title: BRAND_TITLE_STEM,
     description: BRAND_DESCRIPTION,
   },
   {
     id: "about",
     path: "/about",
     label: "About",
-    title: "About",
-    description: BRAND_DESCRIPTION,
+    title: "About the EMDR therapy online app",
+    description:
+      "NuraHelp builds Nura, an online app for guided EMDR therapy between sessions. Self-help software — not a licensed therapist or emergency care.",
   },
   {
     id: "editorial",
@@ -74,15 +120,15 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
-    title: "EMDR Support",
+    title: "EMDR therapy online in the app",
     description:
-      "What EMDR is, how visual sets work, and how a Nura session is structured.",
+      "What guided EMDR therapy looks like in the Nura app: intake, grounding, visual sets, and check-ins. Online, on your schedule — not a licensed therapist.",
   },
   {
     id: "resources",
     path: "/resources",
     label: "Resources",
-    title: "Resources",
+    title: "EMDR therapy resources in the app",
     description:
       "Public guides on EMDR therapy, visual sets with a moving ball, and practice between sessions.",
   },
@@ -99,14 +145,14 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     path: "/privacy",
     label: "Privacy",
     title: "Privacy",
-    description: `Privacy policy for ${BRAND_LEGAL}`,
+    description: `How ${BRAND_LEGAL} handles account, session, and billing data for the Nura EMDR therapy app — what we store, why, and how to reach support.`,
   },
   {
     id: "terms",
     path: "/terms",
     label: "Terms",
-    title: "Terms",
-    description: `Terms of service for ${BRAND_LEGAL}`,
+    title: "Terms of service",
+    description: `Terms for using Nura, the online EMDR therapy app from ${BRAND_LEGAL}. Self-help software — not a substitute for professional clinical care.`,
   },
 ];
 
@@ -132,9 +178,14 @@ export function resolveSiteSeoPages(
   const siteDefault = seo.defaultOgImageUrl.trim();
   return SITE_SEO_DEFAULTS.map((def) => {
     const o = seo.pages[def.id];
-    const title = o?.title?.trim() || def.title;
-    const description = o?.description?.trim() || def.description;
-    const ogTitle = o?.ogTitle?.trim() || title;
+    const title = effectiveSeoText(o?.title, def.title, RETIRED_SEO_TITLES);
+    const description = effectiveSeoText(
+      o?.description,
+      def.description,
+      RETIRED_SEO_DESCRIPTIONS,
+      def.id === "home" ? undefined : new Set([BRAND_DESCRIPTION])
+    );
+    const ogTitle = effectiveSeoText(o?.ogTitle, title, RETIRED_SEO_TITLES);
     const pageOg = o?.ogImageUrl?.trim() || "";
     const stored = pageOg || siteDefault;
     const ogImageUrl = absoluteOgImageUrl({
@@ -195,11 +246,18 @@ export function metadataFromResolved(
     };
   }
   return {
-    title: { absolute: page.title },
+    // Root `/` shares the layout segment, so the `%s — Nura` template does not apply.
+    title:
+      pageId === "home"
+        ? { absolute: documentTitle(page.title) }
+        : page.title,
     description: page.description,
     alternates: localeAlternates(page.canonical),
     openGraph: {
-      title: page.ogTitle,
+      title:
+        page.ogTitle === page.title
+          ? `${page.title} — ${BRAND_SPOKEN}`
+          : page.ogTitle,
       description: page.description,
       url: page.canonical,
       siteName: BRAND_LEGAL,

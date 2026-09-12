@@ -30,6 +30,10 @@ import type {
 } from "@/lib/types";
 import { DEFAULT_BLS } from "@/lib/types";
 import {
+  BLS_BALL_MAX_DT_SEC,
+  blsBallStep,
+} from "@/lib/bls-ball-motion";
+import {
   BLS_SPEED_MAX,
   BLS_SPEED_MIN,
   BLS_SPEED_STEP,
@@ -197,9 +201,11 @@ function PreviewStage({ bls, playing }: { bls: BlsSettings; playing: boolean }) 
     }
 
     let raf = 0;
-    const loop = () => {
-      const period = 1 / Math.max(0.1, speed);
-      const step = (1 / 60 / period) * 0.5;
+    let last = performance.now();
+    const loop = (now: number) => {
+      const dt = Math.min(Math.max((now - last) / 1000, 0), BLS_BALL_MAX_DT_SEC);
+      last = now;
+      const step = blsBallStep(Math.max(0.1, speed), dt);
       let next = posRef.current + dirRef.current * step;
       if (next >= 1) {
         next = 1;

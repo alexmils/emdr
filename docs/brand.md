@@ -25,7 +25,7 @@ Nura is a calm place for guided therapy support — EMDR sessions and resources 
 
 Not an AI therapist. Not an EHR. Not emergency care.
 
-Hero: **Support for therapy. Starting with EMDR.**
+Hero: **EMDR therapy online.** *in a calm app.* (tagline still: Support for therapy. Starting with EMDR.)
 
 Disclaimer (always visible on marketing): self-help tool, not a licensed therapist.
 
@@ -112,4 +112,4 @@ The brand name does not need to contain “EMDR”. Pages do.
 
 Retired: `/therapy`, `/therapists` → redirect to `/resources`.
 
-Default document title: `Nura — guided EMDR, therapy resources, and support`.
+Default document title: `Guided EMDR therapy online app — Nura`.

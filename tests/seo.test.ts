@@ -21,9 +21,17 @@ import {
   validateSeoConfigPatch,
 } from "../lib/seo-admin-settings.ts";
 import {
+  BRAND_DESCRIPTION,
+  BRAND_SPOKEN,
+  BRAND_TITLE,
+  BRAND_TITLE_STEM,
+} from "../lib/brand.ts";
+import {
   buildMarketingSeoStatus,
+  metadataFromResolved,
   publicMarketingTags,
   resolveSiteSeoPages,
+  SITE_SEO_DEFAULTS,
   siteOrigin,
 } from "../lib/site-seo.ts";
 import {
@@ -229,6 +237,94 @@ describe("site-seo status", () => {
     );
     assert.equal(skipped.skipAnalytics, true);
     assert.equal(skipped.checkIgnoreIps, false);
+  });
+});
+
+describe("public page titles and descriptions", () => {
+  it("gives every public page a unique meta description", () => {
+    const descriptions = SITE_SEO_DEFAULTS.map((page) => page.description);
+    assert.equal(new Set(descriptions).size, descriptions.length);
+    for (const page of SITE_SEO_DEFAULTS) {
+      if (page.id === "home") {
+        assert.equal(page.description, BRAND_DESCRIPTION);
+        continue;
+      }
+      assert.notEqual(page.description, BRAND_DESCRIPTION, page.id);
+    }
+  });
+
+  it("puts the money phrase in home and EMDR titles", () => {
+    const home = SITE_SEO_DEFAULTS.find((page) => page.id === "home");
+    const emdr = SITE_SEO_DEFAULTS.find((page) => page.id === "emdr");
+    assert.equal(home?.title, BRAND_TITLE_STEM);
+    assert.match(BRAND_TITLE, new RegExp(`^${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}$`));
+    for (const page of [home, emdr]) {
+      assert.match(page?.title || "", /EMDR therapy/);
+      assert.match(page?.title || "", /online/i);
+      assert.match(page?.title || "", /app/i);
+    }
+  });
+
+  it("uses the layout title template instead of absolute titles", () => {
+    const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
+    const meta = metadataFromResolved("emdr", pages);
+    assert.equal(typeof meta.title, "string");
+    assert.equal(meta.title, "EMDR therapy online in the app");
+  });
+
+  it("uses an absolute document title on home so Nura is not dropped", () => {
+    const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
+    const meta = metadataFromResolved("home", pages);
+    assert.deepEqual(meta.title, { absolute: BRAND_TITLE });
+  });
+
+  it("ignores retired Admin SEO defaults so unique copy can ship", () => {
+    const pages = resolveSiteSeoPages(
+      {
+        ...DEFAULT_PLATFORM_SEO,
+        pages: {
+          about: {
+            title: "About",
+            description: BRAND_DESCRIPTION,
+          },
+          emdr: {
+            title: "EMDR Support",
+            description:
+              "What EMDR is, how visual sets work, and how a Nura session is structured.",
+          },
+          resources: {
+            title: "Resources",
+            description: "Guides for EMDR and therapy support on Nura.",
+          },
+          privacy: {
+            title: "Privacy",
+            description: "Privacy policy for NuraHelp",
+          },
+          terms: {
+            title: "Terms",
+            description: "Terms of service for NuraHelp",
+          },
+        },
+      },
+      "https://nurahelp.com"
+    );
+    const byId = Object.fromEntries(pages.map((p) => [p.id, p]));
+    assert.equal(byId.about?.title, "About the EMDR therapy online app");
+    assert.equal(byId.emdr?.title, "EMDR therapy online in the app");
+    assert.equal(byId.resources?.title, "EMDR therapy resources in the app");
+    assert.equal(byId.terms?.title, "Terms of service");
+    assert.notEqual(byId.about?.description, BRAND_DESCRIPTION);
+    assert.notEqual(byId.privacy?.description, "Privacy policy for NuraHelp");
+    const custom = resolveSiteSeoPages(
+      {
+        ...DEFAULT_PLATFORM_SEO,
+        pages: { about: { title: "Our story", description: "Custom about blurb." } },
+      },
+      "https://nurahelp.com"
+    );
+    const about = custom.find((p) => p.id === "about");
+    assert.equal(about?.title, "Our story");
+    assert.equal(about?.description, "Custom about blurb.");
   });
 });
 

@@ -20,6 +20,7 @@ export type SeoAdminView = {
   gscProperty: string;
   ga4PropertyId: string;
   ignoreIps: string;
+  defaultOgImageUrl: string;
   /** Write-only — always empty on GET. */
   gscVerification: string;
   bingVerification: string;
@@ -38,6 +39,7 @@ export type SeoConfigPatch = {
   gscProperty?: string;
   ga4PropertyId?: string;
   ignoreIps?: string;
+  defaultOgImageUrl?: string;
   gscVerification?: string;
   bingVerification?: string;
   googleServiceAccountJson?: string;
@@ -56,6 +58,7 @@ export function toSeoAdminView(
     gscProperty: seo.gscProperty,
     ga4PropertyId: seo.ga4PropertyId,
     ignoreIps: seo.ignoreIps,
+    defaultOgImageUrl: seo.defaultOgImageUrl,
     gscVerification: "",
     bingVerification: "",
     googleServiceAccountJson: "",
@@ -142,6 +145,14 @@ export function mergeSeoConfigPatch(
   }
   if (typeof patch.ignoreIps === "string") {
     next.ignoreIps = patch.ignoreIps.trim();
+  }
+  if (typeof patch.defaultOgImageUrl === "string") {
+    const t = patch.defaultOgImageUrl.trim();
+    if (!t || isSecretClearToken(t)) {
+      next.defaultOgImageUrl = "";
+    } else if (isAllowedOgImageUrl(t)) {
+      next.defaultOgImageUrl = t;
+    }
   }
 
   if (typeof patch.gscVerification === "string") {
@@ -230,6 +241,16 @@ export function validateSeoConfigPatch(
       errors.push("Service account JSON is not valid JSON.");
     }
   }
+  if (
+    typeof patch.defaultOgImageUrl === "string" &&
+    patch.defaultOgImageUrl.trim() &&
+    !isSecretClearToken(patch.defaultOgImageUrl) &&
+    !isAllowedOgImageUrl(patch.defaultOgImageUrl)
+  ) {
+    errors.push(
+      "Default share image must be https, a path starting with /, or an uploaded image."
+    );
+  }
   if (patch.pages && typeof patch.pages === "object") {
     for (const id of SEO_PAGE_IDS) {
       const page = patch.pages[id];
@@ -240,7 +261,7 @@ export function validateSeoConfigPatch(
         !isAllowedOgImageUrl(page.ogImageUrl)
       ) {
         errors.push(
-          `Share image for ${id} must be an https URL or a path starting with /.`
+          `Share image for ${id} must be https, a path starting with /, or an uploaded image.`
         );
       }
     }

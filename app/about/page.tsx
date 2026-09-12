@@ -2,11 +2,12 @@ import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
+import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const revalidate = 3600; // ISR: static HTML, revalidated hourly
+export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("about");
@@ -22,7 +23,7 @@ export default function AboutPage() {
             { label: "About" },
           ]}
         />
-        <h1>About {BRAND_SPOKEN}</h1>
+        <h1>About the EMDR therapy online app</h1>
         <p>{BRAND_TAGLINE}</p>
         <p>
           {BRAND_SPOKEN} is a calm workspace for guided EMDR sessions and therapy

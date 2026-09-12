@@ -172,6 +172,7 @@ export function SessionWorkspace() {
     // Always allow stopping a running set (safety).
     if (runningRef.current) {
       clearFreeLeaseTimer();
+      runningRef.current = false;
       setRunning(false);
       setSessionMode("idle");
       return;

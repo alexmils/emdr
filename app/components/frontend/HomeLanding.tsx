@@ -31,6 +31,7 @@ import {
   formatBlogDate,
   type LandingBlogPost,
 } from "@/lib/landing-blog";
+import { LANDING_FAQ_ITEMS } from "@/lib/landing-faq";
 import { scheduleScrollToLandingHash } from "@/lib/landing-scroll";
 import { useLandingMotion } from "./useLandingMotion";
 import "lenis/dist/lenis.css";
@@ -596,29 +597,6 @@ function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
   );
 }
 
-const FAQ_ITEMS = [
-  {
-    q: "What is Nura?",
-    a: "Nura is a calm self-help workspace for guided EMDR practice and Free visual sets — structured support in the app, on your schedule. It is not a licensed therapist or emergency care.",
-  },
-  {
-    q: "What is the difference between Guided and Free?",
-    a: "Guided walks you through protocol phases with check-ins. Free is visual sets only — you control the moving ball, speed, and timing yourself.",
-  },
-  {
-    q: "Do I need a therapist to use it?",
-    a: "No. Nura is built for practice between sessions or on your own. If you are in crisis, contact local emergency services — the app does not replace professional care.",
-  },
-  {
-    q: "How does the trial work?",
-    a: `New accounts get a ${TRIAL_DAYS}-day trial with a limited number of guided sessions and Free session time. Paid plans unlock the full app with no trial caps.`,
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. Manage or cancel billing in the customer portal from your account — no phone calls required.",
-  },
-] as const;
-
 function FaqSection() {
   const [open, setOpen] = useState(0);
 
@@ -636,8 +614,9 @@ function FaqSection() {
           </p>
         </div>
         <div className="fe-faq-list">
-          {FAQ_ITEMS.map((item, i) => {
+          {LANDING_FAQ_ITEMS.map((item, i) => {
             const isOpen = open === i;
+            const answerId = `fe-faq-a-${i}`;
             return (
               <div
                 key={item.q}
@@ -647,6 +626,7 @@ function FaqSection() {
                   type="button"
                   className="fe-faq-q"
                   aria-expanded={isOpen}
+                  aria-controls={answerId}
                   onClick={() => setOpen(isOpen ? -1 : i)}
                 >
                   <span>{item.q}</span>
@@ -654,7 +634,9 @@ function FaqSection() {
                     {isOpen ? "−" : "+"}
                   </span>
                 </button>
-                {isOpen ? <p className="fe-faq-a">{item.a}</p> : null}
+                <p id={answerId} className="fe-faq-a" hidden={!isOpen}>
+                  {item.a}
+                </p>
               </div>
             );
           })}
@@ -709,7 +691,7 @@ export function HomeLanding({
                     <p className="fe-hero-kicker">The time is right for</p>
                     <h1 className="fe-hero-title">
                       <span className="fe-hero-title-line">
-                        {["Support", "for", "therapy,"].map((word, i, arr) => (
+                        {["EMDR", "therapy", "online"].map((word, i, arr) => (
                           <span key={word} className="fe-split-line">
                             <span className="fe-split-word">
                               {word}
@@ -717,10 +699,10 @@ export function HomeLanding({
                             </span>
                           </span>
                         ))}
-                      </span>
+                      </span>{" "}
                       <span className="fe-hero-title-line fe-hero-title-line--accent">
                         <em>
-                          {["Starting", "with", "EMDR."].map((word, i, arr) => (
+                          {["in", "a", "calm", "app."].map((word, i, arr) => (
                             <span key={word} className="fe-split-line">
                               <span className="fe-split-word">
                                 {word}
@@ -734,8 +716,9 @@ export function HomeLanding({
                   </div>
                   <div className="fe-hero-right">
                     <p className="fe-hero-description">
-                      A calm place for guided EMDR sessions and readable therapy
-                      resources — structured support in the app, on your schedule.
+                      Visual sets, optional voice, and readable resources —
+                      structured support on your schedule. Self-help, not a
+                      licensed therapist.
                     </p>
                     <div className="fe-hero-card-row">
                       <div className="fe-hero-inner-card">

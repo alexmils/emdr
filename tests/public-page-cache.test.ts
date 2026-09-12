@@ -44,7 +44,7 @@ describe("public page ISR", () => {
         false,
         file
       );
-      assert.match(src, /export const revalidate = 3600/);
+      assert.match(src, /export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS/);
     }
   });
 });

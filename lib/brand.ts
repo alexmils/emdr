@@ -12,9 +12,12 @@ export const BRAND_DOMAIN = "nurahelp.com";
 export const BRAND_TAGLINE = "Support for therapy. Starting with EMDR.";
 
 export const BRAND_DESCRIPTION =
-  "A calm place for guided EMDR sessions, therapy resources, and support. Self-help — not a licensed therapist.";
+  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources. Self-help, not a licensed therapist.";
 
-export const BRAND_TITLE = "Nura — guided EMDR, therapy resources, and support";
+/** Title stem for `/` — layout template adds ` — Nura`. */
+export const BRAND_TITLE_STEM = "Guided EMDR therapy online app";
+
+export const BRAND_TITLE = `${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}`;
 
 /** Pistachio palette — see docs/brand.md */
 export const BRAND_COLORS = {

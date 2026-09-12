@@ -13,6 +13,10 @@ import {
   motionAxisFromSize,
   type BlsMotionAxis,
 } from "@/lib/bls-motion";
+import {
+  BLS_BALL_MAX_DT_SEC,
+  blsBallStep,
+} from "@/lib/bls-ball-motion";
 import { blsBackgroundIsDark } from "@/lib/bls-prefs";
 import { repeatsLimit } from "@/lib/bls-repeats";
 
@@ -64,6 +68,33 @@ function useBlsMotionAxis(): BlsMotionAxis {
   return axis;
 }
 
+function paintBall(
+  el: HTMLDivElement | null,
+  container: HTMLElement | null,
+  pos: number,
+  horizontal: boolean,
+  ballSize: number
+) {
+  if (!el || !container) return;
+  const travel = Math.max(
+    0,
+    (horizontal ? container.clientWidth : container.clientHeight) - ballSize
+  );
+  const px = pos * travel;
+  el.style.transform = horizontal
+    ? `translate3d(${px}px, -50%, 0)`
+    : `translate3d(-50%, ${px}px, 0)`;
+}
+
+function paintFlash(
+  a: HTMLDivElement | null,
+  b: HTMLDivElement | null,
+  pos: number
+) {
+  if (a) a.style.opacity = pos < 0.5 ? "1" : "0.15";
+  if (b) b.style.opacity = pos >= 0.5 ? "1" : "0.15";
+}
+
 export function BallCanvas({
   running,
   speedHz,
@@ -79,24 +110,34 @@ export function BallCanvas({
   onToggle,
   idleHint = "default",
 }: BallCanvasProps) {
-  const [pos, setPos] = useState(0.5);
   const axis = useBlsMotionAxis();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ballRef = useRef<HTMLDivElement>(null);
+  const flashARef = useRef<HTMLDivElement>(null);
+  const flashBRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<BlsAudioEngine | null>(null);
   const posRef = useRef(0.5);
   const dirRef = useRef(1);
   const repeatCount = useRef(0);
   const startTime = useRef(0);
+  const lastFrameRef = useRef(0);
   const lastSide = useRef<"left" | "right" | null>(null);
   const rafRef = useRef<number>(0);
   const speedRef = useRef(speedHz);
   const soundRef = useRef(sound);
   const vibrationRef = useRef(vibration);
   const onCompleteRef = useRef(onSetComplete);
+  const axisRef = useRef(axis);
+  const ballSizeRef = useRef(ballSize);
+  const animationRef = useRef(animation);
 
   speedRef.current = speedHz;
   soundRef.current = sound;
   vibrationRef.current = vibration;
   onCompleteRef.current = onSetComplete;
+  axisRef.current = axis;
+  ballSizeRef.current = ballSize;
+  animationRef.current = animation;
 
   useEffect(() => {
     audioRef.current = new BlsAudioEngine();
@@ -108,69 +149,128 @@ export function BallCanvas({
       cancelAnimationFrame(rafRef.current);
       repeatCount.current = 0;
       startTime.current = 0;
+      lastFrameRef.current = 0;
       lastSide.current = null;
       posRef.current = 0.5;
       dirRef.current = 1;
-      setPos(0.5);
       return;
     }
 
     startTime.current = performance.now();
+    lastFrameRef.current = startTime.current;
     lastSide.current = null;
+    posRef.current = 0.5;
+    dirRef.current = 1;
     audioRef.current?.playPan("left", soundRef.current);
     lastSide.current = "left";
 
-    const loop = (now: number) => {
-      const period = 1 / speedRef.current;
-      const step = (1 / 60) / period * 0.5;
-      let next = posRef.current + dirRef.current * step;
-
-      if (next >= 1) {
-        next = 1;
-        dirRef.current = -1;
-        repeatCount.current += 1;
-        if (vibrationRef.current !== "none") rumble(vibrationRef.current);
-        audioRef.current?.playPan("right", soundRef.current);
-        lastSide.current = "right";
-      } else if (next <= 0) {
-        next = 0;
-        dirRef.current = 1;
-        repeatCount.current += 1;
-        if (vibrationRef.current !== "none") rumble(vibrationRef.current);
-        audioRef.current?.playPan("left", soundRef.current);
-        lastSide.current = "left";
+    const paint = () => {
+      const horizontal = axisRef.current === "horizontal";
+      if (animationRef.current === "dot") {
+        paintBall(
+          ballRef.current,
+          containerRef.current,
+          posRef.current,
+          horizontal,
+          ballSizeRef.current
+        );
+      } else {
+        paintFlash(flashARef.current, flashBRef.current, posRef.current);
       }
-
-      posRef.current = next;
-      setPos(next);
-
-      const elapsed = (now - startTime.current) / 1000;
-      const maxRepeats = repeatsLimit(repeats);
-      if (repeatCount.current >= maxRepeats || elapsed >= setLengthSec) {
-        onCompleteRef.current();
-        return;
-      }
-      rafRef.current = requestAnimationFrame(loop);
     };
 
-    rafRef.current = requestAnimationFrame(loop);
+    // First paint after mount of ball/flash nodes.
+    rafRef.current = requestAnimationFrame(() => {
+      paint();
+      lastFrameRef.current = performance.now();
+
+      const loop = (now: number) => {
+        const rawDt = (now - lastFrameRef.current) / 1000;
+        lastFrameRef.current = now;
+        const dt = Math.min(
+          Math.max(rawDt, 0),
+          BLS_BALL_MAX_DT_SEC
+        );
+
+        const step = blsBallStep(speedRef.current, dt);
+        let next = posRef.current + dirRef.current * step;
+
+        if (next >= 1) {
+          next = 1;
+          dirRef.current = -1;
+          repeatCount.current += 1;
+          if (vibrationRef.current !== "none") rumble(vibrationRef.current);
+          audioRef.current?.playPan("right", soundRef.current);
+          lastSide.current = "right";
+        } else if (next <= 0) {
+          next = 0;
+          dirRef.current = 1;
+          repeatCount.current += 1;
+          if (vibrationRef.current !== "none") rumble(vibrationRef.current);
+          audioRef.current?.playPan("left", soundRef.current);
+          lastSide.current = "left";
+        }
+
+        posRef.current = next;
+        paint();
+
+        const elapsed = (now - startTime.current) / 1000;
+        const maxRepeats = repeatsLimit(repeats);
+        if (repeatCount.current >= maxRepeats || elapsed >= setLengthSec) {
+          onCompleteRef.current();
+          return;
+        }
+        rafRef.current = requestAnimationFrame(loop);
+      };
+
+      rafRef.current = requestAnimationFrame(loop);
+    });
+
     return () => cancelAnimationFrame(rafRef.current);
   }, [running, repeats, setLengthSec]);
 
-  const posPct = pos * 100;
+  // Keep ball size/color and axis transforms in sync without restarting the set.
+  useEffect(() => {
+    if (!running || animation !== "dot") return;
+    const el = ballRef.current;
+    if (el) {
+      el.style.width = `${ballSize}px`;
+      el.style.height = `${ballSize}px`;
+      el.style.background = ballColor;
+    }
+    paintBall(
+      ballRef.current,
+      containerRef.current,
+      posRef.current,
+      axis === "horizontal",
+      ballSize
+    );
+  }, [running, animation, ballSize, ballColor, axis]);
+
   const horizontal = axis === "horizontal";
   const idleHintOnDark = blsBackgroundIsDark(background);
 
   return (
     <div
+      ref={containerRef}
       role="button"
       tabIndex={0}
       onClick={onToggle}
       onKeyDown={(e) => {
+        // Space is owned by SessionWorkspace (start/stop). On role=button, Space
+        // keyup also synthesizes a click — that double-fired toggle (stop then
+        // restart). Prevent default only; Enter still activates when focused.
         if (e.code === "Space") {
+          e.preventDefault();
+          return;
+        }
+        if (e.code === "Enter") {
           e.preventDefault();
           onToggle();
         }
+      }}
+      onKeyUp={(e) => {
+        if (e.code === "Space") e.preventDefault();
       }}
       className="workspace-canvas relative h-full min-h-0 flex-1 overflow-hidden outline-none"
       style={{ background }}
@@ -179,57 +279,43 @@ export function BallCanvas({
       {animation === "flash" && running && horizontal && (
         <>
           <div
-            className="absolute inset-y-0 left-0 w-1/2 transition-opacity duration-75"
-            style={{
-              background: "rgba(0,0,0,0.06)",
-              opacity: pos < 0.5 ? 1 : 0.15,
-            }}
+            ref={flashARef}
+            className="absolute inset-y-0 left-0 w-1/2"
+            style={{ background: "rgba(0,0,0,0.06)", opacity: 1 }}
           />
           <div
-            className="absolute inset-y-0 right-0 w-1/2 transition-opacity duration-75"
-            style={{
-              background: "rgba(0,0,0,0.06)",
-              opacity: pos >= 0.5 ? 1 : 0.15,
-            }}
+            ref={flashBRef}
+            className="absolute inset-y-0 right-0 w-1/2"
+            style={{ background: "rgba(0,0,0,0.06)", opacity: 0.15 }}
           />
         </>
       )}
       {animation === "flash" && running && !horizontal && (
         <>
           <div
-            className="absolute inset-x-0 top-0 h-1/2 transition-opacity duration-75"
-            style={{
-              background: "rgba(0,0,0,0.06)",
-              opacity: pos < 0.5 ? 1 : 0.15,
-            }}
+            ref={flashARef}
+            className="absolute inset-x-0 top-0 h-1/2"
+            style={{ background: "rgba(0,0,0,0.06)", opacity: 1 }}
           />
           <div
-            className="absolute inset-x-0 bottom-0 h-1/2 transition-opacity duration-75"
-            style={{
-              background: "rgba(0,0,0,0.06)",
-              opacity: pos >= 0.5 ? 1 : 0.15,
-            }}
+            ref={flashBRef}
+            className="absolute inset-x-0 bottom-0 h-1/2"
+            style={{ background: "rgba(0,0,0,0.06)", opacity: 0.15 }}
           />
         </>
       )}
       {animation === "dot" && running && (
         <div
-          className="absolute rounded-full shadow-md"
+          ref={ballRef}
+          className="bls-ball absolute rounded-full shadow-md"
           style={{
             width: ballSize,
             height: ballSize,
             background: ballColor,
+            willChange: "transform",
             ...(horizontal
-              ? {
-                  left: `calc(${posPct}% - ${ballSize / 2}px)`,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                }
-              : {
-                  top: `calc(${posPct}% - ${ballSize / 2}px)`,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                }),
+              ? { left: 0, top: "50%", transform: "translate3d(0, -50%, 0)" }
+              : { top: 0, left: "50%", transform: "translate3d(-50%, 0, 0)" }),
           }}
         />
       )}

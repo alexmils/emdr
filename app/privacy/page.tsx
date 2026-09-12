@@ -2,10 +2,11 @@ import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrum
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { getPlatformSettings } from "@/lib/platform-settings";
+import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 
-export const revalidate = 3600; // ISR: static HTML, revalidated hourly
+export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("privacy");

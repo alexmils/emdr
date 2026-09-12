@@ -11,12 +11,13 @@ import {
   getResolvedSiteSeoPages,
   metadataFromResolved,
   resolveSiteSeoPages,
+  SEO_COPY_REVISION,
 } from "@/lib/site-seo";
 
 /** Tagged fetch so Admin → SEO save can `revalidateTag("seo")`. */
 export const getCachedResolvedSiteSeoPages = unstable_cache(
   async () => getResolvedSiteSeoPages(),
-  ["resolved-site-seo", "pages-v2"],
+  ["resolved-site-seo", SEO_COPY_REVISION],
   { tags: [SEO_CACHE_TAG], revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS }
 );
 
