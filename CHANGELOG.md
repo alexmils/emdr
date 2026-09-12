@@ -232,6 +232,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Preloader on all marketing `FrontendShell` pages (not home-only); still skips reduced-motion and pending home hash scroll
 - [internal] Home section H2s: Aiero-style letter rise on scroll (`LetterRevealHeading`)
 - [internal] nura-ui-designer skill: document letter-rise H2 motion + checklist
+- [internal] Blog index width matches header pill column (76rem)
+- [internal] All marketing `.frontend-main` pages match header width (76rem); drop 42rem legal/cluster caps
+- [internal] Sticky header: stop short-page bounce (no padding shrink off-home; scroll hysteresis)
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)

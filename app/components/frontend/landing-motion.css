@@ -1620,7 +1620,7 @@
 }
 
 .fe-blog-inner {
-  max-width: min(72rem, 100%);
+  max-width: none;
 }
 
 .fe-blog-head {

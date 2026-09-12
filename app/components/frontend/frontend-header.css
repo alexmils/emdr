@@ -12,7 +12,12 @@
     background 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.frontend-header-scrolled {
+/*
+ * Padding shrink only on the fixed home overlay.
+ * Sticky pages (About, Privacy, …): shrinking chrome changes document height and
+ * can toggle the scrollbar → header bounce loop on short content.
+ */
+.frontend-header--overlay.frontend-header-scrolled {
   padding-block: clamp(0.45rem, 1.2vw, 0.85rem);
 }
 

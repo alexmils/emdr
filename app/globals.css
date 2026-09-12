@@ -8480,9 +8480,10 @@ select.field option:disabled {
 .frontend-main {
   flex: 1;
   width: 100%;
-  max-width: 52rem;
+  /* Same column as `.frontend-header-wrap` / `.fe-container` */
+  max-width: 76rem;
   margin: 0 auto;
-  padding: 3rem 1.5rem 4rem;
+  padding: 3rem clamp(1rem, 4vw, 1.875rem) 4rem;
 }
 
 .frontend-hero {
@@ -8619,7 +8620,7 @@ select.field option:disabled {
 .frontend-legal ul {
   margin: 0 0 1.1rem;
   padding-left: 1.25rem;
-  max-width: 42rem;
+  max-width: none;
   line-height: 1.65;
   font-size: 1.125rem;
   color: var(--fe-fg);
@@ -8639,7 +8640,7 @@ select.field option:disabled {
 .frontend-legal-draft-banner {
   margin: 0 0 1.25rem;
   padding: 0.75rem 1rem;
-  max-width: 42rem;
+  max-width: none;
   border: 1px solid color-mix(in srgb, var(--fe-accent) 35%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fe-accent) 12%, transparent);
@@ -8650,7 +8651,7 @@ select.field option:disabled {
 .frontend-legal-pre {
   margin: 0 0 1.25rem;
   padding: 0.85rem 1.1rem;
-  max-width: 42rem;
+  max-width: none;
   white-space: pre-wrap;
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -8663,7 +8664,7 @@ select.field option:disabled {
 
 .frontend-legal p {
   margin: 0 0 1.1rem;
-  max-width: 42rem;
+  max-width: none;
   font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.65;
@@ -8683,7 +8684,7 @@ select.field option:disabled {
 .frontend-legal-note {
   margin: 1.5rem 0;
   padding: 0.9rem 1.1rem;
-  max-width: 42rem;
+  max-width: none;
   border-left: 3px solid var(--fe-accent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fe-fg) 4%, transparent);
@@ -8699,7 +8700,7 @@ select.field option:disabled {
 /* Comparison table — horizontal scroll on mobile, no squashed strip. */
 .frontend-legal-tablewrap {
   margin: 0 0 1.4rem;
-  max-width: 42rem;
+  max-width: none;
   overflow-x: auto;
 }
 
@@ -8740,7 +8741,7 @@ select.field option:disabled {
 .frontend-legal-toc {
   margin: 1.5rem 0 2rem;
   padding: 1rem 1.1rem;
-  max-width: 42rem;
+  max-width: none;
   border: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--fe-fg) 3%, transparent);
@@ -8792,7 +8793,7 @@ select.field option:disabled {
 }
 
 .frontend-legal-termly {
-  max-width: 42rem;
+  max-width: none;
   font-family: var(--font-sans);
   font-size: 1.125rem;
   font-weight: 400;

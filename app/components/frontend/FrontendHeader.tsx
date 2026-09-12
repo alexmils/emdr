@@ -94,10 +94,19 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
       const hero = document.querySelector<HTMLElement>(".fe-hero");
       if (overlay && hero) {
         const bottom = hero.getBoundingClientRect().bottom;
-        setScrolled(bottom < 120);
+        // Hysteresis around the hero edge so fixed overlay does not flicker.
+        setScrolled((prev) => {
+          if (prev) return bottom < 140;
+          return bottom < 100;
+        });
         return;
       }
-      setScrolled(window.scrollY > 24);
+      // Sticky chrome: hysteresis — short pages must not oscillate at the threshold.
+      setScrolled((prev) => {
+        const y = window.scrollY;
+        if (prev) return y > 6;
+        return y > 48;
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

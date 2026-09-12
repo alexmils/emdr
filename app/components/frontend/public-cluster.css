@@ -47,15 +47,18 @@
 }
 
 .fe-cluster-inner {
-  max-width: 42rem;
+  max-width: none;
+  width: 100%;
 }
 
 .fe-cluster-inner--wide {
-  max-width: 48rem;
+  max-width: none;
+  width: 100%;
 }
 
 .fe-cluster-inner--blog {
-  max-width: min(72rem, 100%);
+  max-width: none;
+  width: 100%;
 }
 
 .fe-cluster-kicker {
@@ -168,12 +171,12 @@
 
 .frontend-legal .fe-cluster-related {
   margin-top: 2.5rem;
-  max-width: 40rem;
+  max-width: none;
 }
 
 .frontend-legal .fe-cluster-related--cards,
 .fe-cluster .fe-cluster-related--cards {
-  max-width: min(52rem, 100%);
+  max-width: none;
 }
 
 .fe-cluster-group {
@@ -285,7 +288,7 @@
 .fe-learn .fe-cluster-list-dek {
   margin-top: 0.25rem;
   font-size: 0.9375rem;
-  max-width: 42rem;
+  max-width: none;
 }
 
 @media (max-width: 520px) {

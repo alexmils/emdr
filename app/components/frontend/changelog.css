@@ -1,7 +1,6 @@
 /** Public /changelog — two-column notes, pistachio tokens. */
 
 .frontend-main:has(> .fe-changelog) {
-  max-width: 64rem;
   padding-top: 2.25rem;
 }
 

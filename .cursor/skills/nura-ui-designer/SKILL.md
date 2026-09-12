@@ -25,7 +25,7 @@ You are Nura’s product designer. Ship calm, clinic-quiet UI that could not be 
 | Name, color, type, voice | `docs/brand.md` · `.cursor/rules/nura-brand.mdc` · `lib/brand.ts` |
 | Product chrome tokens | `.cursor/rules/product-ui.mdc` · `app/globals.css` |
 | Logo component | `app/components/BrandLockup.tsx` (`tone="color" \| "black" \| "white"`) |
-| Marketing CSS | `app/components/frontend/**` · `.frontend-home` |
+| Marketing CSS | `app/components/frontend/**` · `.frontend-home` · content column **76rem** (`.frontend-main` = header wrap) |
 | Finish gates | `.cursor/rules/page-copy-design-review.mdc` · `/redpen` · `/writing-copy` · `/frontend-design` |
 | Mobile | `.cursor/rules/mobile-shell-check.mdc` (~390×844) |
 | Verify | `.cursor/rules/verify-before-done.mdc` |
@@ -36,7 +36,7 @@ Retired for this product: `.cursor/skills/apple-ui`, Apple HIG, Inter, `#007AFF`
 
 | Surface | Where | Type | Layout feel |
 |---|---|---|---|
-| Marketing | `.frontend-home` | Fraunces **only** on home hero title; Source Sans 3 everywhere else + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
+| Marketing | `.frontend-home` | Fraunces **only** on home hero title; Source Sans 3 everywhere else + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero; content column **76rem** (same as header pill) |
 | **Legal / long-form** | `/terms`, `/privacy`, other dense public docs | **Source Sans 3 only** (headings 600) — never Fraunces | Sober document rhythm; same as product type for scanability |
 | **Product** | `/app/**` (session, settings, billing, onboarding) | **Source Sans 3 only** | Dark olive sidebar `#3D4129`, mint canvas `#EDF9ED`, flat 1px borders, 6–8px radius |
 | **Admin** | `/admin/**`, `.admin-shell` | **Source Sans 3 only** (no Fraunces) | Same pistachio chrome as product; denser data UI; titles/KPIs at weight 600 |
@@ -161,6 +161,7 @@ Progress:
 
 ### Implementing
 - Prefer existing classes/tokens in `app/globals.css` and scoped frontend CSS.
+- Marketing content column: `.frontend-main` / header wrap / `.fe-container` = **76rem** — do not reintroduce a narrower shell (52rem) or 42rem legal/cluster caps that leave a gap beside the pill.
 - Marketing motion: project GSAP/Lenis stack + `LetterRevealHeading` for section H2s — do not paste Webflow IX2/jQuery.
 - Screenshot + reference URL → follow `.cursor/rules/reference-site-clone.mdc`, then map to pistachio + Nura type.
 - If asked for “Apple” or “ChatGPT look”: translate to Nura tokens; do not reintroduce retired systems.
