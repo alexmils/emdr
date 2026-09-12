@@ -14,9 +14,9 @@ const CHOICES: {
 }[] = [
   {
     id: "guided",
-    title: "Agent-guided session",
+    title: "AI-guided session",
     description:
-      "A session agent walks you through EMDR phases, grounding, and check-ins after each set.",
+      "An AI session guide walks you through EMDR phases, grounding, and check-ins after each set.",
     keyHint: "1",
   },
   {
@@ -102,12 +102,12 @@ export function SessionStartScreen() {
       <div className="session-start-inner">
         <h2 className="session-start-title">Start a session</h2>
         <p className="session-start-subtitle">
-          Agent-guided (with a session agent) or Free (sets you run yourself).
+          AI-guided (with a session guide) or Free (sets you run yourself).
           This choice stays for this session.
         </p>
         {entitlement?.isTrialLimited && (
           <p className="session-start-trial">
-            Trial: {Math.max(0, entitlement.guidedRemaining)} agent-guided left ·{" "}
+            Trial: {Math.max(0, entitlement.guidedRemaining)} AI-guided left ·{" "}
             {Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)} min
             Free left
             {(guidedBlocked || blsBlocked) && (
@@ -155,7 +155,7 @@ export function SessionStartScreen() {
                 <span className="session-start-card-desc">
                   {blocked
                     ? c.id === "guided"
-                      ? "Trial agent-guided sessions used — upgrade to continue."
+                      ? "Trial AI-guided sessions used — upgrade to continue."
                       : "Trial Free session time used — upgrade to continue."
                     : c.description}
                 </span>

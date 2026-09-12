@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppleToggle } from "@/app/components/AppleToggle";
 import { PasskeySettings } from "@/app/components/PasskeySettings";
 import { Avatar } from "@/app/components/Avatar";
+import { DeleteAccountZone } from "@/app/components/DeleteAccountZone";
 import { MemoryImportDropzone } from "@/app/components/MemoryImportDropzone";
 import {
   displayNameFor,
@@ -234,6 +235,7 @@ function SettingsPageContent() {
           <h2 className="settings-panel-title">{panelTitle}</h2>
 
           {tab === "profile" && (
+            <>
             <div className="settings-group">
               <div className="settings-row flex flex-wrap items-center gap-4">
                 <Avatar
@@ -309,6 +311,8 @@ function SettingsPageContent() {
                 </p>
               )}
             </div>
+            <DeleteAccountZone email={user?.email} />
+            </>
           )}
 
           {tab === "voice" && (
@@ -317,10 +321,8 @@ function SettingsPageContent() {
                 <div className="min-w-0 flex-1">
                   <span className="settings-body-text">Auto voice</span>
                   <p className="settings-help mt-1">
-                    Automatically read each agent line aloud (not while a set is
-                    running).
-                    Use the speaker icon on each message when off. Voice provider
-                    is configured by the platform admin.
+                    Speak AI replies as they arrive. Pauses during a set. When
+                    off, tap the speaker on a message.
                   </p>
                 </div>
                 <AppleToggle

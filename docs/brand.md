@@ -49,10 +49,10 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 
 ## Type
 
-### Product (`/app`)
+### Product (`/app`, `.app-shell`)
 
-- Display: **Fraunces** via `next/font/google` (`--font-display`)
-- UI: **Source Sans 3** (`--font-sans`)
+- **Source Sans 3 only** (`--font-sans`) for titles, body, and chrome
+- `.app-shell` / `.settings-shell` remap `--font-display` → `--font-sans` (no ornamental Fraunces in product)
 
 ### Admin (`/admin`, `.admin-shell`)
 
@@ -61,7 +61,7 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 
 ### Marketing (`.frontend-home`)
 
-Same Fraunces + Source Sans pair as product — contrasts the rounded wave wordmark (do not echo it with soft grotesks):
+Fraunces is the decorative display face for public marketing only (hero, section titles) — not for `/app`:
 
 | Role | Font | Notes |
 |---|---|---|

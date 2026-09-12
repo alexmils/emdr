@@ -81,17 +81,17 @@ export function UpgradeModal({
     reason === "bls_limit_reached"
       ? "You’ve used your Free session time"
       : reason === "trial_limit_reached"
-        ? "You’ve used your trial guided sessions"
+        ? "You’ve used your trial AI-guided sessions"
         : "Upgrade for unlimited sessions";
 
   const detail =
     reason === "bls_limit_reached"
       ? `Trial includes ${Math.floor(blsSecondsLimit / 60)} minutes of Free session time (${blsSecondsUsed}s used). Upgrade for unlimited Free sessions.`
       : reason === "trial_limit_reached"
-        ? `Trial includes ${guidedLimit} guided wellness sessions (${guidedUsed} used). Upgrade to continue without limits.`
+        ? `Trial includes ${guidedLimit} AI-guided sessions (${guidedUsed} used). Upgrade to continue without limits.`
         : activateCurrent
           ? `End your trial and start billing on your ${plans[plan]?.label ?? plan} plan.`
-          : "Get unlimited guided and Free sessions.";
+          : "Get unlimited AI-guided and Free sessions.";
 
   const upgrade = useCallback(async () => {
     setBusy(true);
@@ -215,7 +215,7 @@ export function UpgradeModal({
                 aria-hidden
                 strokeWidth={2.25}
               />
-              <span>Unlimited guided wellness sessions</span>
+              <span>Unlimited AI-guided sessions</span>
             </li>
             <li>
               <Check
@@ -223,7 +223,7 @@ export function UpgradeModal({
                 aria-hidden
                 strokeWidth={2.25}
               />
-              <span>Unlimited Free sessions</span>
+              <span>Unlimited Free sets (no agent)</span>
             </li>
             <li>
               <Check

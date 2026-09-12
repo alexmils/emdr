@@ -102,9 +102,13 @@ export function Sidebar() {
         (entitlement.isTrialLimited || entitlement.needsPayment)
     );
 
-  const upgradeBannerBody = entitlement?.isTrialLimited
-    ? `Unlimited agent-guided sessions and Free sessions. Trial left: ${Math.max(0, entitlement.guidedRemaining)} agent-guided · ${Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m free.`
-    : "Unlock unlimited agent-guided sessions and Free sessions with a paid plan.";
+  const upgradeBannerLead = entitlement?.isTrialLimited
+    ? "Unlimited sessions — no trial caps."
+    : "Unlock unlimited sessions.";
+
+  const upgradeBannerMeta = entitlement?.isTrialLimited
+    ? `${Math.max(0, entitlement.guidedRemaining)} guided · ${Math.floor(Math.max(0, entitlement.blsSecondsRemaining) / 60)}m Free remaining`
+    : null;
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -280,7 +284,10 @@ export function Sidebar() {
               </button>
             </div>
             <p className="sidebar-upgrade-title">Upgrade to Pro!</p>
-            <p className="sidebar-upgrade-body">{upgradeBannerBody}</p>
+            <p className="sidebar-upgrade-body">{upgradeBannerLead}</p>
+            {upgradeBannerMeta ? (
+              <p className="sidebar-upgrade-meta">{upgradeBannerMeta}</p>
+            ) : null}
             <button
               type="button"
               className="sidebar-upgrade-cta"

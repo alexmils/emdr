@@ -533,17 +533,19 @@ export function SessionWorkspace() {
   if (showConsent) {
     return (
       <main className="workspace-main flex min-h-0 flex-1 flex-col">
-        <header className="workspace-header">
+        <header className="workspace-header workspace-header--consent">
           <div className="workspace-header-row">
             <div className="workspace-header-lead">
               <WorkspaceMenuButton />
               <div className="min-w-0">
                 <h1 className="workspace-title">Safety consent</h1>
+                <SessionNotTherapyStrip />
               </div>
             </div>
-            <CrisisHelpButton />
+            <div className="workspace-header-trail">
+              <CrisisHelpButton />
+            </div>
           </div>
-          <SessionNotTherapyStrip />
         </header>
         <div className="flex flex-1 flex-col items-center justify-center px-4 py-6">
           <InformedConsentGate
@@ -565,6 +567,7 @@ export function SessionWorkspace() {
               <WorkspaceMenuButton />
               <div className="min-w-0">
                 <h1 className="workspace-title">Nura</h1>
+                <SessionNotTherapyStrip />
               </div>
             </div>
             <div className="workspace-header-trail">
@@ -572,13 +575,12 @@ export function SessionWorkspace() {
               <CrisisHelpButton />
             </div>
           </div>
-          <SessionNotTherapyStrip />
         </header>
         <div className="workspace-home-empty flex flex-1 flex-col items-center justify-center gap-6 px-6 py-8">
           <div className="workspace-home-empty-top flex flex-col items-center gap-4 text-center">
             <h2 className="session-start-title">Start a session</h2>
             <p className="session-start-subtitle max-w-md">
-              Open a new chat to choose agent-guided or Free.
+              Open a new chat to choose AI-guided or Free.
             </p>
             <button
               type="button"
@@ -612,6 +614,7 @@ export function SessionWorkspace() {
               <div className="min-w-0">
                 <h1 className="workspace-title">{thread.title}</h1>
                 <p className="workspace-hint">Choose a session type to begin</p>
+                <SessionNotTherapyStrip />
               </div>
             </div>
             <div className="workspace-header-trail">
@@ -619,7 +622,6 @@ export function SessionWorkspace() {
               <CrisisHelpButton />
             </div>
           </div>
-          <SessionNotTherapyStrip />
         </header>
         <SessionStartScreen />
         <SessionClosureModal
@@ -658,6 +660,7 @@ export function SessionWorkspace() {
                 threadId={thread.id}
                 description={thread.description}
               />
+              {!running ? <SessionNotTherapyStrip /> : null}
             </div>
           </div>
           <div className="workspace-header-trail">
@@ -674,7 +677,6 @@ export function SessionWorkspace() {
             {!running ? <CrisisHelpButton /> : null}
           </div>
         </div>
-        {!running ? <SessionNotTherapyStrip /> : null}
       </header>
 
       {showResume ? (

@@ -2,12 +2,24 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { BRAND_SPOKEN } from "@/lib/brand";
+import {
+  FIND_A_HELPLINE_URL,
+  type CountryCrisisResources,
+} from "@/lib/emergency-by-country";
+
+type CrisisResourcesPayload = CountryCrisisResources & {
+  source?: string;
+};
 
 /**
  * Always-available crisis resources in session UI (separate from product Help).
+ * Emergency / crisis numbers follow request geo (Cloudflare country or IP).
  */
 export function CrisisHelpButton() {
   const [open, setOpen] = useState(false);
+  const [resources, setResources] = useState<CrisisResourcesPayload | null>(
+    null
+  );
   const panelId = useId();
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -32,6 +44,31 @@ export function CrisisHelpButton() {
     return () => document.removeEventListener("mousedown", onPointer);
   }, [open]);
 
+  useEffect(() => {
+    if (!open || resources) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/crisis-resources", {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as CrisisResourcesPayload;
+        if (!cancelled) setResources(data);
+      } catch {
+        /* keep fallback copy */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, resources]);
+
+  const countryLabel = resources?.countryName ?? null;
+  const emergency = resources?.emergency ?? null;
+  const crisis = resources?.crisis ?? null;
+  const findUrl = resources?.findHelplineUrl ?? FIND_A_HELPLINE_URL;
+
   return (
     <div className="crisis-help">
       <button
@@ -42,7 +79,12 @@ export function CrisisHelpButton() {
         aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
       >
-        I need help now
+        <span className="crisis-help-btn-label crisis-help-btn-label--full">
+          I need help now
+        </span>
+        <span className="crisis-help-btn-label crisis-help-btn-label--short">
+          Need help
+        </span>
       </button>
       {open ? (
         <div
@@ -57,24 +99,60 @@ export function CrisisHelpButton() {
             services.
           </p>
           <ul className="crisis-help-list">
+            {crisis ? (
+              <li>
+                <a href={`tel:${crisis.dial}`} className="crisis-help-call">
+                  {countryLabel
+                    ? `${countryLabel} — ${crisis.display}`
+                    : crisis.display}
+                </a>
+                <span>
+                  {crisis.note}
+                  {": "}
+                  <a href={`tel:${crisis.dial}`}>call</a>
+                  {crisis.smsDial ? (
+                    <>
+                      {" or "}
+                      <a href={`sms:${crisis.smsDial}`}>text {crisis.display}</a>
+                    </>
+                  ) : null}
+                </span>
+              </li>
+            ) : null}
             <li>
-              <strong>US — 988</strong>
-              <span> Suicide &amp; Crisis Lifeline: call or text 988</span>
+              {emergency ? (
+                <>
+                  <a
+                    href={`tel:${emergency.dial}`}
+                    className="crisis-help-call"
+                  >
+                    {countryLabel
+                      ? `Emergency — ${countryLabel}`
+                      : "Emergency"}{" "}
+                    {emergency.display}
+                  </a>
+                  <span> Police, fire, or ambulance in your area</span>
+                </>
+              ) : (
+                <>
+                  <strong>Emergency</strong>
+                  <span>
+                    {" "}
+                    Call your local emergency number (often 112 or 911)
+                  </span>
+                </>
+              )}
             </li>
             <li>
-              <strong>Emergency</strong>
-              <span> Call your local emergency number</span>
-            </li>
-            <li>
-              <strong>Chat</strong>
+              <strong>More helplines</strong>
               <span>
                 {" "}
                 <a
-                  href="https://988lifeline.org"
+                  href={findUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  988lifeline.org
+                  Find a local helpline
                 </a>
               </span>
             </li>
@@ -96,7 +174,7 @@ export function CrisisHelpButton() {
 export function SessionNotTherapyStrip() {
   return (
     <p className="session-not-therapy" role="note">
-      Self-help support — not a licensed therapist · not emergency care
+      Not a therapist. Not for emergencies.
     </p>
   );
 }

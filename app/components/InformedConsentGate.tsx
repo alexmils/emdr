@@ -64,7 +64,7 @@ export function InformedConsentGate({ onCompleted }: Props) {
 
   return (
     <div className="informed-consent-gate">
-      <h2 className="informed-consent-title">Before your first session</h2>
+      <h2 className="informed-consent-title font-sans">Before your first session</h2>
       <p className="informed-consent-lead">
         {BRAND_SPOKEN} is a self-help tool. It is not therapy, not a medical
         device, and does not diagnose. Confirm each statement to continue.

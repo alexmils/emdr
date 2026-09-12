@@ -74,9 +74,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Public sitemap **`lastModified`** dates only (no `changefreq` / `priority` — Google ignores them)
 - Homepage JSON-LD (`Organization` + `SoftwareApplication` + `FAQPage`) matching the visible FAQ accordion; no native-app OS list, no BLS jargon, no `MedicalWebPage` until a clinical reviewer exists
 - **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
+- **Self-serve account deletion**: Settings → Profile → Danger zone deletes the signed-in user (cascaded session/intake/memory data) via `POST /api/auth/delete-account` with email confirm; best-effort Stripe subscription cancel; Privacy §9 + Terms §8 document how to update/delete (store compliance); confirmation email (`account_deleted` template) to the user + notify active admins/support (+ platform support email)
 
 ### Changed
+- **`/terms`**: hosts prepared Termly Terms of Service HTML (`content/legal/terms-of-service.termly.html` → `lib/legal/terms-body.generated.ts`) with in-page TOC jump links + Nura product-notice addendum (not therapy / risk / crisis / agent / account delete); Termly free plan cannot publish a second policy
 - **18+ age confirm**: moved off create-account into first onboarding step after signup (`POST /api/consents` `age_18`); create-account keeps Terms/Privacy only; age copy “Are you 18 or older?”; **all** onboarding titles use Source Sans (no Fraunces); larger wave lockup; plan step drops “Getting started” kicker; trial note leads with **AI-guided** sessions + Free session time, card saved, no charge for N days (explicit AI override vs usual nura-brand “don’t lead with AI”)
+- **Informed consent gate**: Source Sans title (no Fraunces); larger lead + checklist type; session header trail (Charges + “I need help now”) vertically centered with title + not-therapy strip; mobile trail no longer `display: contents` (was escaping to the top)
+- **/app typography**: Fraunces removed from product chrome (`.app-shell` remaps `--font-display` → Source Sans); Fraunces stays marketing-only (`.frontend-home` hero / sections)
+- **Session not-therapy strip**: “Not a therapist. Not for emergencies.” (replaces unclear “Self-help support — …”)
+- **/app AI-guided copy**: sidebar upgrade, mode picker, home empty, UpgradeModal — “AI-guided” (matches onboarding trial note)
+- **Mobile session header**: disclaimer on its own row under title; hide “Charges in…” on narrow; crisis pill short label “Need help”
+- **Resources article header**: menu icon + “← Resources” vertically centered (lead `align-items: center`, back link `min-height: 36px`)
+- **Sidebar lockup**: larger wave logo (~1.85rem) to match New chat chrome weight
+- **Sidebar upgrade banner**: larger body type + split lead/meta; AI-guided wording; stronger contrast
+- **Settings Profile**: Danger zone is a separate card below profile (not fused into the same white block)
+- **Auto voice help**: “Speak AI replies as they arrive. Pauses during a set…” (dropped admin jargon)
+- **Mobile crisis pill**: “Need help” label was blank (empty white pill) — mobile `display` override now comes after the base `display: none` rule
+- **Sidebar upgrade banner**: lead = “Unlimited sessions — no trial caps.”; meta = “3 guided · 10m Free remaining” (no AI-guided/Free echo)
+- **Session header**: not-therapy strip back under the title; “Need help” vertically centers with the left stack
+- **Crisis panel**: US — 988 is a `tel:988` link; supporting line has call / text (`sms:988`) links
+- **Localized crisis numbers**: `GET /api/crisis-resources` uses Cloudflare `CF-IPCountry` (else IP lookup) to show country emergency + verified crisis lines; Find a Helpline fallback
 - **Brand lockup**: public name is **Nura** only (drop “NuraHelp” from UI/legal copy; domain `nurahelp.com` unchanged). Operator **Receptly LLC**, 30 N Gould St, Sheridan, WY 82801 — Terms/Privacy, footer copyright, JSON-LD `legalName`
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
 - **Start a session**: mode picker only — removed Learn teaser; keyboard hint fades out after ~2.5s

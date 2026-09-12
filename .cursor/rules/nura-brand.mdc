@@ -9,22 +9,25 @@ Full spec: [`docs/brand.md`](docs/brand.md). Constants: [`lib/brand.ts`](lib/bra
 
 ## Name
 
-**Say Nura. Write NuraHelp. URL is nurahelp.com.**
+**Say and write Nura. URL is nurahelp.com (domain only).** Operator: **Receptly LLC** (`lib/legal-entity.ts`).
 
 | Layer | Name | Where |
 |---|---|---|
-| Spoken / chrome | Nura | Sidebar, headers, email from-name, Stripe Checkout, WebAuthn `rpName` |
-| Legal / lockup | NuraHelp | Logo aria, Terms, copyright, footer |
+| Brand / chrome | Nura | Sidebar, headers, email from-name, Stripe Checkout, WebAuthn `rpName`, lockup |
+| Legal operator | Receptly LLC | Terms, Privacy, footer copyright, JSON-LD `legalName` |
 | Product feature | EMDR Support | Not the company name |
+| Never in public | NuraHelp / NuraHelp AI | Domain host only — rewrite leftovers via `rewriteRetiredBrandCopy` |
 
 ```ts
 // ❌ BAD
+"NuraHelp"
 "NuraHelp AI"
 "Nura Help"
 
 // ✅ GOOD
-import { BRAND_SPOKEN, BRAND_LEGAL } from "@/lib/brand";
-chromeBrandName(raw) // maps leftover "NuraHelp AI" → Nura
+import { BRAND_SPOKEN } from "@/lib/brand";
+import { legalEntityDisplayName } from "@/lib/legal-entity";
+chromeBrandName(raw) // maps leftover "NuraHelp" → Nura
 rewriteRetiredBrandCopy(text) // stored help/knowledge copy
 ```
 
@@ -40,9 +43,9 @@ Hero: **EMDR therapy online.** *in a calm app.* (tagline still: Support for ther
 
 - Pistachio palette: Paper/mint `#A4EDA5` · Sage `#84B067` (buttons, wordmark) · Ink `#2A3020` (body) · Pistachio `#C6D67E` **focus/hover only, never body or default field borders** · Olive `#948F4E` (muted) · Sidebar `#3D4129`
 - Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
-- **Product type** (`/app`): Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
+- **Product type** (`/app`, `.app-shell`): **Source Sans 3 only** — remaps `--font-display` to sans (same idea as admin). No Fraunces in product chrome.
 - **Admin type** (`/admin`, `.admin-shell`): **Source Sans 3 only** — sober UI; remaps `--font-display` to `--font-sans` so titles/KPIs are not ornamental Fraunces
-- **Marketing type** (`.frontend-home`, public pages): Fraunces + Source Sans 3 + Roboto Mono kickers — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it)
+- **Marketing type** (`.frontend-home`, public pages): Fraunces + Source Sans 3 + Roboto Mono kickers — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it). Fraunces is decorative for hero / section titles — not for `/app`.
 - Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
 
 ## Frontend typography (aligned with product)
