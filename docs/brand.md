@@ -61,15 +61,18 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 
 ### Marketing (`.frontend-home`)
 
-Fraunces is the decorative display face for public marketing only (hero, section titles) — not for `/app`:
+Fraunces is the **decorative** display face for marketing **hero and major section titles only** — not for dense reading, legal docs, or app chrome:
 
 | Role | Font | Notes |
 |---|---|---|
-| Headings | **Fraunces** | h1–h6, hero, pricing; weight 400; italic for emphasis |
-| Body / UI | **Source Sans 3** | Nav, buttons, paragraphs |
+| Hero / landing section titles | **Fraunces** | Weight 400; italic for emphasis. One signature moment per composition |
+| Legal / long-form public docs (`/terms`, `/privacy`, …) | **Source Sans 3** | Headings **600**, body **400** — same sober scale as product. Never Fraunces on “OUR SERVICES”-style legal headings |
+| Body / UI / nav / buttons | **Source Sans 3** | All other marketing UI |
 | Labels | **Roboto Mono** | Kickers, marquee, uppercase ~0.9375rem |
 
-Loaded via `next/font` in `app/layout.tsx` (`--font-fraunces`, `--font-source-sans`, `--font-fe-alt`). Scoped on `.frontend-home` in `app/globals.css`.
+**Do not** use Fraunces for Termly/legal ALL-CAPS section titles, settings, admin, or `/app`. Ornamental serif next to wave lockup is fine in the hero; on a contract page it looks scattered and hard to scan.
+
+Loaded via `next/font` in `app/layout.tsx` (`--font-fraunces`, `--font-source-sans`, `--font-fe-alt`). Scoped on `.frontend-home` in `app/globals.css`. Legal overrides: `.frontend-home .frontend-legal h1–h3` → `--font-sans`.
 
 Do not use Inter on any surface. Avoid rounded soft grotesks (Nunito, Manrope, retired BDOGrotesk) next to the wave lockup.
 

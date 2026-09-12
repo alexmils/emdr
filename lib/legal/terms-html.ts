@@ -111,6 +111,84 @@ function injectNuraAddendum(html: string): string {
   return `${html}\n${NURA_ADDENDUM}`;
 }
 
+const HELP_CONTROL =
+  '<button type="button" class="help-text-link legal-open-help" data-open-help>Need help</button>';
+
+/** Soft sentence case for ALL-CAPS Termly headings (keeps "1." / "1A." prefixes). */
+export function softSentenceCaseHeading(text: string): string {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (!cleaned) return cleaned;
+  const m = cleaned.match(/^(\d+[A-Za-z]?\.\s*)?(.*)$/);
+  if (!m) return cleaned;
+  const prefix = m[1] || "";
+  const rest = (m[2] || "").toLowerCase();
+  if (!rest) return prefix.trim();
+  return `${prefix}${rest.charAt(0).toUpperCase()}${rest.slice(1)}`;
+}
+
+function rewriteHeadingCase(html: string): string {
+  return html.replace(/<(h[23])(\b[^>]*)>([\s\S]*?)<\/\1>/gi, (_all, tag, attrs, inner) => {
+    const plain = inner
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!plain || !/[A-Z]{3,}/.test(plain)) {
+      return `<${tag}${attrs}>${inner}</${tag}>`;
+    }
+    return `<${tag}${attrs}>${softSentenceCaseHeading(plain)}</${tag}>`;
+  });
+}
+
+/**
+ * Strip Termly Word/HTML chrome so CSS owns color, weight, and size.
+ * Without this, half the body stays gray 11pt Arial and some blocks look bold.
+ */
+export function stripTermlyPresentation(html: string): string {
+  let out = html
+    .replace(/\sstyle=("([^"]*)"|'([^']*)')/gi, "")
+    .replace(/\sclass="MsoNormal"/gi, "")
+    .replace(/\sdata-custom-class="[^"]*"/gi, "")
+    .replace(/&nbsp;/gi, " ");
+
+  // Unwrap decorative wrappers around headings
+  for (let i = 0; i < 4; i++) {
+    out = out
+      .replace(/<strong>\s*(<(h[23])\b[^>]*>[\s\S]*?<\/\2>)\s*<\/strong>/gi, "$1")
+      .replace(/<(h[23])(\b[^>]*)>\s*<strong>([\s\S]*?)<\/strong>\s*<\/\1>/gi, "<$1$2>$3</$1>")
+      .replace(/<span(\s[^>]*)?>\s*(<(h[23])\b[^>]*>[\s\S]*?<\/\3>)\s*<\/span>/gi, "$2");
+  }
+
+  // Unwrap empty attribute-less spans (former style carriers)
+  for (let i = 0; i < 6; i++) {
+    const next = out.replace(/<span>([\s\S]*?)<\/span>/gi, "$1");
+    if (next === out) break;
+    out = next;
+  }
+
+  // Drop empty leftover divs / lone breaks between blocks
+  out = out
+    .replace(/<div>\s*<\/div>/gi, "")
+    .replace(/(?:<div>\s*<br\s*\/?>\s*<\/div>\s*){2,}/gi, "<br>")
+    .replace(/\s{2,}/g, " ");
+
+  return out;
+}
+
+/** Hide public support emails — open Need help instead (phone/mail stay). */
+function rewriteSupportEmails(html: string): string {
+  return html
+    .replace(
+      /email at\s*<a\b[^>]*href=["']mailto:[^"']+["'][^>]*>[\s\S]*?<\/a>/gi,
+      HELP_CONTROL,
+    )
+    .replace(
+      /<a\b[^>]*href=["']mailto:[^"']+["'][^>]*>[\s\S]*?<\/a>/gi,
+      HELP_CONTROL,
+    )
+    .replace(/\bsupport@nurahelp\.com\b/gi, HELP_CONTROL);
+}
+
 function lightSanitize(html: string): string {
   return html
     .replace(/https:\/\/nurahelp\.com\/privacy/gi, "/privacy")
@@ -127,6 +205,9 @@ export function prepareTermsHtml(rawHtml: string): string {
   let body = extractBody(rawHtml);
   body = stripTermlyToc(body);
   body = injectNuraAddendum(body);
+  body = stripTermlyPresentation(body);
+  body = rewriteHeadingCase(body);
+  body = rewriteSupportEmails(body);
   return lightSanitize(body);
 }
 

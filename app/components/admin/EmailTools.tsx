@@ -75,13 +75,13 @@ export function TemplateEditor({
             className="field"
           />
         </label>
-        <label className="admin-field-label">
+        <label className="admin-field-label admin-field-grow">
           HTML body
           <textarea
             value={html}
             onChange={(e) => setHtml(e.target.value)}
-            className="field admin-textarea"
-            rows={8}
+            className="field admin-textarea admin-textarea-html"
+            rows={16}
           />
         </label>
         <label className="admin-field-label">
@@ -98,7 +98,11 @@ export function TemplateEditor({
         </button>
         {err && <p className="admin-invite-msg">{err}</p>}
       </form>
-      <div className="admin-email-preview-chrome">
+      <div
+        className="admin-email-preview-chrome"
+        role="region"
+        aria-label="Email preview"
+      >
         <p className="admin-email-preview-subject">
           <span className="admin-email-preview-label">Subject</span>
           {subject || "(empty)"}

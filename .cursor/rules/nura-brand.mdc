@@ -45,7 +45,7 @@ Hero: **EMDR therapy online.** *in a calm app.* (tagline still: Support for ther
 - Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
 - **Product type** (`/app`, `.app-shell`): **Source Sans 3 only** — remaps `--font-display` to sans (same idea as admin). No Fraunces in product chrome.
 - **Admin type** (`/admin`, `.admin-shell`): **Source Sans 3 only** — sober UI; remaps `--font-display` to `--font-sans` so titles/KPIs are not ornamental Fraunces
-- **Marketing type** (`.frontend-home`, public pages): Fraunces + Source Sans 3 + Roboto Mono kickers — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it). Fraunces is decorative for hero / section titles — not for `/app`.
+- **Marketing type** (`.frontend-home`): Fraunces **only** for hero / major landing section titles + Source Sans 3 body + Roboto Mono kickers. **Legal / long-form public docs** (`/terms`, `/privacy`, …) use **Source Sans 3** for h1–h3 and body (weight 600 headings) — never Fraunces on “OUR SERVICES”-style contract headings. See **Frontend typography** below.
 - Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
 
 ## Frontend typography (aligned with product)
@@ -54,16 +54,17 @@ Loaded via `next/font` in `app/layout.tsx`. Scoped on `.frontend-home` in `app/g
 
 | Role | Font | CSS var | Where |
 |---|---|---|---|
-| Headings (h1–h6, hero, pricing titles) | **Fraunces** (400; italic for emphasis) | `--font-display` on `.frontend-home` → `--font-fraunces` | Hero headline, section titles, display words, card headings |
-| Body / UI | **Source Sans 3** | `--font-sans` on `.frontend-home` → `--font-source-sans` | Paragraphs, nav, buttons, intro lead |
-| Labels / kickers | **Roboto Mono** (400) | `--font-alt` → `--font-fe-alt` | `.fe-eyebrow`, `.fe-section-kicker`, marquee, offer kickers — uppercase, ~0.9375rem |
+| Marketing hero / section titles | **Fraunces** (400; italic for emphasis) | `--font-display` on `.frontend-home` → `--font-fraunces` | Landing hero, pricing titles, editorial display — **not** legal docs |
+| Legal + long-form public | **Source Sans 3** (headings 600) | `--font-sans` | `/terms`, `/privacy`, dense reading pages (override Fraunces) |
+| Body / UI | **Source Sans 3** | `--font-sans` | Paragraphs, nav, buttons, intro lead |
+| Labels / kickers | **Roboto Mono** (400) | `--font-alt` → `--font-fe-alt` | `.fe-eyebrow`, `.fe-section-kicker`, marquee — uppercase, ~0.9375rem |
 
 **Rules:**
-- Heading weight **400** by default; medium (500) only for emphasis or buttons
-- Heading/body **line-height 1.2** on marketing; long paragraphs may use ~1.5
+- Marketing hero/section titles: Fraunces weight **400**; legal headings: Source Sans **600**
+- Heading/body **line-height 1.2** on marketing heroes; legal/long paragraphs ~1.5–1.6
 - Kickers: mono, uppercase, muted color — never bold sans competing with the lockup
 - Marketing and product share one voice; do **not** use Inter or soft rounded grotesks (retired: Libre Caslon Condensed, BDOGrotesk)
-- Scale (desktop): h1 ~4rem, h2 ~3rem, h3 ~2.5rem, body lead ~1.25rem, body sm ~1–1.1rem, xs ~0.9375rem (readable chrome floor ~12px)
+- Scale (desktop marketing): h1 ~4rem, h2 ~3rem, h3 ~2.5rem, body lead ~1.25rem, body sm ~1–1.1rem, xs ~0.9375rem (readable chrome floor ~12px). Legal page titles stay ~1.75rem / section ~1.125rem.
 
 **Header (pill nav):** floating `frontend-header-pill` — logo | center nav **Home · How it works · Prices · Blog · FAQ** (hash links on `/`) | guests: **Sign in** + **Get started** pill; signed-in: name + avatar dropdown. No auth links in center nav. Styles: `frontend-header.css`.
 

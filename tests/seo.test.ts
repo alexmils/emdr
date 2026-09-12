@@ -45,6 +45,8 @@ import {
   testSeoConnection,
 } from "../lib/seo-test-connection.ts";
 import {
+  analyticsConsentJustGranted,
+  consentToClarityV2,
   consentToMode,
   isGtmAllowedPath,
   isMarketingPublicPath,
@@ -380,6 +382,65 @@ describe("marketing consent paths", () => {
         updatedAt: "2026-01-01",
       }).ad_storage,
       "denied"
+    );
+  });
+
+  it("maps consent to Clarity consentv2", () => {
+    assert.deepEqual(consentToClarityV2(null), {
+      ad_Storage: "denied",
+      analytics_Storage: "denied",
+    });
+    assert.deepEqual(
+      consentToClarityV2({
+        analytics: true,
+        marketing: true,
+        updatedAt: "2026-01-01",
+      }),
+      {
+        ad_Storage: "granted",
+        analytics_Storage: "granted",
+      }
+    );
+  });
+
+  it("detects analytics consent just granted", () => {
+    assert.equal(
+      analyticsConsentJustGranted(null, {
+        analytics: true,
+        marketing: false,
+        updatedAt: "2026-01-01",
+      }),
+      true
+    );
+    assert.equal(
+      analyticsConsentJustGranted(
+        {
+          analytics: true,
+          marketing: true,
+          updatedAt: "2026-01-01",
+        },
+        {
+          analytics: true,
+          marketing: true,
+          updatedAt: "2026-01-02",
+        }
+      ),
+      false
+    );
+    assert.equal(
+      analyticsConsentJustGranted(
+        {
+          analytics: false,
+          marketing: false,
+          updatedAt: "2026-01-01",
+        },
+        {
+          analytics: true,
+          marketing: false,
+          updatedAt: "2026-01-02",
+        }
+      ),
+      true
     );
   });
 });

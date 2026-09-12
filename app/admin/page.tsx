@@ -106,7 +106,7 @@ export default function AdminOverviewPage() {
     <div className="admin-page">
       <AdminPageHeader
         title="Overview"
-        subtitle="Live platform pulse — users, sessions, AI cost, and health."
+        subtitle="Users, sessions, AI cost, and health."
       />
       <main className="admin-main">
         <section className="admin-dash-kpis">

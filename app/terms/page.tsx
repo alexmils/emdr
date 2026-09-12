@@ -1,9 +1,9 @@
 ﻿import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+import { LegalOpenHelp } from "@/app/components/frontend/LegalOpenHelp";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import {
   formatLegalEntityBlock,
   LEGAL_DOC_VERSION,
-  pendingCounselNotice,
 } from "@/lib/legal-entity";
 import { loadPreparedTermsHtml, TERMS_TOC } from "@/lib/legal/terms-html";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
@@ -20,6 +20,7 @@ export default function TermsPage() {
 
   return (
     <FrontendShell>
+      <LegalOpenHelp />
       <article className="frontend-legal frontend-legal--long frontend-legal--termly">
         <FrontendBreadcrumbs
           items={[
@@ -27,11 +28,6 @@ export default function TermsPage() {
             { label: "Terms" },
           ]}
         />
-        <p className="frontend-legal-draft-banner" role="note">
-          {pendingCounselNotice()} Text prepared from Termly (12 September
-          2026) plus a Nura product-notice addendum. Hosted here because Termly’s
-          free plan allows only one published policy.
-        </p>
         <h1>Terms of service</h1>
         <p className="frontend-legal-meta">
           Version {LEGAL_DOC_VERSION.terms} · Last updated 12 September 2026

@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/app/components/admin/AdminPageHeader";
 import { AdminTabs, useAdminTab } from "@/app/components/admin/AdminTabs";
 import { formatDateTime } from "@/lib/admin-format";
 import type { EmailEvent } from "@/lib/email-events";
-import type { EmailTemplateId } from "@/lib/email/templates";
+import { emailTemplateLabel, keepEmailTemplateId, type EmailTemplateId } from "@/lib/email/template-labels";
 import type { EmailAdminView } from "@/lib/email-admin-settings";
 import type { EmailAdminStatus } from "@/lib/email-admin-settings";
 import { fetchJson } from "@/lib/fetch-json";
@@ -81,14 +81,12 @@ function AdminEmailPageInner() {
     setStatus(settingsRes.status);
     setForm(settingsRes.email);
     setCanEdit(settingsRes.canEdit);
-    setTemplates(templatesRes.templates ?? []);
-    const current =
-      templatesRes.templates?.find((t) => t.id === selectedTemplate) ??
-      templatesRes.templates?.[0];
-    if (current) {
-      setSelectedTemplate(current.id);
-    }
-  }, [selectedTemplate]);
+    const list = templatesRes.templates ?? [];
+    setTemplates(list);
+    setSelectedTemplate(
+      (id) => keepEmailTemplateId(id, list.map((t) => t.id)) as EmailTemplateId
+    );
+  }, []);
 
   const loadLog = useCallback(async () => {
     const params = new URLSearchParams({ limit: "50" });
@@ -103,12 +101,15 @@ function AdminEmailPageInner() {
     void (async () => {
       try {
         await load();
-        await loadLog();
       } finally {
         setLoading(false);
       }
     })();
-  }, [load, loadLog]);
+  }, [load]);
+
+  useEffect(() => {
+    void loadLog();
+  }, [loadLog]);
 
   const patchForm = (patch: Partial<EmailFormState>) => {
     setForm((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -188,7 +189,13 @@ function AdminEmailPageInner() {
         title="Email"
         subtitle="Delivery status, sender identity, templates, and send log."
       />
-      <main className="admin-main">
+      <main
+        className={
+          tab === "templates"
+            ? "admin-main admin-main-wide admin-main-templates"
+            : "admin-main"
+        }
+      >
         <AdminTabs
           tabs={TAB_ITEMS}
           value={tab}
@@ -493,7 +500,7 @@ function AdminEmailPageInner() {
                 >
                   {TEMPLATE_IDS.map((id) => (
                     <option key={id} value={id}>
-                      {id}
+                      {emailTemplateLabel(id)}
                     </option>
                   ))}
                 </select>
@@ -518,29 +525,39 @@ function AdminEmailPageInner() {
         )}
 
         {tab === "templates" && (
-          <section className="admin-panel">
+          <section className="admin-panel admin-templates-panel">
             <h2 className="admin-panel-title">Template preview & editor</h2>
-            <div className="admin-template-picker">
-              {TEMPLATE_IDS.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`admin-tab ${selectedTemplate === id ? "admin-tab-active" : ""}`}
-                  onClick={() => setSelectedTemplate(id)}
-                >
-                  {id}
-                </button>
-              ))}
+            <div className="admin-templates-layout">
+              <nav className="admin-templates-nav" aria-label="Email templates">
+                {TEMPLATE_IDS.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`admin-templates-nav-item${
+                      selectedTemplate === id ? " is-active" : ""
+                    }`}
+                    aria-current={selectedTemplate === id ? "true" : undefined}
+                    onClick={() => setSelectedTemplate(id)}
+                  >
+                    {emailTemplateLabel(id)}
+                  </button>
+                ))}
+              </nav>
+              <div className="admin-templates-main">
+                {templates.find((t) => t.id === selectedTemplate) && (
+                  <TemplateEditor
+                    key={selectedTemplate}
+                    template={
+                      templates.find((t) => t.id === selectedTemplate)!
+                    }
+                    onSaved={async () => {
+                      await load();
+                      setMsg("Template saved.");
+                    }}
+                  />
+                )}
+              </div>
             </div>
-            {templates.find((t) => t.id === selectedTemplate) && (
-              <TemplateEditor
-                template={templates.find((t) => t.id === selectedTemplate)!}
-                onSaved={async () => {
-                  await load();
-                  setMsg("Template saved.");
-                }}
-              />
-            )}
           </section>
         )}
 
@@ -590,7 +607,11 @@ function AdminEmailPageInner() {
                     <tr key={ev.id}>
                       <td>{formatDateTime(ev.createdAt)}</td>
                       <td>{ev.toEmail}</td>
-                      <td>{ev.templateId ?? "—"}</td>
+                      <td>
+                        {ev.templateId
+                          ? emailTemplateLabel(ev.templateId)
+                          : "—"}
+                      </td>
                       <td>{ev.provider ?? "—"}</td>
                       <td>{ev.status}</td>
                       <td className="text-[var(--text-muted)]">

@@ -35,7 +35,8 @@ Retired for this product: `.cursor/skills/apple-ui`, Apple HIG, Inter, `#007AFF`
 
 | Surface | Where | Type | Layout feel |
 |---|---|---|---|
-| **Marketing** | `/`, `/about`, `/editorial`, `/emdr`, `/resources`, `/blog`, legal, `.frontend-home` | Fraunces + Source Sans 3 + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
+| **Marketing** | `/`, `/about`, `/editorial`, `/emdr`, `/resources`, `/blog`, `.frontend-home` | Fraunces **only** on hero / major section titles; Source Sans 3 body + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
+| **Legal / long-form** | `/terms`, `/privacy`, other dense public docs | **Source Sans 3 only** (headings 600) — never Fraunces | Sober document rhythm; same as product type for scanability |
 | **Product** | `/app/**` (session, settings, billing, onboarding) | **Source Sans 3 only** | Dark olive sidebar `#3D4129`, mint canvas `#EDF9ED`, flat 1px borders, 6–8px radius |
 | **Admin** | `/admin/**`, `.admin-shell` | **Source Sans 3 only** (no Fraunces) | Same pistachio chrome as product; denser data UI; titles/KPIs at weight 600 |
 
@@ -61,8 +62,8 @@ Onboarding follows marketing rhythm (`OnboardingShell` + `.frontend-home` tokens
 Forbidden: OpenAI green, Apple blue, purple wellness, hospital blue, neon competitor greens.
 
 ### Type
-- **Display:** Fraunces 400 (italic for emphasis) — **marketing only** (`.frontend-home` hero / section titles). Never in `/app` or `/admin`.
-- **UI/body:** Source Sans 3 — humanist, sharper terminals; all product + admin titles and body.
+- **Display:** Fraunces 400 (italic for emphasis) — **marketing hero / major landing section titles only**. Never in `/app`, `/admin`, or legal/long-form public docs (`/terms`, `/privacy`).
+- **UI/body:** Source Sans 3 — humanist, sharper terminals; all product + admin titles and body; **also legal headings and body**.
 - **Admin:** Source Sans 3 for all titles and body (`.admin-shell` remaps `--font-display` to sans). Weight 500–600 on headings — never ornamental serif in Settings/Voices/data UI.
 - **Kickers:** Roboto Mono, uppercase, muted — never bold sans competing with the lockup (marketing).
 - **Do not** use Inter, Nunito, Manrope, Satoshi-playful, or any soft rounded grotesk next to the wave logo (retired: BDOGrotesk, Libre Caslon Condensed).

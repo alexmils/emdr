@@ -197,7 +197,7 @@ function AdminResourcesPageInner() {
     <div className="admin-page">
       <AdminPageHeader
         title="Resources"
-        subtitle="Blog-style library for /app/resources — articles, videos, and safety guides."
+        subtitle="Articles, videos, and guides in /app/resources."
       />
 
       <main className="admin-main">

@@ -1,4 +1,5 @@
-﻿import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+﻿import { HelpChatLink } from "@/app/components/HelpChatWidget";
+import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import {
   BRAND_DOMAIN,
@@ -10,9 +11,7 @@ import {
   formatLegalEntityBlock,
   LEGAL_DOC_VERSION,
   legalEntityDisplayName,
-  pendingCounselNotice,
 } from "@/lib/legal-entity";
-import { getPlatformSettings } from "@/lib/platform-settings";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -23,15 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("privacy");
 }
 
-export default async function PrivacyPage() {
-  let supportEmail = `hi@contact.${BRAND_DOMAIN}`;
-  try {
-    const settings = await getPlatformSettings();
-    supportEmail = settings.supportEmail || supportEmail;
-  } catch {
-    // Build-time / DB unavailable
-  }
-
+export default function PrivacyPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal frontend-legal--long">
@@ -41,9 +32,6 @@ export default async function PrivacyPage() {
             { label: "Privacy" },
           ]}
         />
-        <p className="frontend-legal-draft-banner" role="note">
-          {pendingCounselNotice()}
-        </p>
         <h1>Privacy policy</h1>
         <p className="frontend-legal-meta">
           Version {LEGAL_DOC_VERSION.privacy} · Last updated 12 September 2026
@@ -58,8 +46,8 @@ export default async function PrivacyPage() {
         <pre className="frontend-legal-pre">{formatLegalEntityBlock()}</pre>
         <p>
           Contact for privacy requests:{" "}
-          <a href={`mailto:${supportEmail}`}>{supportEmail}</a>. A Data
-          Protection Officer will be named here if/when one is appointed.
+          <HelpChatLink>Need help</HelpChatLink>. A Data Protection Officer
+          will be named here if/when one is appointed.
         </p>
 
         <h2>2. Special category data (GDPR Art. 9)</h2>
@@ -94,11 +82,12 @@ export default async function PrivacyPage() {
         <h2 id="cookies">Cookies</h2>
         <p>
           On public marketing pages we use necessary cookies to remember your
-          cookie choice. Analytics and marketing cookies (for example Google
-          Analytics 4, Google Tag Manager, Microsoft Clarity) run only after you
-          allow them in the cookie banner. You can change that choice anytime
-          via Cookie settings in the site footer. Session cookies for signing in
-          to the app are required for the product to work.
+          cookie choice. Marketing tags (Google Analytics 4, Google Tag Manager,
+          Microsoft Clarity) may load in a limited mode so vendors can verify
+          installation. Full cookies and cross-session tracking start only after
+          you allow analytics or marketing cookies in the banner. You can change
+          that choice anytime via Cookie settings in the site footer. Session
+          cookies for signing in to the app are required for the product to work.
         </p>
 
         <h2>4. Where data is stored</h2>
@@ -113,8 +102,8 @@ export default async function PrivacyPage() {
           <li>Email delivery (Brevo; optional Gmail API fallback)</li>
           <li>LLM / voice providers configured for agent-guided sessions</li>
           <li>
-            Optional marketing tags after cookie consent: Google Analytics 4,
-            Google Tag Manager, Microsoft Clarity
+            Optional marketing tags (Consent Mode / limited until cookie accept):
+            Google Analytics 4, Google Tag Manager, Microsoft Clarity
           </li>
         </ul>
         <p>
@@ -170,9 +159,10 @@ export default async function PrivacyPage() {
           </li>
         </ul>
         <p>
-          Prefer email help instead? Contact{" "}
-          <a href={`mailto:${supportEmail}`}>{supportEmail}</a> from the address
-          on your account. We may ask you to verify ownership before erasure.
+          Prefer chat help instead? Open{" "}
+          <HelpChatLink>Need help</HelpChatLink> while signed in from the
+          address on your account. We may ask you to verify ownership before
+          erasure.
         </p>
 
         <h2>10. Your rights</h2>
@@ -180,8 +170,8 @@ export default async function PrivacyPage() {
           Subject to applicable law (including GDPR), you may request access,
           correction, erasure (Art. 17), restriction, objection, and
           portability (Art. 20). Start with the in-app delete flow above, or
-          contact {supportEmail}. You may also lodge a complaint with your local
-          supervisory authority.
+          use <HelpChatLink>Need help</HelpChatLink>. You may also lodge a
+          complaint with your local supervisory authority.
         </p>
 
         <h2>11. International transfers</h2>

@@ -28,13 +28,10 @@
   }
 }
 
-/* Hide on mobile / narrow viewports — pill crowds the shell */
+/* Hide FAB on mobile / narrow viewports — pill crowds the shell.
+   Keep the drawer available so in-page “Need help” on legal pages still works. */
 @media (max-width: 768px) {
   .frontend-home .help-fab {
-    display: none !important;
-  }
-
-  .frontend-home .help-drawer-root {
     display: none !important;
   }
 }

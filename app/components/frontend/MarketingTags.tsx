@@ -4,7 +4,6 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  CONSENT_UPDATE_EVENT,
   applyConsentToGtag,
   isGtmAllowedPath,
   readConsent,
@@ -12,25 +11,19 @@ import {
 import type { PublicMarketingTags } from "@/lib/site-seo-types";
 
 /**
- * GA4 loads with Google Consent Mode (storage denied until analytics cookies).
- * Clarity / GTM still wait for consent. Ignored IPs skip via analytics-gate
- * (not `headers()` in the page — that would force dynamic HTML).
+ * GA4, GTM, and Clarity load on marketing pages with consent defaults denied
+ * so vendor install checkers can detect the tags without clicking Accept.
+ * Cookie banner / localStorage then grant storage via Consent Mode / Clarity
+ * consentv2. Ignored IPs skip via analytics-gate (not `headers()` in the page).
  */
 export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   const pathname = usePathname() || "/";
   const allowed = isGtmAllowedPath(pathname);
-  const [consent, setConsent] = useState(() =>
-    typeof window !== "undefined" ? readConsent() : null
-  );
   const [ipSkip, setIpSkip] = useState(tags.skipAnalytics);
   const [ipChecked, setIpChecked] = useState(!tags.checkIgnoreIps);
 
   useEffect(() => {
-    setConsent(readConsent());
     applyConsentToGtag(readConsent());
-    const onUpdate = () => setConsent(readConsent());
-    window.addEventListener(CONSENT_UPDATE_EVENT, onUpdate);
-    return () => window.removeEventListener(CONSENT_UPDATE_EVENT, onUpdate);
   }, []);
 
   useEffect(() => {
@@ -60,9 +53,6 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   }, [tags.checkIgnoreIps, tags.skipAnalytics]);
 
   if (!ipChecked || ipSkip || tags.skipAnalytics || !allowed) return null;
-
-  const analyticsOk = consent?.analytics === true;
-  const marketingOk = consent?.marketing === true;
 
   return (
     <>
@@ -99,23 +89,27 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
         </>
       ) : null}
 
-      {analyticsOk && tags.clarityId ? (
-        <Script id="nura-clarity" strategy="afterInteractive">{`
-          (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "${tags.clarityId}");
-        `}</Script>
-      ) : null}
-
-      {marketingOk && tags.gtmId ? (
+      {tags.gtmId ? (
         <Script id="nura-gtm" strategy="afterInteractive">{`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','${tags.gtmId}');
+        `}</Script>
+      ) : null}
+
+      {tags.clarityId ? (
+        <Script
+          id="nura-clarity"
+          strategy="afterInteractive"
+          onReady={() => applyConsentToGtag(readConsent())}
+        >{`
+          (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window, document, "clarity", "script", "${tags.clarityId}");
         `}</Script>
       ) : null}
     </>

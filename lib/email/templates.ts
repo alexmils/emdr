@@ -1,11 +1,7 @@
 import { BRAND_COLORS } from "@/lib/brand";
+import type { EmailTemplateId } from "@/lib/email/template-labels";
 
-export type EmailTemplateId =
-  | "password_reset"
-  | "welcome_invite"
-  | "password_changed"
-  | "welcome"
-  | "account_deleted";
+export type { EmailTemplateId } from "@/lib/email/template-labels";
 
 export type EmailTemplateData = {
   password_reset: {

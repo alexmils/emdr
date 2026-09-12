@@ -58,6 +58,22 @@ export function consentToMode(choice: ConsentChoice | null): ConsentModeState {
   };
 }
 
+/** Clarity Consent API v2 keys (capital S) — see Microsoft Learn. */
+export type ClarityConsentV2 = {
+  ad_Storage: "granted" | "denied";
+  analytics_Storage: "granted" | "denied";
+};
+
+export function consentToClarityV2(
+  choice: ConsentChoice | null
+): ClarityConsentV2 {
+  const mode = consentToMode(choice);
+  return {
+    ad_Storage: mode.ad_storage,
+    analytics_Storage: mode.analytics_storage,
+  };
+}
+
 function parseChoice(raw: string): ConsentChoice | null {
   try {
     const parsed = JSON.parse(raw) as Partial<ConsentChoice>;
@@ -95,6 +111,7 @@ export function writeConsent(partial: {
   analytics: boolean;
   marketing: boolean;
 }): ConsentChoice {
+  const previous = readConsent();
   const choice: ConsentChoice = {
     analytics: partial.analytics,
     marketing: partial.marketing,
@@ -107,11 +124,31 @@ export function writeConsent(partial: {
       /* private mode / quota */
     }
   }
-  applyConsentToGtag(choice);
+  applyConsentToGtag(choice, { previous });
   return choice;
 }
 
-export function applyConsentToGtag(choice: ConsentChoice | null): void {
+export function applyConsentToClarity(choice: ConsentChoice | null): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.clarity !== "function") return;
+  window.clarity("consentv2", consentToClarityV2(choice));
+}
+
+export function analyticsConsentJustGranted(
+  previous: ConsentChoice | null | undefined,
+  next: ConsentChoice | null
+): boolean {
+  return next?.analytics === true && previous?.analytics !== true;
+}
+
+/**
+ * Sync Consent Mode (+ Clarity). When analytics flips from denied → granted,
+ * send a page_view so GA4 Realtime counts this visit without a full reload.
+ */
+export function applyConsentToGtag(
+  choice: ConsentChoice | null,
+  opts?: { previous?: ConsentChoice | null }
+): void {
   if (typeof window === "undefined") return;
   const mode = consentToMode(choice);
   window.dataLayer = window.dataLayer || [];
@@ -122,6 +159,16 @@ export function applyConsentToGtag(choice: ConsentChoice | null): void {
     };
   }
   window.gtag("consent", "update", mode);
+  applyConsentToClarity(choice);
+
+  if (analyticsConsentJustGranted(opts?.previous, choice)) {
+    window.gtag("event", "page_view", {
+      page_location: window.location.href,
+      page_path: window.location.pathname + window.location.search,
+      page_title: document.title,
+    });
+  }
+
   window.dataLayer.push({
     event: CONSENT_UPDATE_EVENT,
     analytics_storage: mode.analytics_storage,
@@ -141,5 +188,6 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    clarity?: (...args: unknown[]) => void;
   }
 }

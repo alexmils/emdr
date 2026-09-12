@@ -368,7 +368,8 @@ function ConnectionConnectModal({
             {connId === "clarity" ? (
               <>
                 <p className="admin-panel-sub">
-                  Loads on public pages after analytics cookies are allowed.
+                  Tag loads on public pages; enable Consent Mode in Clarity so
+                  cookies stay off until analytics cookies are allowed.
                 </p>
                 <label className="admin-field-label">
                   Project ID
@@ -737,7 +738,7 @@ function SeoAnalyticsPanel() {
         <div>
           <h2 className="admin-panel-title">Analytics</h2>
           <p className="admin-panel-sub">
-            Visits and search for {BRAND_DOMAIN} — not the logged-in app.
+            Visits and search for {BRAND_DOMAIN}.
           </p>
           <p className="admin-seo-note">
             Your office IP is ignored for new visits (see Connections → Ignored
@@ -1058,7 +1059,7 @@ function AdminSeoPageInner() {
     <div className="admin-page">
       <AdminPageHeader
         title="SEO"
-        subtitle={`How ${BRAND_DOMAIN} looks in search and which tools are connected. Public marketing site — not the logged-in app.`}
+        subtitle={`Titles, descriptions, search tools, and indexing for ${BRAND_DOMAIN}.`}
       />
       <main className="admin-main admin-main-wide">
         <AdminTabs
@@ -1369,8 +1370,7 @@ function AdminSeoPageInner() {
           <div className="admin-seo-section">
             <h2 className="admin-panel-title">Indexing</h2>
             <p className="admin-panel-sub">
-              Google can read the public homepage, About, EMDR, Resources,
-              Privacy, and Terms. The logged-in app is blocked.
+              Sitemap, robots.txt, and llms.txt for public routes.
             </p>
             <div className="admin-panel admin-seo-list">
               <div className="admin-seo-index-row">
@@ -1396,10 +1396,8 @@ function AdminSeoPageInner() {
                   {status.robotsUrl}
                 </a>
                 <p className="admin-panel-sub">
-                  Public pages for search. Grounding bots (OAI-SearchBot,
-                  PerplexityBot, ChatGPT-User) may fetch Home, EMDR, About,
-                  Resources, and Blog. Training crawlers are disallowed. /app,
-                  /admin, and /api stay closed.
+                  Public routes for search and AI grounding bots. /app, /admin,
+                  and /api stay closed. Training crawlers are disallowed.
                 </p>
               </div>
               <div className="admin-seo-index-row">
@@ -1413,8 +1411,7 @@ function AdminSeoPageInner() {
                   {status.llmsTxtUrl}
                 </a>
                 <p className="admin-panel-sub">
-                  Tells AI search systems they may cite public pages, not train
-                  on them, and not fetch the signed-in app.
+                  Notes for AI search on what they may cite from public pages.
                 </p>
               </div>
             </div>
@@ -1426,9 +1423,7 @@ function AdminSeoPageInner() {
             <h2 className="admin-panel-title">Cookies</h2>
             <div className="admin-panel">
               <p className="admin-panel-sub">
-                Visitors on the public site choose analytics and marketing
-                cookies. Sign-in and the logged-in app do not load Clarity or Tag
-                Manager.
+                Cookie banner and analytics tags on the marketing site.
               </p>
               <p className="admin-seo-cookie-actions">
                 <Link href="/" className="admin-seo-link">

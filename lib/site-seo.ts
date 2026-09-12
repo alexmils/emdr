@@ -336,7 +336,7 @@ export function buildMarketingSeoStatus(
       status: clarityOn ? "connected" : "not_connected",
       publicIdMasked: clarityOn ? maskPublicId(clarity) : null,
       detail: null,
-      hint: "Loads on the homepage and legal pages after someone allows analytics cookies. Never on sign-in or the logged-in app.",
+      hint: "Tag loads on public marketing pages. Turn on Consent Mode in the Clarity project; Nura passes consentv2 so cookies stay off until analytics cookies are allowed. Never on sign-in or the logged-in app.",
     },
     {
       id: "ga4",
@@ -352,7 +352,7 @@ export function buildMarketingSeoStatus(
       status: gtmOn ? "connected" : "not_connected",
       publicIdMasked: gtmOn ? maskPublicId(gtm) : null,
       detail: null,
-      hint: "Loads on the homepage and legal pages only. Do not add Google Analytics or Clarity tags in this container — Nura already loads them. Use Tag Manager only for Meta and LinkedIn later.",
+      hint: "Container loads on public marketing pages with Consent Mode (ads storage stays off until marketing cookies are allowed). Do not add Google Analytics or Clarity here — Nura already loads them. Use Tag Manager for Meta and LinkedIn later.",
     },
     {
       id: "bing",

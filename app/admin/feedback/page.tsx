@@ -55,7 +55,7 @@ export default function AdminFeedbackPage() {
     <div className="admin-page">
       <AdminPageHeader
         title="Feedback"
-        subtitle="Private NPS scores from members. Not shown on the public site."
+        subtitle="Scores and notes from the in-app prompt."
       />
       <main className="admin-main">
         {msg ? <p className="admin-inline-msg">{msg}</p> : null}
