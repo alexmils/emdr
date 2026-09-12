@@ -19,6 +19,7 @@ import {
   type TurnstileFieldHandle,
 } from "@/app/components/TurnstileField";
 import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
+import { playHelpReplyPop } from "@/lib/help-reply-sound";
 
 const OPEN_EVENT = "emdr-open-help";
 const HELP_KEYBOARD_VAR = "--help-keyboard-inset";
@@ -292,9 +293,17 @@ export function HelpChatWidget({ showFab = true }: Props) {
         return;
       }
       guestSentRef.current = true;
-      setMessages(data.messages ?? []);
+      const nextMessages = (data.messages ?? []) as HelpMessage[];
+      setMessages(nextMessages);
       if (typeof data.hasContact === "boolean") {
         setHasContact(data.hasContact);
+      }
+      const last = nextMessages[nextMessages.length - 1];
+      if (
+        data.assistantMessage ||
+        (last && (last.role === "assistant" || last.role === "admin"))
+      ) {
+        playHelpReplyPop();
       }
       turnstileRef.current?.reset();
       setTurnstileToken(null);
