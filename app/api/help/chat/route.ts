@@ -296,6 +296,8 @@ async function maybeAiReply(input: {
       await chatCompletion(llm, messages, {
         userId: input.userId ?? undefined,
         purpose: "help",
+        provider: input.settings.aiProvider || null,
+        model: input.settings.aiModel || null,
       })
     ).trim();
     if (!reply) return null;

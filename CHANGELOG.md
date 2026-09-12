@@ -79,6 +79,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Admin weekly AI cost + ElevenLabs voice usage**: Overview KPI for AI cost (week); Billing → Usage cards for week/month/all-time + ElevenLabs voice (month); per-user Voice chars / est. voice cost columns; TTS calls via `/api/voice` (and admin preview) record `purpose=voice` in `llm_usage_events` with list-price estimates ($0.10/1K multilingual, $0.05/1K flash)
 - Public **`GET /health`**: cheap app + Postgres probe (200/503 JSON) for Coolify and Docker; Dockerfile `HEALTHCHECK` hits `/health` instead of `/`
 - **Guest help chat**: marketing Need help works without sign-in via HttpOnly `nura_help_visitor` cookie; exit-intent name+email capture; Turnstile `help-guest`; auto transcript email ~1h after last activity (`/api/cron/help-guest-transcripts` + `CRON_SECRET`); admin inbox shows guest threads
+- **Help chat AI provider/model**: Admin → Help → Settings can pin DeepSeek / OpenAI / Claude and a model for Need help (empty = platform default from AI & Voice)
 
 ### Changed
 - **Legal / long-form type**: `/terms` + `/privacy` use Source Sans 3 (headings 600) — Fraunces reserved for marketing hero/section titles only; documented in `docs/brand.md`, `nura-brand`, `nura-ui-designer`
@@ -197,6 +198,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
+- Clarity public tag: load on marketing pages + pass `consentv2` (cookies off until analytics accept); enable Consent Mode in the Clarity project; Privacy cookie copy updated (`MarketingTags`, `lib/marketing-consent.ts`)
 - App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
 - App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
 - App Help flyout opens upward so Terms sits level with Help (not hanging into the foot / status bar)
@@ -349,7 +351,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Production Docker: `WORKDIR` `/app` → `/nura` so standalone traces do not collide with App Router `app/` + console `/app` (fixes unstyled pages and `/` rendering as login/AppAccessGate; vercel/next.js#68690)
 - Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 - **Production runbook**: `docs/production.md` + always-on Cursor rule `.cursor/rules/nura-production.mdc` (Coolify UUIDs, VPS, nginx/Cloudflare path, GHCR deploy, WORKDIR `/nura`)
-- GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
+- GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; GTM/Clarity follow the same detect-then-consent pattern (`MarketingTags`, Connections hint)
 - Favicon/mark quality: round-cap stroke wave, equal padding both sides, brighter right tip (mint→sage), supersampled PNGs — no flat crop into the letter `n`
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)

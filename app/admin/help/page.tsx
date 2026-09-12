@@ -47,6 +47,8 @@ type Knowledge = {
 type Settings = {
   enabled: boolean;
   aiFirstReply: boolean;
+  aiProvider: "" | "deepseek" | "openai" | "claude";
+  aiModel: string;
   welcomeMessage: string;
   allowedTopics: string;
   deniedTopics: string;
@@ -74,6 +76,8 @@ function HelpAdminInner() {
     tags: "",
     enabled: true,
   });
+  const [modelOptions, setModelOptions] = useState<string[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
 
   const loadThreads = useCallback(async () => {
     const res = await fetch("/api/admin/help");
@@ -103,6 +107,33 @@ function HelpAdminInner() {
     if (res.ok) setSettings(data.settings);
   }, []);
 
+  const loadHelpModels = useCallback(async (provider: Settings["aiProvider"]) => {
+    if (!provider) {
+      setModelOptions([]);
+      return;
+    }
+    setModelsLoading(true);
+    try {
+      const res = await fetch("/api/admin/ai/models", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider }),
+      });
+      const data = (await res.json()) as { models?: string[]; error?: string };
+      if (!res.ok) {
+        setModelOptions([]);
+        setMsg(data.error ?? "Could not load models");
+        return;
+      }
+      setModelOptions(Array.isArray(data.models) ? data.models : []);
+    } catch {
+      setModelOptions([]);
+      setMsg("Could not load models");
+    } finally {
+      setModelsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadThreads();
     const t = params.get("thread");
@@ -113,6 +144,14 @@ function HelpAdminInner() {
     if (tab === "knowledge") void loadKnowledge();
     if (tab === "settings") void loadSettings();
   }, [tab, loadKnowledge, loadSettings]);
+
+  useEffect(() => {
+    if (tab !== "settings" || !settings?.aiProvider) {
+      setModelOptions([]);
+      return;
+    }
+    void loadHelpModels(settings.aiProvider);
+  }, [tab, settings?.aiProvider, loadHelpModels]);
 
   const sendReply = async () => {
     if (!activeId || !reply.trim()) return;
@@ -472,6 +511,52 @@ function HelpAdminInner() {
                 />
               </AdminSettingToggleStack>
             </div>
+            <label className="mt-4 block text-[13px] font-medium" htmlFor="help-ai-provider">
+              Help chat AI provider
+            </label>
+            <p className="admin-panel-sub mt-1">
+              Which connector answers the Need help chat. Keys stay in Admin → AI &amp; Voice.
+            </p>
+            <select
+              id="help-ai-provider"
+              className="field mt-2"
+              value={settings.aiProvider}
+              onChange={(e) => {
+                const aiProvider = e.target.value as Settings["aiProvider"];
+                setSettings({
+                  ...settings,
+                  aiProvider,
+                  aiModel: aiProvider ? settings.aiModel : "",
+                });
+              }}
+            >
+              <option value="">Platform default</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="openai">OpenAI</option>
+              <option value="claude">Claude</option>
+            </select>
+            <label className="mt-4 block text-[13px] font-medium" htmlFor="help-ai-model">
+              Help chat model
+            </label>
+            <p className="admin-panel-sub mt-1">
+              Leave empty to use that provider’s model from AI &amp; Voice
+              {modelsLoading ? " · Loading list…" : ""}.
+            </p>
+            <input
+              id="help-ai-model"
+              className="field mt-2"
+              list="help-ai-model-list"
+              value={settings.aiModel}
+              placeholder="Provider default (or pick / paste a model id)"
+              onChange={(e) =>
+                setSettings({ ...settings, aiModel: e.target.value })
+              }
+            />
+            <datalist id="help-ai-model-list">
+              {modelOptions.map((id) => (
+                <option key={id} value={id} />
+              ))}
+            </datalist>
             <label className="mt-4 block text-[13px] font-medium">
               Welcome message
             </label>

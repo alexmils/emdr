@@ -1,8 +1,22 @@
 import { rewriteRetiredBrandCopy } from "@/lib/brand";
+import type { AiProvider } from "@/lib/types";
+
+const AI_PROVIDERS: AiProvider[] = ["deepseek", "openai", "claude"];
+
+export function isHelpAiProvider(value: unknown): value is AiProvider {
+  return (
+    typeof value === "string" &&
+    (AI_PROVIDERS as string[]).includes(value)
+  );
+}
 
 export type HelpSettings = {
   enabled: boolean;
   aiFirstReply: boolean;
+  /** Empty = platform default provider. */
+  aiProvider: AiProvider | "";
+  /** Empty = that connector’s model from Admin → AI. */
+  aiModel: string;
   welcomeMessage: string;
   allowedTopics: string;
   deniedTopics: string;
@@ -13,6 +27,8 @@ export type HelpSettings = {
 export const DEFAULT_HELP_SETTINGS: HelpSettings = {
   enabled: true,
   aiFirstReply: true,
+  aiProvider: "",
+  aiModel: "",
   welcomeMessage:
     "Hi — I’m the Nura assistant. Ask about billing, your account, or how sessions work. For emergencies, contact local emergency services.",
   allowedTopics:
@@ -31,6 +47,9 @@ export function normalizeHelpSettings(raw: unknown): HelpSettings {
   return {
     enabled: r.enabled !== false,
     aiFirstReply: r.aiFirstReply !== false,
+    aiProvider: isHelpAiProvider(r.aiProvider) ? r.aiProvider : "",
+    aiModel:
+      typeof r.aiModel === "string" ? r.aiModel.trim().slice(0, 200) : "",
     welcomeMessage: remapHelpField(
       typeof r.welcomeMessage === "string" && r.welcomeMessage.trim()
         ? r.welcomeMessage.trim()

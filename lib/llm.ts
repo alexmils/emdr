@@ -31,12 +31,34 @@ function envKeyFor(provider: AiProvider): string {
   return envKeys[provider]?.trim() || "";
 }
 
-/** Pick default provider if it has a key; otherwise first enabled connector with a key. */
-export function resolveLlmProvider(settings: LlmRuntimeConfig): {
+/** Pick default provider if it has a key; otherwise first enabled connector with a key.
+ *  Optional override: force provider and/or model (e.g. Help chat settings). */
+export function resolveLlmProvider(
+  settings: LlmRuntimeConfig,
+  override?: { provider?: AiProvider | null; model?: string | null }
+): {
   provider: AiProvider;
   key: string;
   model: string;
 } | null {
+  const modelOverride = override?.model?.trim() || "";
+  const forced =
+    override?.provider && PROVIDER_ORDER.includes(override.provider)
+      ? override.provider
+      : null;
+
+  if (forced) {
+    const cfg = settings.connectors[forced];
+    if (!cfg || cfg.enabled === false) return null;
+    const key = (cfg.apiKey || envKeyFor(forced)).trim();
+    if (!key) return null;
+    return {
+      provider: forced,
+      key,
+      model: modelOverride || cfg.model,
+    };
+  }
+
   const preferred = settings.defaultAiProvider;
   const order: AiProvider[] = [
     preferred,
@@ -48,7 +70,11 @@ export function resolveLlmProvider(settings: LlmRuntimeConfig): {
     if (!cfg || cfg.enabled === false) continue;
     const key = (cfg.apiKey || envKeyFor(provider)).trim();
     if (!key) continue;
-    return { provider, key, model: cfg.model };
+    return {
+      provider,
+      key,
+      model: modelOverride || cfg.model,
+    };
   }
   return null;
 }
@@ -95,9 +121,15 @@ function trackUsage(
 export async function chatCompletion(
   settings: LlmRuntimeConfig,
   messages: ChatMessage[],
-  meta?: ChatCompletionMeta
+  meta?: ChatCompletionMeta & {
+    provider?: AiProvider | null;
+    model?: string | null;
+  }
 ): Promise<string> {
-  const resolved = resolveLlmProvider(settings);
+  const resolved = resolveLlmProvider(settings, {
+    provider: meta?.provider,
+    model: meta?.model,
+  });
   if (!resolved) {
     throw new Error(
       "No API key configured for any AI provider (check Admin → AI & Voice)"

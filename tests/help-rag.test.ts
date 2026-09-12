@@ -14,10 +14,29 @@ describe("help settings", () => {
     const s = normalizeHelpSettings(undefined);
     assert.equal(s.enabled, true);
     assert.equal(s.aiFirstReply, true);
+    assert.equal(s.aiProvider, "");
+    assert.equal(s.aiModel, "");
     assert.equal(s.notifyAdminsByEmail, true);
     assert.ok(s.welcomeMessage.includes("Nura assistant"));
     assert.equal(s.welcomeMessage.includes("NuraHelp AI"), false);
     assert.equal(s.welcomeMessage.includes("NuraHelp assistant"), false);
+  });
+
+  it("keeps help AI provider and model overrides", () => {
+    const s = normalizeHelpSettings({
+      ...DEFAULT_HELP_SETTINGS,
+      aiProvider: "openai",
+      aiModel: "gpt-4.1-mini",
+    });
+    assert.equal(s.aiProvider, "openai");
+    assert.equal(s.aiModel, "gpt-4.1-mini");
+    const bad = normalizeHelpSettings({
+      ...DEFAULT_HELP_SETTINGS,
+      aiProvider: "not-a-provider" as never,
+      aiModel: "  x  ",
+    });
+    assert.equal(bad.aiProvider, "");
+    assert.equal(bad.aiModel, "x");
   });
 
   it("preserves custom allow/deny lists", () => {

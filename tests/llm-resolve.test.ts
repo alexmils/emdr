@@ -75,4 +75,41 @@ describe("resolveLlmProvider", () => {
         process.env.ANTHROPIC_API_KEY = prev.claude;
     }
   });
+
+  it("honors forced provider and model overrides", () => {
+    const resolved = resolveLlmProvider(
+      cfg("openai", {
+        openai: { apiKey: "sk-openai" },
+        deepseek: { apiKey: "ds-key", model: "deepseek-chat" },
+      }),
+      { provider: "deepseek", model: "deepseek-reasoner" }
+    );
+    assert.equal(resolved?.provider, "deepseek");
+    assert.equal(resolved?.model, "deepseek-reasoner");
+  });
+
+  it("fails closed when forced provider has no key", () => {
+    const prev = process.env.DEEPSEEK_API_KEY;
+    delete process.env.DEEPSEEK_API_KEY;
+    try {
+      assert.equal(
+        resolveLlmProvider(
+          cfg("openai", { openai: { apiKey: "sk-openai" } }),
+          { provider: "deepseek" }
+        ),
+        null
+      );
+    } finally {
+      if (prev !== undefined) process.env.DEEPSEEK_API_KEY = prev;
+    }
+  });
+
+  it("applies model override on platform default resolution", () => {
+    const resolved = resolveLlmProvider(
+      cfg("openai", { openai: { apiKey: "sk-test", model: "gpt-4.1-mini" } }),
+      { model: "gpt-4.1" }
+    );
+    assert.equal(resolved?.provider, "openai");
+    assert.equal(resolved?.model, "gpt-4.1");
+  });
 });
