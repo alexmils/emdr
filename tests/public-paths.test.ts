@@ -16,8 +16,10 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/about"), true);
     assert.equal(isFrontendPublicPath("/about/clinical-team"), true);
     assert.equal(isFrontendPublicPath("/emdr"), true);
-    assert.equal(isFrontendPublicPath("/resources"), true);
+    assert.equal(isFrontendPublicPath("/learn"), true);
+    assert.equal(isFrontendPublicPath("/resources"), false);
     assert.equal(isFrontendPublicPath("/blog"), true);
+    assert.equal(isFrontendPublicPath("/changelog"), true);
     assert.equal(isFrontendPublicPath("/editorial"), true);
     assert.equal(isFrontendPublicPath("/blog/what-is-emdr"), true);
     assert.equal(isFrontendPublicPath("/therapy"), false);
@@ -116,7 +118,7 @@ describe("shouldRedirectToLoginOn401", () => {
     assert.equal(shouldRedirectToLoginOn401("/"), false);
     assert.equal(shouldRedirectToLoginOn401("/privacy"), false);
     assert.equal(shouldRedirectToLoginOn401("/emdr"), false);
-    assert.equal(shouldRedirectToLoginOn401("/resources"), false);
+    assert.equal(shouldRedirectToLoginOn401("/learn"), false);
     assert.equal(shouldRedirectToLoginOn401("/blog"), false);
     assert.equal(shouldRedirectToLoginOn401("/app/login"), false);
     assert.equal(shouldRedirectToLoginOn401("/apple"), false);

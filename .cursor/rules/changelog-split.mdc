@@ -1,0 +1,55 @@
+---
+description: Classify every CHANGELOG bullet — in-app user feature vs internal
+alwaysApply: true
+---
+
+# EMDR — split changelog (app vs internal)
+
+After every coding turn, **classify the work before you write the bullet.** Do not dump one mixed note. `/changelog` (“What's new”) is for people using the **signed-in app**, not for admin or platform.
+
+Parser: `lib/changelog-public.ts`. Do not rely on the filter to clean a sloppy bullet — label it correctly.
+
+## Classify (pick one)
+
+Ask: **Would someone in `/app` notice this?**
+
+| Goes on `/changelog` (no prefix) | Stays off the public page (`[internal]`) |
+|---|---|
+| Session, visual sets, voice, intake, composer | `/admin`, platform settings, Coolify, Docker |
+| Login, create account, password, passkey, Google | Cursor rules, Mem0, tests, lint, scripts |
+| Onboarding, billing, upgrade, trial, account delete | Marketing site (`/`, `/blog`, `/learn`, `/editorial`) |
+| Settings, sidebar, threads, memory sets | SEO, robots, sitemap, Meta Pixel, GTM, JSON-LD |
+| In-app help, crisis, consent gate | Infra, env, webhooks, secrets, ports |
+
+If the turn mixed both, write **two bullets** (one public, one `[internal]`). Never fuse them.
+
+## How to write the bullet
+
+Append under `[Unreleased]` → Added / Changed / Fixed / Removed. Newest **last** in that subsection.
+
+```md
+# ✅ Public — short, what the user sees (no prefix)
+- Password show/hide on login
+- Agent-guided sessions can start a set with voice
+
+# ✅ Internal — prefix required
+- [internal] Admin Users directory restyle (`app/admin/users/page.tsx`)
+- [internal] Cursor rule changelog-split — classify public vs internal bullets
+
+# ❌ BAD — one dump (admin + app + files)
+- Auth + Admin SEO + Coolify healthcheck (`AuthShell.tsx`, `/admin/seo`, port **3471**)
+```
+
+Public bullets:
+
+- English, sentence case, **one idea**
+- No **BLS**, no file paths, no CSS classes, no `lib/…`, no ports
+- No “admin”, “platform”, “Coolify”, “ISR”, “GTM”
+
+`[public]` only to **force** a rare user-facing note the filter would hide. Never use it for admin/platform.
+
+## Also
+
+- Full technical summary still goes to Mem0 (`user_id: emdr`) — that is not the public page
+- No secrets in CHANGELOG or Mem0
+- See `.cursor/rules/emdr-memory.mdc`

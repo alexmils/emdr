@@ -15,10 +15,13 @@ export const PUBLIC_ISR_PATHS = [
   "/about/clinical-team",
   "/editorial",
   "/emdr",
-  "/resources",
+  "/learn",
   "/blog",
+  "/changelog",
   "/privacy",
   "/terms",
+  "/safety",
+  "/limits",
 ] as const;
 
 export type PublicIsrPath = (typeof PUBLIC_ISR_PATHS)[number];

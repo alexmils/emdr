@@ -1,5 +1,4 @@
 ﻿import { FrontendShell } from "@/app/components/frontend/FrontendShell";
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
@@ -16,12 +15,6 @@ export default function AboutPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { label: "About" },
-          ]}
-        />
         <h1>About the EMDR therapy online app</h1>
         <p>{BRAND_TAGLINE}</p>
         <p>
@@ -43,8 +36,8 @@ export default function AboutPage() {
           <Link href={appPath("/create-account")} className="frontend-btn-primary">
             Get started
           </Link>
-          <Link href="/resources" className="frontend-btn-ghost">
-            Resources
+          <Link href="/learn" className="frontend-btn-ghost">
+            Learn
           </Link>
           <Link href={LOGIN_PATH} className="frontend-btn-ghost">
             Sign in

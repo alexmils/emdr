@@ -35,6 +35,7 @@ RUN apk add --no-cache curl \
 COPY --from=builder /nura/public ./public
 COPY --from=builder --chown=nextjs:nodejs /nura/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /nura/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /nura/CHANGELOG.md ./CHANGELOG.md
 
 USER nextjs
 EXPOSE 3471

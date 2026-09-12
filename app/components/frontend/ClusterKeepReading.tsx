@@ -19,8 +19,8 @@ type ClusterKeepReadingProps = {
 
 export function ClusterKeepReading({
   posts,
-  indexHref = "/resources",
-  indexLabel = "All public guides",
+  indexHref = "/blog",
+  indexLabel = "All articles",
 }: ClusterKeepReadingProps) {
   const cards = posts.filter((p) => Boolean(p.coverUrl)).slice(0, 3);
   if (!cards.length) return null;

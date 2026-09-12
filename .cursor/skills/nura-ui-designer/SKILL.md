@@ -2,11 +2,12 @@
 name: nura-ui-designer
 description: >-
   Nura UI/UX design system for marketing, /app, and /admin — pistachio tokens,
-  Fraunces on marketing only; Source Sans 3 for /app and /admin; wave
-  lockup contrast, clinic-calm layouts, no BLS jargon. Use when designing,
-  restyling, reviewing, or shipping any UI/UX, page, layout, component, modal,
-  empty state, sidebar, header, landing section, onboarding, auth, billing
-  chrome, or visual polish for Nura / EMDR.
+  Fraunces only on home hero title; Source Sans 3 everywhere else including
+  /app and /admin; wave lockup contrast, clinic-calm layouts, no BLS jargon;
+  marketing letter-rise H2s via LetterRevealHeading.
+  Use when designing, restyling, reviewing, or shipping any UI/UX, page, layout,
+  component, modal, empty state, sidebar, header, landing section, onboarding,
+  auth, billing chrome, or visual polish for Nura / EMDR.
   Triggers: /nura-ui-designer, nura-ui-designer, UI, UX, design, restyle, layout,
   typography, spacing, mobile shell, screenshot clone for Nura.
 ---
@@ -35,7 +36,7 @@ Retired for this product: `.cursor/skills/apple-ui`, Apple HIG, Inter, `#007AFF`
 
 | Surface | Where | Type | Layout feel |
 |---|---|---|---|
-| **Marketing** | `/`, `/about`, `/editorial`, `/emdr`, `/resources`, `/blog`, `.frontend-home` | Fraunces **only** on hero / major section titles; Source Sans 3 body + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
+| Marketing | `.frontend-home` | Fraunces **only** on home hero title; Source Sans 3 everywhere else + Roboto Mono kickers | Editorial, one job per section, wave lockup is brand hero |
 | **Legal / long-form** | `/terms`, `/privacy`, other dense public docs | **Source Sans 3 only** (headings 600) — never Fraunces | Sober document rhythm; same as product type for scanability |
 | **Product** | `/app/**` (session, settings, billing, onboarding) | **Source Sans 3 only** | Dark olive sidebar `#3D4129`, mint canvas `#EDF9ED`, flat 1px borders, 6–8px radius |
 | **Admin** | `/admin/**`, `.admin-shell` | **Source Sans 3 only** (no Fraunces) | Same pistachio chrome as product; denser data UI; titles/KPIs at weight 600 |
@@ -62,7 +63,7 @@ Onboarding follows marketing rhythm (`OnboardingShell` + `.frontend-home` tokens
 Forbidden: OpenAI green, Apple blue, purple wellness, hospital blue, neon competitor greens.
 
 ### Type
-- **Display:** Fraunces 400 (italic for emphasis) — **marketing hero / major landing section titles only**. Never in `/app`, `/admin`, or legal/long-form public docs (`/terms`, `/privacy`).
+- **Display:** Fraunces 400 (italic for emphasis) — **home hero title only**. Never on other landing sections, `/app`, `/admin`, or legal/long-form public docs (`/terms`, `/privacy`).
 - **UI/body:** Source Sans 3 — humanist, sharper terminals; all product + admin titles and body; **also legal headings and body**.
 - **Admin:** Source Sans 3 for all titles and body (`.admin-shell` remaps `--font-display` to sans). Weight 500–600 on headings — never ornamental serif in Settings/Voices/data UI.
 - **Kickers:** Roboto Mono, uppercase, muted — never bold sans competing with the lockup (marketing).
@@ -87,9 +88,62 @@ Forbidden: OpenAI green, Apple blue, purple wellness, hospital blue, neon compet
 3. **One job per section** — one headline, one short support line, one primary CTA.
 4. **Cards sparingly** — default no cards; cards only when they contain a real interaction. Never cards in the marketing hero.
 5. **Atmosphere without clutter** — mint gradients/imagery OK; no pill clusters, stat strips, floating badges on hero media, or emoji decoration.
-6. **Motion with purpose** — GSAP/Lenis/`useLandingMotion` for landing; 2–3 intentional motions max for visual-led work; no noise.
+6. **Motion with purpose** — GSAP/Lenis/`useLandingMotion` for landing; letter-rise H2s via `LetterRevealHeading` (see Motion); 2–3 intentional motions max for visual-led work; no noise.
 7. **Clinic calm** — soft surfaces, room to breathe; not frosted-glass iOS, not ChatGPT clone chrome.
 8. **Accessible focus** — pistachio `#C6D67E` focus rings; visible `:focus-visible`.
+
+## Motion (marketing)
+
+Home / marketing motion lives in `useLandingMotion` (Lenis + GSAP ScrollTrigger) and small dedicated components. Prefer these patterns over inventing new libraries.
+
+### Letter-rise section titles (Aiero-style)
+
+Main section **H2**s animate letter-by-letter on scroll — rise from below with a clipped word mask (reference: Aiero `aiero_heading_animation`).
+
+| Item | Detail |
+|---|---|
+| Component | `app/components/frontend/LetterRevealHeading.tsx` |
+| CSS | `letter-reveal-heading.css` (imported by the component) |
+| Effect | Split words → letters; `translateY(120%)` + fade → `0`; stagger `index / 50` s; ease `cubic-bezier(0.26, -0.14, 0, 1.01)` |
+| Trigger | `IntersectionObserver` adds `.is-in` once (not every scroll) |
+| A11y | `aria-label` on the `h2`; visual letter spans `aria-hidden` |
+| Reduced motion | Immediately add `.is-in` (no animation) |
+
+**Use for:** marketing section titles (Why Nura, How it works, pricing, blog, FAQ, stories, footer CTA, similar new H2s under `.frontend-home`).
+
+**Do not use for:**
+- Home **hero** H1 (already uses `.fe-split-word` load animation)
+- About statement (`.fe-about-title` / `.fe-about-word` — scroll-scrub **word color**, Curevo)
+- Product `/app` or `/admin` headings
+- Dense legal body headings
+
+**Implementing a new section title:**
+
+```tsx
+import { LetterRevealHeading } from "@/app/components/frontend/LetterRevealHeading";
+
+// ✅ Title alone — do not wrap it in `.fe-animate` (GSAP opacity fights letter rise)
+<p className="fe-section-kicker fe-animate">Why {BRAND_SPOKEN}</p>
+<LetterRevealHeading className="fe-section-title">
+  Support crafted around your pace
+</LetterRevealHeading>
+<p className="fe-section-body fe-animate">…</p>
+
+// ❌ BAD — whole head fades while letters also animate
+<div className="fe-section-head fe-animate">
+  <h2 className="fe-section-title">…</h2>
+</div>
+```
+
+Pass existing title classNames (`fe-section-title`, `fe-how-title`, `fe-pricing-title`, …) so type scale stays unchanged. Children must be a plain **string** (no nested JSX).
+
+### Other landing motion (already wired)
+
+- Hero word rise: `.fe-split-word` on load
+- Section body/cards: `.fe-animate` + ScrollTrigger in `useLandingMotion`
+- About word color scrub: `.fe-about-word`
+- Stats counters: `.fe-count` + `data-target`
+- Do **not** paste Webflow IX2 / Elementor animation JS — recreate with this stack
 
 ## Workflow (do in order)
 
@@ -107,7 +161,7 @@ Progress:
 
 ### Implementing
 - Prefer existing classes/tokens in `app/globals.css` and scoped frontend CSS.
-- Marketing motion: project GSAP/Lenis stack — do not paste Webflow IX2/jQuery.
+- Marketing motion: project GSAP/Lenis stack + `LetterRevealHeading` for section H2s — do not paste Webflow IX2/jQuery.
 - Screenshot + reference URL → follow `.cursor/rules/reference-site-clone.mdc`, then map to pistachio + Nura type.
 - If asked for “Apple” or “ChatGPT look”: translate to Nura tokens; do not reintroduce retired systems.
 
@@ -125,6 +179,8 @@ See [checklist.md](checklist.md).
 | Inventing a new logo or wordmark font | Use BrandLockup |
 | Only desktop check | Must verify ~390×844 for page chrome |
 | Generic SaaS template after removing lockup | Failed Nura signature test |
+| New marketing H2 without letter-rise | Use `LetterRevealHeading` (unless hero / about scrub / legal) |
+| Letter-reveal H2 inside `.fe-animate` | Opacity fight — animate kicker/body separately |
 
 ## Invoke
 

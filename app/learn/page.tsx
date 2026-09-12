@@ -1,8 +1,8 @@
-﻿import { BlogIndex } from "@/app/components/frontend/BlogIndex";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { JsonLd } from "@/app/components/frontend/JsonLd";
+import { LearnHub } from "@/app/components/frontend/LearnHub";
 import { getPublicAppUrl } from "@/lib/platform-settings";
-import { buildBlogIndexJsonLd } from "@/lib/seo-jsonld";
+import { buildLearnJsonLd } from "@/lib/seo-jsonld";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import { siteOrigin } from "@/lib/site-seo";
 import type { Metadata } from "next";
@@ -10,10 +10,10 @@ import type { Metadata } from "next";
 export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildCachedPageMetadata("blog");
+  return buildCachedPageMetadata("learn");
 }
 
-export default async function BlogPage() {
+export default async function LearnPage() {
   let publicUrl: string | undefined;
   try {
     publicUrl = await getPublicAppUrl();
@@ -23,8 +23,8 @@ export default async function BlogPage() {
 
   return (
     <FrontendShell>
-      <JsonLd data={buildBlogIndexJsonLd(siteOrigin(publicUrl))} />
-      <BlogIndex />
+      <JsonLd data={buildLearnJsonLd(siteOrigin(publicUrl))} />
+      <LearnHub />
     </FrontendShell>
   );
 }

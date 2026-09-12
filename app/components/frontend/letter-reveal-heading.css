@@ -1,0 +1,55 @@
+/* Aiero-style letter rise for marketing H2s */
+
+.fe-letter-reveal-inner {
+  display: block;
+}
+
+.fe-letter-word {
+  display: inline-flex;
+  align-items: flex-start;
+  clip-path: inset(-0.15em -0.1em);
+  vertical-align: top;
+}
+
+.fe-letter {
+  display: inline-flex;
+  opacity: 0;
+  transform: translateY(120%);
+  will-change: transform, opacity;
+}
+
+.fe-letter-space {
+  display: inline-flex;
+}
+
+.fe-letter-reveal.is-in .fe-letter {
+  animation:
+    fe-letter-fade 0.35s forwards,
+    fe-letter-rise 0.7s cubic-bezier(0.26, -0.14, 0, 1.01) forwards;
+}
+
+@keyframes fe-letter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fe-letter-rise {
+  from {
+    transform: translateY(120%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fe-letter-reveal .fe-letter {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+}

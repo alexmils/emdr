@@ -5,12 +5,13 @@ Use before ending a UI/UX turn.
 ## Visual
 
 - [ ] Correct surface tokens (marketing vs product vs admin)
-- [ ] Type: Fraunces headings on marketing + `/app`; **admin = Source Sans 3 only**; Source Sans UI; Roboto Mono kickers on marketing
+- [ ] Type: Fraunces **only** on home hero title; Source Sans 3 for all other marketing + `/app` + admin; Roboto Mono kickers on marketing
 - [ ] Pistachio palette only; `#C6D67E` focus/hover only
 - [ ] BrandLockup used; type does not echo rounded wordmark
 - [ ] One primary action; secondary chrome does not compete
 - [ ] No forbidden colors/fonts; no BLS in user copy
 - [ ] Removing the lockup would still feel like Nura (or deliberate product chrome)
+- [ ] New marketing section H2s use `LetterRevealHeading` (not hero / about / legal); title not wrapped in `.fe-animate`
 
 ## Copy (if strings changed)
 

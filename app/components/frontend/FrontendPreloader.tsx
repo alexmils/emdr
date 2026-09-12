@@ -25,7 +25,9 @@ function buildSteps(): number[] {
 function shouldSkipPreloader(): boolean {
   if (typeof window === "undefined") return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
-  return Boolean(resolveLandingHash());
+  // Pending home section hash — skip so overflow-lock does not eat the scroll.
+  if (resolveLandingHash()) return true;
+  return false;
 }
 
 export function FrontendPreloader() {

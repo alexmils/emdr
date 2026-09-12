@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -10,6 +10,31 @@ const skipClean =
 const useWebpack =
   process.env.DEV_WEBPACK === "1" || args.includes("--webpack");
 
+/** Turbopack chokes on UTF-8 BOM in CSS ("Invalid dangling combinator"). */
+function stripCssBom(dir = join(root, "app")) {
+  let stripped = 0;
+  const stack = [dir];
+  while (stack.length) {
+    const cur = stack.pop();
+    for (const ent of readdirSync(cur, { withFileTypes: true })) {
+      const p = join(cur, ent.name);
+      if (ent.isDirectory()) {
+        stack.push(p);
+        continue;
+      }
+      if (!ent.name.endsWith(".css")) continue;
+      const buf = readFileSync(p);
+      if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+        writeFileSync(p, buf.subarray(3));
+        stripped += 1;
+      }
+    }
+  }
+  if (stripped) {
+    console.log(`[dev] Stripped UTF-8 BOM from ${stripped} CSS file(s).`);
+  }
+}
+
 function cleanNext() {
   try {
     rmSync(join(root, ".next"), { recursive: true, force: true });
@@ -18,6 +43,8 @@ function cleanNext() {
     /* ok */
   }
 }
+
+stripCssBom();
 
 if (!skipClean) {
   cleanNext();

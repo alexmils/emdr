@@ -8,6 +8,8 @@ export type LandingBlogPost = {
   tag: string;
   coverUrl: string | null;
   createdAt: string;
+  /** Estimated minutes — shown on home / blog cards. */
+  readMinutes?: number;
 };
 
 const COVER_FALLBACKS = [

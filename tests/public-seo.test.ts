@@ -19,7 +19,7 @@ describe("console crawl leak", () => {
     assert.equal(shouldNoindexPath("/app/resources"), true);
     assert.equal(shouldNoindexPath("/app"), true);
     assert.equal(shouldNoindexPath("/admin"), true);
-    assert.equal(shouldNoindexPath("/resources"), false);
+    assert.equal(shouldNoindexPath("/learn"), false);
     assert.equal(shouldNoindexPath("/blog"), false);
     assert.equal(shouldNoindexPath("/editorial"), false);
     assert.equal(shouldNoindexPath("/health"), true);
@@ -48,7 +48,9 @@ describe("public sitemap", () => {
   it("includes editorial and cluster slugs", () => {
     const urls = new Set(entries.map((e) => e.url));
     assert.ok(urls.has("https://nurahelp.com/editorial"));
+    assert.ok(urls.has("https://nurahelp.com/learn"));
     assert.ok(urls.has("https://nurahelp.com/blog"));
+    assert.ok(urls.has("https://nurahelp.com/changelog"));
     assert.ok(urls.has("https://nurahelp.com/blog/what-is-emdr"));
   });
 });

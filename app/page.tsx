@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const blogPosts = await getLandingBlogPosts(3);
+  const blogPosts = await getLandingBlogPosts(5);
 
   return (
     <FrontendShell wide>

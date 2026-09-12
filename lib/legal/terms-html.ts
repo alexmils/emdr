@@ -67,7 +67,7 @@ const NURA_ADDENDUM = `
     intervention. If you might hurt yourself or someone else, contact emergency
     services or a crisis line immediately — in the US, call or text
     <strong>988</strong>. See our
-    <a href="/resources">Resources</a> page for additional links.
+    <a href="/learn">Learn</a> page for additional links.
   </p>
   <h3 id="nura-ai">Agent-guided features</h3>
   <p>

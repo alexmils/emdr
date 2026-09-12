@@ -1,5 +1,4 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
   CLINICAL_ADVISOR,
@@ -21,13 +20,6 @@ export default function ClinicalTeamPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { href: "/about", label: "About" },
-            { label: "Clinical team" },
-          ]}
-        />
         <h1>Clinical review</h1>
         <p>
           {BRAND_SPOKEN} is self-help software. Clinical review of intake

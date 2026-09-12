@@ -19,7 +19,7 @@ import {
   Waves,
 } from "lucide-react";
 import { appPath } from "@/lib/app-base";
-import { BRAND_CIRCLE_AVATAR, BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_SPOKEN } from "@/lib/brand";
 import {
   BILLING_PLANS,
   TRIAL_DAYS,
@@ -32,6 +32,7 @@ import {
 } from "@/lib/landing-blog";
 import { LANDING_FAQ_ITEMS } from "@/lib/landing-faq";
 import { scheduleScrollToLandingHash } from "@/lib/landing-scroll";
+import { LetterRevealHeading } from "./LetterRevealHeading";
 import { useLandingMotion } from "./useLandingMotion";
 import "lenis/dist/lenis.css";
 import "./landing-motion.css";
@@ -45,7 +46,6 @@ const IMG = {
   reading: "/marketing/landing/reading.jpg",
   eveningLight: "/marketing/landing/evening-light.jpg",
   together: "/marketing/landing/together.jpg",
-  careDesk: "/marketing/landing/care-desk.jpg",
   softWindow: "/marketing/landing/soft-window.jpg",
   quietHands: "/marketing/landing/quiet-hands.jpg",
   avatarMaya: "/marketing/landing/avatar-maya.jpg",
@@ -111,7 +111,7 @@ const FEATURES = [
   },
   {
     icon: BookOpen,
-    title: "Resources that explain",
+    title: "Learn at your pace",
     body: "Short guides for EMDR and therapy support — written for real people, not jargon.",
   },
 ];
@@ -143,7 +143,7 @@ const SHOWCASES = [
     alt: "Calm rest and focus",
   },
   {
-    kicker: "Resources",
+    kicker: "Learn",
     title: "Guides you can actually finish",
     body: "Short articles on EMDR, safety, and what to expect — written for real people between sessions, not textbooks.",
     points: [
@@ -208,30 +208,6 @@ const STEPS = [
     ],
     image: IMG.together,
     alt: "People sharing a calm supportive moment",
-  },
-];
-
-const OFFERS = [
-  {
-    href: appPath("/create-account"),
-    tag: "Now",
-    title: "Agent-guided sessions",
-    body: "Visual sets, optional voice, and a session agent on protocol — built for practice between sessions.",
-    image: IMG.supportTalk,
-  },
-  {
-    href: "/resources",
-    tag: "Now",
-    title: "Resources",
-    body: "Readable guides for EMDR, safety, and what to expect in therapy support — short enough to finish.",
-    image: IMG.reading,
-  },
-  {
-    href: "/about",
-    tag: "About",
-    title: "About Nura",
-    body: "How agent-guided support fits into your practice — and what comes next as we grow the product.",
-    image: IMG.careDesk,
   },
 ];
 
@@ -350,9 +326,12 @@ function StoriesSection() {
     <section className="fe-stories" aria-labelledby="fe-stories-title">
       <div className="fe-container">
         <div className="fe-stories-intro">
-          <h2 id="fe-stories-title" className="fe-stories-title">
+          <LetterRevealHeading
+            id="fe-stories-title"
+            className="fe-stories-title"
+          >
             Their experience, your confidence
-          </h2>
+          </LetterRevealHeading>
           <p className="fe-stories-sub">
             Voices from people using {BRAND_SPOKEN} between sessions — calm
             enough to stay with the work.
@@ -533,70 +512,77 @@ function AboutRevealText({ text }: { text: string }) {
   );
 }
 
+/** Nexsas home/blog stagger — fixed crop heights across 3 columns. */
+const HOME_BLOG_HEIGHTS = [420, 320, 520] as const;
+
 function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
   if (posts.length === 0) return null;
 
+  const columns: LandingBlogPost[][] = [[], [], []];
+  posts.forEach((post, i) => {
+    columns[i % 3]!.push(post);
+  });
+
   return (
     <section className="fe-blog" id="blog" aria-labelledby="fe-blog-title">
-      <div className="fe-container">
+      <div className="fe-container fe-blog-inner">
         <div className="fe-blog-head">
-          <h2 id="fe-blog-title" className="fe-blog-title">
-            Guides and calm reading
-          </h2>
-          <div className="fe-blog-head-aside">
-            <p className="fe-blog-head-copy">
-              Short articles for EMDR practice, grounding, and when to stop.
-            </p>
-            <Link href="/blog" className="fe-blog-cta">
-              View all guides
-              <ArrowRight size={16} aria-hidden />
-            </Link>
-          </div>
+          <p className="fe-section-kicker fe-animate">Blog</p>
+          <LetterRevealHeading id="fe-blog-title" className="fe-blog-title">
+            Guides for practice between sessions
+          </LetterRevealHeading>
         </div>
 
-        <div className="fe-blog-grid">
-          {posts.map((post) => (
-            <article key={post.slug} className="fe-blog-card">
-              <Link
-                href={`/blog/${post.slug}`}
-                className="fe-blog-card-media"
-              >
-                <Image
-                  src={post.coverUrl || IMG.reading}
-                  alt=""
-                  fill
-                  priority={false}
-                  sizes="(max-width: 900px) 100vw, 33vw"
-                  className="fe-blog-card-image"
-                />
-              </Link>
-              <p className="fe-blog-card-tag">{post.tag}</p>
-              <h3 className="fe-blog-card-title">
-                <Link href={`/blog/${post.slug}`}>
-                  {post.title}
-                </Link>
-              </h3>
-              <p className="fe-blog-card-excerpt">{post.summary}</p>
-              <div className="fe-blog-card-meta">
-                <span className="fe-blog-card-logo" aria-hidden>
-                  <Image
-                    src={BRAND_CIRCLE_AVATAR}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="fe-blog-card-avatar"
-                    unoptimized
-                  />
-                </span>
-                <span className="fe-blog-card-byline">
-                  <strong>{BRAND_SPOKEN}</strong>
-                  <time dateTime={post.createdAt}>
-                    {formatBlogDate(post.createdAt)}
-                  </time>
-                </span>
-              </div>
-            </article>
+        <div className="fe-blog-masonry" role="list">
+          {columns.map((colPosts, col) => (
+            <div key={col} className="fe-blog-masonry-col" role="presentation">
+              {colPosts.map((post, row) => {
+                const date = formatBlogDate(post.createdAt);
+                const mins = post.readMinutes ?? 2;
+                const height =
+                  HOME_BLOG_HEIGHTS[(col + row) % HOME_BLOG_HEIGHTS.length]!;
+                return (
+                  <article
+                    key={post.slug}
+                    className="fe-blog-masonry-item"
+                    role="listitem"
+                  >
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="fe-blog-masonry-card"
+                    >
+                      <span
+                        className="fe-blog-masonry-media"
+                        style={{ height }}
+                      >
+                        <Image
+                          src={post.coverUrl || IMG.reading}
+                          alt=""
+                          fill
+                          priority={false}
+                          sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                          className="fe-blog-masonry-image"
+                        />
+                      </span>
+                      <span className="fe-blog-masonry-body">
+                        <span className="fe-blog-masonry-meta">
+                          {date ? <span>{date}</span> : null}
+                          <span>{mins} min read</span>
+                        </span>
+                        <span className="fe-blog-masonry-title">{post.title}</span>
+                      </span>
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
           ))}
+        </div>
+
+        <div className="fe-blog-more">
+          <Link href="/blog" className="fe-blog-load-more">
+            Load more
+          </Link>
         </div>
       </div>
     </section>
@@ -609,12 +595,12 @@ function FaqSection() {
   return (
     <section className="fe-faq" id="faq" aria-labelledby="fe-faq-title">
       <div className="fe-container">
-        <div className="fe-faq-head fe-animate">
-          <p className="fe-section-kicker">FAQ</p>
-          <h2 id="fe-faq-title" className="fe-faq-title">
+        <div className="fe-faq-head">
+          <p className="fe-section-kicker fe-animate">FAQ</p>
+          <LetterRevealHeading id="fe-faq-title" className="fe-faq-title">
             Questions, answered calmly
-          </h2>
-          <p className="fe-faq-sub">
+          </LetterRevealHeading>
+          <p className="fe-faq-sub fe-animate">
             Short answers about how Nura works — before you start a trial or open a
             session.
           </p>
@@ -735,15 +721,15 @@ export function HomeLanding({
                           <p className="fe-hero-inner-label">
                             Support you can trust
                           </p>
-                          <Link href="/resources" className="fe-hero-inner-link">
-                            Browse resources
+                          <Link href="/learn" className="fe-hero-inner-link">
+                            Learn
                           </Link>
                         </div>
                       </div>
                       <Link
-                        href="/resources"
+                        href="/learn"
                         className="fe-hero-video-thumb"
-                        aria-label="Browse resources"
+                        aria-label="Learn where to start"
                       >
                         <DecorativeImg
                           src={HERO_PREVIEW_IMAGE}
@@ -802,10 +788,12 @@ export function HomeLanding({
 
       <section className="fe-section-block">
         <div className="fe-container">
-          <div className="fe-section-head fe-animate">
-            <p className="fe-section-kicker">Why {BRAND_SPOKEN}</p>
-            <h2 className="fe-section-title">Support crafted around your pace</h2>
-            <p className="fe-section-body">
+          <div className="fe-section-head">
+            <p className="fe-section-kicker fe-animate">Why {BRAND_SPOKEN}</p>
+            <LetterRevealHeading className="fe-section-title">
+              Support crafted around your pace
+            </LetterRevealHeading>
+            <p className="fe-section-body fe-animate">
               Every surface is built for calm focus — a session agent when you want
               structure, Free when you run the sets yourself, and resources you
               can finish in one sitting.
@@ -825,12 +813,12 @@ export function HomeLanding({
 
       <section className="fe-showcase-section">
         <div className="fe-container">
-          <div className="fe-section-head fe-section-head--center fe-animate">
-            <p className="fe-section-kicker">Inside the app</p>
-            <h2 className="fe-section-title">
+          <div className="fe-section-head fe-section-head--center">
+            <p className="fe-section-kicker fe-animate">Inside the app</p>
+            <LetterRevealHeading className="fe-section-title">
               Tools that stay with you between sessions
-            </h2>
-            <p className="fe-section-body fe-section-body--center">
+            </LetterRevealHeading>
+            <p className="fe-section-body fe-section-body--center fe-animate">
               Large, quiet blocks for the parts of Nura you will use most — not a
               thin strip of icons.
             </p>
@@ -873,12 +861,14 @@ export function HomeLanding({
 
       <section className="fe-how-section" id="how-it-works">
         <div className="fe-container">
-          <div className="fe-how-head fe-animate">
-            <p className="fe-section-kicker fe-section-kicker--on-dark">
+          <div className="fe-how-head">
+            <p className="fe-section-kicker fe-section-kicker--on-dark fe-animate">
               How it works
             </p>
-            <h2 className="fe-how-title">Personalized care, every step</h2>
-            <p className="fe-how-sub">
+            <LetterRevealHeading className="fe-how-title">
+              Personalized care, every step
+            </LetterRevealHeading>
+            <p className="fe-how-sub fe-animate">
               Four calm steps from signup to ongoing support — same agent-guided
               sessions and Free once you are in.
             </p>
@@ -941,48 +931,13 @@ export function HomeLanding({
         </div>
       </section>
 
-      <section className="fe-section-block">
-        <div className="fe-container">
-          <div className="fe-section-head fe-animate">
-            <p className="fe-section-kicker">What you can use today</p>
-            <h2 className="fe-section-title">
-              Built for therapy support — starting with EMDR
-            </h2>
-            <p className="fe-section-body">
-              Explore the product hubs on the public site, then open the app when
-              you are ready for a session.
-            </p>
-          </div>
-          <div className="fe-offer-cards">
-            {OFFERS.map((offer) => (
-              <Link key={offer.href} href={offer.href} className="fe-offer-card">
-                <div className="fe-offer-image-wrap">
-                  <Image
-                    src={offer.image}
-                    alt=""
-                    width={640}
-                    height={420}
-                    className="fe-offer-image"
-                    priority={false}
-                    sizes="(max-width: 900px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="fe-offer-body">
-                  <span className="fe-offer-tag">{offer.tag}</span>
-                  <h3>{offer.title}</h3>
-                  <p>{offer.body}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="fe-stats-section fe-section-block">
         <div className="fe-container">
-          <div className="fe-section-head fe-section-head--center fe-animate">
-            <p className="fe-section-kicker">Our journey in numbers</p>
-            <h2 className="fe-section-title">A community built on calm and clarity</h2>
+          <div className="fe-section-head fe-section-head--center">
+            <p className="fe-section-kicker fe-animate">Our journey in numbers</p>
+            <LetterRevealHeading className="fe-section-title">
+              A community built on calm and clarity
+            </LetterRevealHeading>
           </div>
           <div className="fe-stats-grid">
             {STATS.map((s) => (
@@ -1003,9 +958,11 @@ export function HomeLanding({
 
       <section className="fe-pricing-section" id="prices">
         <div className="fe-container">
-          <div className="fe-pricing-head fe-animate">
-            <h2 className="fe-pricing-title">Plans tailored to your pace</h2>
-            <p className="fe-pricing-sub">
+          <div className="fe-pricing-head">
+            <LetterRevealHeading className="fe-pricing-title">
+              Plans tailored to your pace
+            </LetterRevealHeading>
+            <p className="fe-pricing-sub fe-animate">
               Start with a {TRIAL_DAYS}-day trial. Every paid plan unlocks the same
               agent-guided sessions and Free sessions — pick how often you want to
               be billed.

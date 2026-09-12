@@ -64,8 +64,9 @@ describe("content cluster", () => {
   it("lists newest first and features enough posts for the home grid", () => {
     const listed = listClusterArticles();
     assert.equal(listed[0]?.slug, CLUSTER_ARTICLES.at(-1)?.slug);
-    const featured = featuredClusterPosts(3);
-    assert.equal(featured.length, 3);
+    const featured = featuredClusterPosts(5);
+    assert.equal(featured.length, 5);
     assert.ok(featured.every((p) => p.slug && p.title && p.summary));
+    assert.ok(featured.every((p) => typeof p.readMinutes === "number"));
   });
 });

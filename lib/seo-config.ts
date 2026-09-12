@@ -6,10 +6,13 @@ export const SEO_PAGE_IDS = [
   "clinical-team",
   "editorial",
   "emdr",
-  "resources",
+  "learn",
   "blog",
+  "changelog",
   "privacy",
   "terms",
+  "safety",
+  "limits",
 ] as const;
 
 export type SeoPageId = (typeof SEO_PAGE_IDS)[number];
@@ -95,6 +98,11 @@ export function normalizeSeoConfig(raw: unknown): PlatformSeoConfig {
     for (const id of SEO_PAGE_IDS) {
       const override = normalizePageOverride(r.pages[id]);
       if (override) pages[id] = override;
+    }
+    // Retired public hub id: /resources → /learn
+    if (!pages.learn) {
+      const legacy = normalizePageOverride(r.pages.resources);
+      if (legacy) pages.learn = legacy;
     }
   }
   return {

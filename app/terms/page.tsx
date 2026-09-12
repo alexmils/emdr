@@ -1,5 +1,4 @@
-﻿import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
-import { LegalOpenHelp } from "@/app/components/frontend/LegalOpenHelp";
+﻿import { LegalOpenHelp } from "@/app/components/frontend/LegalOpenHelp";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import {
   formatLegalEntityBlock,
@@ -22,12 +21,6 @@ export default function TermsPage() {
     <FrontendShell>
       <LegalOpenHelp />
       <article className="frontend-legal frontend-legal--long frontend-legal--termly">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { label: "Terms" },
-          ]}
-        />
         <h1>Terms of service</h1>
         <p className="frontend-legal-meta">
           Version {LEGAL_DOC_VERSION.terms} · Last updated 12 September 2026

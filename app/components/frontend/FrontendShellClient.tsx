@@ -21,7 +21,7 @@ export function FrontendShellClient({
 }) {
   return (
     <div className={`frontend-home${wide ? " frontend-home-landing" : ""}`}>
-      {wide ? <FrontendPreloader /> : null}
+      <FrontendPreloader />
       <FrontendHeader overlay={wide} />
       <main
         className={wide ? "frontend-main frontend-main-wide" : "frontend-main"}

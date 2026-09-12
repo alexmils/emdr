@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/changelog": ["./CHANGELOG.md"],
+    "/sitemap.xml": ["./CHANGELOG.md"],
+  },
   reactStrictMode: true,
   devIndicators: false,
   // Docker/Coolify builds are memory-tight; lint + typecheck run in CI / locally.
@@ -10,23 +14,28 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/resources",
+        destination: "/learn",
+        permanent: true,
+      },
+      {
         source: "/therapy",
-        destination: "/resources",
+        destination: "/learn",
         permanent: true,
       },
       {
         source: "/therapy/:path*",
-        destination: "/resources",
+        destination: "/learn",
         permanent: true,
       },
       {
         source: "/therapists",
-        destination: "/resources",
+        destination: "/learn",
         permanent: true,
       },
       {
         source: "/therapists/:path*",
-        destination: "/resources",
+        destination: "/learn",
         permanent: true,
       },
     ];

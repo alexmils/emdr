@@ -271,7 +271,10 @@ describe("public page titles and descriptions", () => {
     const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
     const meta = metadataFromResolved("emdr", pages);
     assert.equal(typeof meta.title, "string");
-    assert.equal(meta.title, "EMDR therapy online in the app");
+    assert.equal(
+      meta.title,
+      "AI-guided EMDR therapy online — bilateral stimulation app"
+    );
   });
 
   it("uses an absolute document title on home so Nura is not dropped", () => {
@@ -294,7 +297,7 @@ describe("public page titles and descriptions", () => {
             description:
               "What EMDR is, how visual sets work, and how a Nura session is structured.",
           },
-          resources: {
+          learn: {
             title: "Resources",
             description: "Guides for EMDR and therapy support on Nura.",
           },
@@ -312,8 +315,12 @@ describe("public page titles and descriptions", () => {
     );
     const byId = Object.fromEntries(pages.map((p) => [p.id, p]));
     assert.equal(byId.about?.title, "About the EMDR therapy online app");
-    assert.equal(byId.emdr?.title, "EMDR therapy online in the app");
-    assert.equal(byId.resources?.title, "EMDR therapy resources in the app");
+    assert.equal(
+      byId.emdr?.title,
+      "AI-guided EMDR therapy online — bilateral stimulation app"
+    );
+    assert.equal(byId.learn?.title, "EMDR therapy — where to start");
+    assert.equal(byId.blog?.title, "EMDR therapy blog — guides and visual sets");
     assert.equal(byId.terms?.title, "Terms of service");
     assert.notEqual(byId.about?.description, BRAND_DESCRIPTION);
     assert.notEqual(byId.privacy?.description, "Privacy policy for NuraHelp");
@@ -350,6 +357,7 @@ describe("marketing consent paths", () => {
     assert.ok(isMarketingPublicPath("/blog"));
     assert.ok(isMarketingPublicPath("/blog/what-is-emdr"));
     assert.ok(isMarketingPublicPath("/editorial"));
+    assert.ok(isMarketingPublicPath("/changelog"));
     assert.ok(!isMarketingPublicPath("/app"));
     assert.ok(!isMarketingPublicPath("/app/login"));
     assert.ok(!isMarketingPublicPath("/admin/seo"));

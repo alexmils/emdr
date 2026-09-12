@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
@@ -17,13 +16,6 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
   return (
     <article className="fe-cluster">
       <div className="fe-cluster-inner">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { href: "/blog", label: "Blog" },
-            { label: article.title },
-          ]}
-        />
         <p className="fe-cluster-kicker">{article.kicker}</p>
         <h1>{article.title}</h1>
         <p className="fe-cluster-dek">{article.dek}</p>

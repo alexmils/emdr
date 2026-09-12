@@ -6,7 +6,7 @@
 }
 
 :root {
-  /* Nura â€” Pistachio palette (see docs/brand.md) */
+  /* Nura — Pistachio palette (see docs/brand.md) */
   --sidebar-bg: #3d4129;
   --sidebar-border: #4e5236;
   --sidebar-text: #eaf8ea;
@@ -218,7 +218,7 @@ button {
   font-size: var(--ui-muted);
 }
 
-/* â€”â€” Sidebar â€”â€” */
+/* —— Sidebar —— */
 
 /* Product chrome: Source Sans only — Fraunces stays on marketing (.frontend-home) */
 .app-shell {
@@ -536,7 +536,7 @@ button {
   color: var(--text);
 }
 
-/* â€”â€” Workspace â€”â€” */
+/* —— Workspace —— */
 
 .app-shell.session-immersive .app-sidebar {
   width: 0;
@@ -564,7 +564,7 @@ button {
   display: none !important;
 }
 
-/* Help FAB sits outside .app-shell â€” hide while a set is running. */
+/* Help FAB sits outside .app-shell — hide while a set is running. */
 body:has(.app-shell.session-immersive) .help-fab {
   display: none !important;
 }
@@ -960,7 +960,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Sidebar primary nav â€”â€” */
+/* —— Sidebar primary nav —— */
 
 .sidebar-primary-nav {
   display: flex;
@@ -1154,7 +1154,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Resources library â€”â€” */
+/* —— Resources library —— */
 
 .resources-main {
   background: var(--bg-canvas);
@@ -2102,7 +2102,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--bg-canvas);
 }
 
-/* â€”â€” Buttons â€”â€” */
+/* —— Buttons —— */
 
 .btn-primary {
   display: inline-flex;
@@ -2229,7 +2229,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--accent-hover);
 }
 
-/* â€”â€” Agent overlay (prompt â†’ then chat thread + pill composer) â€”â€” */
+/* —— Agent overlay (prompt â†’ then chat thread + pill composer) —— */
 
 .agent-overlay {
   position: absolute;
@@ -3107,7 +3107,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
 }
 
-/* â€”â€” BLS bar expand (collapsed state) â€”â€” */
+/* —— BLS bar expand (collapsed state) —— */
 
 .bls-expand-btn {
   display: inline-flex;
@@ -3157,7 +3157,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     border-bottom: none;
   }
 
-  /* Two-row Control Center layout â€” tap targets â‰¥36px, labeled groups */
+  /* Two-row Control Center layout — tap targets â‰¥36px, labeled groups */
   .bls-panel {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3206,7 +3206,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Form fields â€”â€” */
+/* —— Form fields —— */
 
 .field {
   width: 100%;
@@ -3230,7 +3230,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: var(--radius-lg);
 }
 
-/* â€”â€” Cards / settings â€”â€” */
+/* —— Cards / settings —— */
 
 .apple-card,
 .settings-group {
@@ -3253,7 +3253,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* â€”â€” BLS Adjustments sheet â€”â€” */
+/* —— BLS Adjustments sheet —— */
 
 .gear-overlay {
   position: fixed;
@@ -3890,7 +3890,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: var(--shadow-sm);
 }
 
-/* â€”â€” Toggle â€”â€” */
+/* —— Toggle —— */
 
 .apple-toggle {
   position: relative;
@@ -4371,7 +4371,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     background: var(--bg-elevated);
   }
 
-  /* Stack Back above title â€” avoid cramped single-row chrome */
+  /* Stack Back above title — avoid cramped single-row chrome */
   .settings-sidebar-top {
     display: flex;
     flex-direction: column;
@@ -4459,7 +4459,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Toasts â€”â€” */
+/* —— Toasts —— */
 
 .toast-viewport {
   position: fixed;
@@ -4524,7 +4524,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* â€”â€” Admin dashboard â€”â€” */
+/* —— Admin dashboard —— */
 
 .admin-page {
   width: 100%;
@@ -8413,7 +8413,7 @@ select.field option:disabled {
   margin-top: 1.1rem;
 }
 
-/* â€”â€” Frontend site (public /) â€”â€” */
+/* —— Frontend site (public /) —— */
 
 .frontend-home-landing {
   position: relative;
@@ -8449,19 +8449,27 @@ select.field option:disabled {
 .frontend-home h4,
 .frontend-home h5,
 .frontend-home h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.2;
+  font-optical-sizing: auto;
+  font-variation-settings: normal;
+}
+
+/* Fraunces only on home hero display title */
+.frontend-home .fe-hero-title {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 1.2;
   font-optical-sizing: auto;
   font-variation-settings: "SOFT" 45, "WONK" 0.4;
 }
 
-/* Section titles need room to breathe — beat the h2 element rule above */
+/* Section titles — Source Sans (not Fraunces) */
 .frontend-home h2.fe-section-title {
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.28;
-  letter-spacing: -0.01em;
-  font-variation-settings: "SOFT" 55, "WONK" 0.5;
+  letter-spacing: -0.02em;
+  font-variation-settings: normal;
 }
 
 .frontend-nav-muted {
@@ -8493,9 +8501,9 @@ select.field option:disabled {
 
 .frontend-hero-title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: clamp(2.25rem, 5.5vw, 3.5rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.03em;
 }
@@ -8587,6 +8595,27 @@ select.field option:disabled {
   font-family: var(--font-sans) !important;
 }
 
+/* Blog / Learn / articles — Source Sans only (Fraunces = home hero display) */
+.frontend-home .fe-cluster h1,
+.frontend-home .fe-cluster .fe-cluster-title,
+.frontend-home .fe-cluster h2,
+.frontend-home .fe-cluster-list-title,
+.frontend-home .fe-cluster-card-title,
+.frontend-home .fe-cluster-related h2,
+.frontend-home .fe-cluster-group h2,
+.frontend-home .fe-cluster-body h2,
+.frontend-home .fe-changelog-hero h1 {
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  font-variation-settings: normal !important;
+}
+
+.frontend-home .fe-blog-masonry-title {
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-variation-settings: normal !important;
+}
+
 .frontend-legal ul {
   margin: 0 0 1.1rem;
   padding-left: 1.25rem;
@@ -8639,6 +8668,73 @@ select.field option:disabled {
   font-weight: 400;
   line-height: 1.65;
   color: var(--fe-fg);
+}
+
+.frontend-legal h3 {
+  margin: 1.6rem 0 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fe-fg);
+}
+
+/* Long-form YMYL callout (safety strip, disclaimer). */
+.frontend-legal-note {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.1rem;
+  max-width: 42rem;
+  border-left: 3px solid var(--fe-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fe-fg) 4%, transparent);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--fe-fg);
+}
+
+.frontend-legal-note strong {
+  font-weight: 600;
+}
+
+/* Comparison table — horizontal scroll on mobile, no squashed strip. */
+.frontend-legal-tablewrap {
+  margin: 0 0 1.4rem;
+  max-width: 42rem;
+  overflow-x: auto;
+}
+
+.frontend-legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.frontend-legal-table th,
+.frontend-legal-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
+}
+
+.frontend-legal-table thead th {
+  font-weight: 600;
+  color: var(--fe-fg);
+}
+
+.frontend-legal-table tbody th {
+  font-weight: 600;
+  color: var(--fe-muted);
+  white-space: nowrap;
+}
+
+.frontend-legal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  margin: 1.25rem 0 1.5rem;
 }
 
 .frontend-legal-toc {
@@ -8829,9 +8925,9 @@ select.field option:disabled {
 
 .frontend-not-found-code {
   margin: 0 0 0.35rem;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: clamp(3.5rem, 14vw, 5.5rem);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--fe-muted);
@@ -8839,9 +8935,9 @@ select.field option:disabled {
 
 .frontend-not-found h1 {
   margin: 0 0 0.75rem;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: clamp(1.75rem, 4vw, 2.25rem);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--fe-fg);
@@ -8900,9 +8996,9 @@ select.field option:disabled {
 
 .frontend-offer h2 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 1.2rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .frontend-offer p {
@@ -9534,7 +9630,7 @@ select.field option:disabled {
   }
 }
 
-/* â€”â€” Onboarding / upgrade â€”â€” */
+/* —— Onboarding / upgrade —— */
 .onboarding-bullets,
 .onboarding-steps {
   margin: 0 0 0.75rem;

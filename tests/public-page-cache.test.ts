@@ -18,10 +18,13 @@ const PUBLIC_PAGE_FILES = [
   "app/about/clinical-team/page.tsx",
   "app/editorial/page.tsx",
   "app/emdr/page.tsx",
-  "app/resources/page.tsx",
+  "app/learn/page.tsx",
   "app/blog/page.tsx",
+  "app/changelog/page.tsx",
   "app/privacy/page.tsx",
   "app/terms/page.tsx",
+  "app/safety/page.tsx",
+  "app/limits/page.tsx",
 ] as const;
 
 describe("public page ISR", () => {

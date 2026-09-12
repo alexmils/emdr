@@ -85,10 +85,14 @@ export function InformedConsentGate({ onCompleted }: Props) {
       </ul>
       <p className="informed-consent-links">
         Read the{" "}
+        <Link href="/safety" target="_blank" rel="noopener noreferrer">
+          safety guide
+        </Link>
+        , the{" "}
         <Link href="/terms" target="_blank" rel="noopener noreferrer">
           Terms
-        </Link>{" "}
-        and{" "}
+        </Link>
+        , and the{" "}
         <Link href="/privacy" target="_blank" rel="noopener noreferrer">
           Privacy Policy
         </Link>

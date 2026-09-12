@@ -30,10 +30,23 @@ export type ClusterArticle = {
   sections: ClusterSection[];
 };
 
+/** Distinct landing stills so /blog masonry does not read as one repeated crop. */
 const COVER = {
   reading: "/marketing/landing/reading.jpg",
   landscape: "/marketing/landing/green-landscape.jpg",
   practice: "/marketing/landing/practice-space.jpg",
+  forest: "/marketing/landing/forest-path.jpg",
+  water: "/marketing/landing/calm-water.jpg",
+  rest: "/marketing/landing/calm-rest.jpg",
+  desk: "/marketing/landing/care-desk.jpg",
+  evening: "/marketing/landing/evening-light.jpg",
+  journal: "/marketing/landing/journal.jpg",
+  tea: "/marketing/landing/morning-tea.jpg",
+  hands: "/marketing/landing/quiet-hands.jpg",
+  window: "/marketing/landing/soft-window.jpg",
+  talk: "/marketing/landing/support-talk.jpg",
+  together: "/marketing/landing/together.jpg",
+  sofa: "/marketing/landing/warm-sofa.jpg",
 } as const;
 
 export const CLUSTER_ARTICLES: ClusterArticle[] = [
@@ -129,7 +142,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-04T10:00:00.000Z",
     topic: "practice",
     featured: true,
-    coverUrl: COVER.landscape,
+    coverUrl: COVER.forest,
     emdrAnchor: "what a visual set looks like in the Nura app",
     related: [
       "what-is-bilateral-stimulation",
@@ -170,7 +183,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-05T10:00:00.000Z",
     topic: "understand",
     featured: false,
-    coverUrl: COVER.reading,
+    coverUrl: COVER.water,
     emdrAnchor: "how Nura runs EMDR-style visual sets, not CBT worksheets",
     related: ["what-is-emdr", "emdr-for-anxiety", "self-help-emdr-vs-a-therapist"],
     sections: [
@@ -207,7 +220,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-06T10:00:00.000Z",
     topic: "practice",
     featured: true,
-    coverUrl: COVER.practice,
+    coverUrl: COVER.rest,
     emdrAnchor: "a Nura session you can run between therapy appointments",
     related: [
       "can-you-do-emdr-alone",
@@ -248,7 +261,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-07T10:00:00.000Z",
     topic: "practice",
     featured: false,
-    coverUrl: COVER.landscape,
+    coverUrl: COVER.desk,
     emdrAnchor: "how to run a Free or Guided set on your own in Nura",
     related: [
       "emdr-between-sessions",
@@ -289,7 +302,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-08T10:00:00.000Z",
     topic: "understand",
     featured: false,
-    coverUrl: COVER.reading,
+    coverUrl: COVER.evening,
     emdrAnchor: "how long a Nura set runs — and how you stop it",
     related: ["what-happens-in-an-emdr-set", "emdr-session-structure", "emdr-check-ins-after-sets"],
     sections: [
@@ -326,7 +339,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-09T10:00:00.000Z",
     topic: "understand",
     featured: false,
-    coverUrl: COVER.practice,
+    coverUrl: COVER.journal,
     emdrAnchor: "using visual sets in Nura when anxiety is the target",
     related: ["emdr-for-ptsd", "grounding-before-a-set", "when-to-pause-or-stop"],
     sections: [
@@ -363,7 +376,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-10T10:00:00.000Z",
     topic: "understand",
     featured: false,
-    coverUrl: COVER.landscape,
+    coverUrl: COVER.tea,
     emdrAnchor: "what Nura offers instead of a PTSD treatment claim",
     related: ["emdr-for-anxiety", "self-help-emdr-vs-a-therapist", "when-to-pause-or-stop"],
     sections: [
@@ -400,7 +413,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-11T10:00:00.000Z",
     topic: "practice",
     featured: false,
-    coverUrl: COVER.reading,
+    coverUrl: COVER.hands,
     emdrAnchor: "what an online Nura EMDR session actually contains",
     related: ["emdr-session-structure", "eye-movements-and-online-emdr", "guided-vs-free-mode"],
     sections: [
@@ -437,7 +450,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-12T10:00:00.000Z",
     topic: "practice",
     featured: false,
-    coverUrl: COVER.practice,
+    coverUrl: COVER.window,
     emdrAnchor: "Guided and Free modes in a Nura EMDR session",
     related: ["emdr-session-structure", "visual-sets-and-the-moving-ball", "emdr-check-ins-after-sets"],
     sections: [
@@ -474,7 +487,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-12T11:00:00.000Z",
     topic: "safety",
     featured: false,
-    coverUrl: COVER.landscape,
+    coverUrl: COVER.talk,
     emdrAnchor: "grounding, then visual sets, in a Nura session",
     related: ["when-to-pause-or-stop", "what-happens-in-an-emdr-set", "can-you-do-emdr-alone"],
     sections: [
@@ -511,7 +524,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-12T12:00:00.000Z",
     topic: "safety",
     featured: false,
-    coverUrl: COVER.reading,
+    coverUrl: COVER.together,
     emdrAnchor: "stopping a visual set in Nura when you need to",
     related: ["grounding-before-a-set", "can-you-do-emdr-alone", "emdr-for-ptsd"],
     sections: [
@@ -548,7 +561,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-12T13:00:00.000Z",
     topic: "practice",
     featured: false,
-    coverUrl: COVER.practice,
+    coverUrl: COVER.sofa,
     emdrAnchor: "the phases of a guided EMDR session in Nura",
     related: ["what-is-emdr", "guided-vs-free-mode", "emdr-check-ins-after-sets"],
     sections: [
@@ -700,7 +713,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
     publishedAt: "2026-09-12T17:00:00.000Z",
     topic: "practice",
     featured: false,
-    coverUrl: COVER.landscape,
+    coverUrl: COVER.forest,
     emdrAnchor: "running a visual set with the moving ball in Nura",
     related: [
       "visual-sets-and-the-moving-ball",
@@ -763,6 +776,19 @@ export function relatedClusterArticles(article: ClusterArticle): ClusterArticle[
     .filter((a): a is ClusterArticle => Boolean(a));
 }
 
+/** Rough reading time for blog cards (~200 wpm). */
+export function estimateClusterReadMinutes(article: ClusterArticle): number {
+  const words = article.sections.reduce((sum, section) => {
+    const heading = section.heading.split(/\s+/).length;
+    const body = section.paragraphs.reduce(
+      (n, p) => n + p.split(/\s+/).filter(Boolean).length,
+      0
+    );
+    return sum + heading + body;
+  }, article.dek.split(/\s+/).filter(Boolean).length);
+  return Math.max(2, Math.min(12, Math.ceil(words / 200)));
+}
+
 export function clusterSitemapPaths(): {
   path: string;
   lastModified: Date;
@@ -791,6 +817,7 @@ export function clusterToLandingPost(article: ClusterArticle): LandingBlogPost {
     tag: CLUSTER_TOPIC_LABEL[article.topic],
     coverUrl: article.coverUrl,
     createdAt: article.publishedAt,
+    readMinutes: estimateClusterReadMinutes(article),
   };
 }
 

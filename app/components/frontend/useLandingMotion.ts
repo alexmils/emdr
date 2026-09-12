@@ -169,10 +169,11 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       });
 
       /* —— Closing band (CTA inside footer) —— */
-      gsap.from(".fe-site-footer-cta", {
-        y: 36,
+      gsap.from(".fe-site-footer-cta-sub, .fe-site-footer-cta-actions", {
+        y: 28,
         opacity: 0,
-        duration: 1,
+        duration: 0.9,
+        stagger: 0.1,
         ease: "power3.out",
         scrollTrigger: { trigger: ".fe-site-footer", start: "top 85%" },
       });

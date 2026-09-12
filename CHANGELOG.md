@@ -81,12 +81,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Guest help chat**: marketing Need help works without sign-in via HttpOnly `nura_help_visitor` cookie; exit-intent name+email capture; Turnstile `help-guest`; auto transcript email ~1h after last activity (`/api/cron/help-guest-transcripts` + `CRON_SECRET`); admin inbox shows guest threads
 - **Help chat AI provider/model**: Admin → Help → Settings can pin DeepSeek / OpenAI / Claude and a model for Need help (empty = platform default from AI & Voice); default **OpenAI `gpt-5-nano`** (cheapest FAQ lane; guided sessions stay on `gpt-4.1-mini`)
 - **Meta Pixel conversion events**: `CompleteRegistration` (email + Google signup), `InitiateCheckout`, `StartTrial` (onboarding checkout success), `Subscribe` / `Purchase` (billing upgrade / activate); GTM on create-account / onboarding / billing via `ConversionTags` + `lib/meta-pixel.ts`
+- Public **What's new** page at `/changelog` — product notes, newest first, linked from the footer
+- [internal] `/changelog` lists in-app user features only (session, auth, billing, settings) — not admin, platform, or marketing-site notes
+- [internal] Cursor rule `changelog-split` — after each turn, classify CHANGELOG bullets as public app features vs `[internal]` admin/platform/marketing
+- [internal] `/learn` and `/blog` JSON-LD — CollectionPage, ItemList of guides, and BreadcrumbList (same graph pattern as `/changelog`)
+- [internal] Public `/safety` page — when to stop a session, when to see a clinician, and crisis lines (988); registered in public paths, sitemap, robots, llms.txt, and Admin SEO
+- [internal] `/emdr` rewritten as an AI-guided EMDR long-form guide (session steps, visual/audio/tactile channels, what the AI does and does not do, comparison table, FAQ) with WebPage + FAQPage + BreadcrumbList JSON-LD that upgrades to `MedicalWebPage` + `reviewedBy` once a clinical advisor is configured
+- [internal] Public `/limits` page — “what Nura does not do” (no diagnosis, treatment, clinical judgment, or crisis care); registered in public paths, sitemap, robots, llms.txt, and Admin SEO
+- [internal] Wired the safety content cluster so it is no longer orphaned — Safety + Limits links in the site footer, `/learn` safety group links to `/safety`, informed-consent gate links to the safety guide, and cross-links between `/emdr`, `/safety`, and `/limits`
 
 ### Changed
 - **Cursor rule `marketing-no-explain-copy`**: marketing surfaces must not use body text to explain — hierarchy, cards, labels, visuals + CTA; linked from `page-copy-design-review` and `nura-brand`
+- [internal] Brand rule `nura-brand` + `docs/brand.md`: titles/hero/H1 may lead with **AI-guided EMDR** (product + search term); wordmark stays **Nura** (never “Nura AI”). `/emdr` meta title now “AI-guided EMDR therapy online — bilateral stimulation app”
 - **Login passkey hint**: Google/passkey block grouped in `.auth-alt-methods`; hint uses `.auth-passkey-hint` with more line-height and `2rem` footer gap on login (less cramped vs Reset it / Create one)
 - **Product page type pairing** (`/app` + auth + onboarding): shared `--ui-page-title-*` / `--ui-page-lead-*` tokens + `.ui-page-title` / `.ui-page-lead` — Source Sans **700** title (`clamp` 1.75–2.25rem) + **300** lead (~1.06–1.25rem, muted); wired on AuthShell, OnboardingShell, session start, informed consent
-- **Auth chrome**: logo + Home in one `.auth-shell-chrome` row (vertically centered); Home uses sage `#84B067`; Instagram/Facebook moved to right visual pane as quiet follow-us icons (not form footer); SEO visual copy “Self-help EMDR” / “EMDR therapy online” / AI agent-guided + Free visual sets; Terms/Privacy in `.auth-method-legal` inherit muted sentence size (accent kept for Sign in / Create one)
+- **Auth chrome**: create-account (`align="center"`) puts logo above the title on the centered axis; login/forgot keep top-left chrome logo (no Home link); form stack lowered on mobile; visual-pane social + SEO copy
 - **Legal / long-form type**: `/terms` + `/privacy` use Source Sans 3 (headings 600) — Fraunces reserved for marketing hero/section titles only; documented in `docs/brand.md`, `nura-brand`, `nura-ui-designer`
 - **`/terms` Termly body**: strip all inline Word/Termly styles (gray `#595959`, 11pt, white span chips); unified ink color, weight 400 body / 600 headings, ~1.125rem size so sections read evenly
 - **Legal contact**: public support emails removed; **Need help** opens the help chat (`HelpChatLink` / Termly `data-open-help`); marketing help drawer stays usable on narrow screens when opened from a link
@@ -202,6 +211,27 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `/app` crawl: shared `shouldNoindexPath` so `/app/resources` stays behind login + `X-Robots-Tag` + robots `Disallow: /app`
 - Billing display currency: plan prices and money formatters default to **USD** (`$4.99` / `$14.99` / `$99`); leftover `€` display strings from admin settings are rewritten on load
 - Marketing footer copyright: `© {year} Nura | All rights reserved` — drop Receptly LLC and the tagline from that line (operator stays on Terms, Privacy, JSON-LD)
+- Public content split: `/learn` is the start-here hub (ex `/resources`, 301 redirect); `/blog` is the article stream with masonry cover cards; `/app/resources` stays the gated CMS library
+- Blog / Learn / article titles use **Source Sans 3** (600) — Fraunces only on the home hero title
+- Blog index: Nexsas-style 3-column stacks with fixed crop heights (320/420/520), date + min-read, Source Sans titles — no Fraunces, no breadcrumbs
+- [internal] Home blog section: 5 masonry cards + centered Load more (same crop pattern as `/blog`)
+- [internal] Learn hub: remove bottom Get started / All articles / Sign in CTAs
+- [internal] Footer nav: drop Home link (logo already goes home)
+- [internal] Home: remove “What you can use today” offer cards section
+- [internal] Fraunces only on home hero — section/blog/404/changelog titles use Source Sans
+- [internal] Footer: Privacy / Terms / Cookie settings moved to a quieter legal row under the main nav
+- [internal] Learn hub: drop “In the app” Resources explainer block
+- [internal] Learn hub: restore full topic lists (was only one starter pick per topic)
+- [internal] Dev: strip UTF-8 BOM from CSS before Next starts (Turbopack parse fix)
+- [internal] Learn hub: clearer topic vs article hierarchy (index + larger section titles)
+- [internal] Learn hub: remove bottom self-help disclaimer line
+- [internal] Learn hub intro: “Start with one guide” + All articles link (drop meta “covers” line)
+- [internal] Learn hub: drop “All articles” link under the title
+- [internal] Learn hub subtext: “Pick a topic below. One guide is enough for now.”
+- [internal] Learn hub subtext: “Short EMDR reading for between sessions.”
+- [internal] Preloader on all marketing `FrontendShell` pages (not home-only); still skips reduced-motion and pending home hash scroll
+- [internal] Home section H2s: Aiero-style letter rise on scroll (`LetterRevealHeading`)
+- [internal] nura-ui-designer skill: document letter-rise H2 motion + checklist
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
@@ -440,7 +470,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
 - Marketing footer social row: drop the `mailto:hello@nurahelp.com` envelope icon (Instagram + Facebook remain)
 - Marketing footer nav: drop **How we write** (`/editorial` stays public; still linked from About and articles)
+- Visible marketing breadcrumbs (`FrontendBreadcrumbs`) — pages start with kicker/title; JSON-LD BreadcrumbList unchanged
 
 ---
 
-<!-- Agent: append new bullets under [Unreleased] after each change session, then sync summary to Mem0 user_id "emdr". -->
+<!-- Agent: classify each bullet (see .cursor/rules/changelog-split.mdc). Public /changelog = in-app user features. Prefix [internal] for admin/platform/marketing/SEO/infra. Then sync Mem0 user_id "emdr". -->

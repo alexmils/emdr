@@ -196,8 +196,8 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
     if (id === "blog") {
       return pathname === "/blog" || pathname.startsWith("/blog/");
     }
-    if (id === "resources") {
-      return pathname === "/resources" || pathname.startsWith("/resources/");
+    if (id === "learn") {
+      return pathname === "/learn" || pathname.startsWith("/learn/");
     }
     if (pathname !== "/") return false;
     if (id === "home") return !activeHash || activeHash === "home";

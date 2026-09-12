@@ -1,0 +1,149 @@
+/** Public /changelog — two-column notes, pistachio tokens. */
+
+.frontend-main:has(> .fe-changelog) {
+  max-width: 64rem;
+  padding-top: 2.25rem;
+}
+
+.fe-changelog {
+  width: 100%;
+}
+
+.fe-changelog-hero {
+  text-align: center;
+  margin: 1.25rem 0 3.5rem;
+}
+
+.fe-changelog-hero h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--fe-fg);
+}
+
+.fe-changelog-empty {
+  margin: 0;
+  text-align: center;
+  color: var(--fe-muted);
+}
+
+.fe-changelog-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.fe-changelog-row {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 1.75rem 4.5rem;
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--fe-line);
+}
+
+.fe-changelog-meta {
+  padding-top: 0.15rem;
+}
+
+.fe-changelog-kind {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fe-fg);
+}
+
+.fe-changelog-date {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--fe-accent);
+}
+
+.fe-changelog-ver {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-alt);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--fe-muted);
+}
+
+.fe-changelog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  min-width: 0;
+}
+
+.frontend-home .fe-changelog-h {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  color: var(--fe-fg);
+  font-variation-settings: normal;
+}
+
+.fe-changelog-h svg {
+  flex-shrink: 0;
+  color: var(--fe-accent);
+}
+
+.fe-changelog-block--changed .fe-changelog-h svg,
+.fe-changelog-block--removed .fe-changelog-h svg {
+  color: var(--fe-muted);
+}
+
+.fe-changelog-block--fixed .fe-changelog-h svg {
+  color: var(--fe-fg);
+}
+
+.fe-changelog-body ul {
+  margin: 0;
+  padding: 0 0 0 1.15rem;
+}
+
+.fe-changelog-body li {
+  margin: 0 0 0.4rem;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: var(--fe-fg);
+}
+
+.fe-changelog-body li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .fe-changelog-hero {
+    text-align: left;
+    margin-bottom: 1.75rem;
+  }
+
+  .fe-changelog-hero h1 {
+    font-size: clamp(1.85rem, 9vw, 2.35rem);
+  }
+
+  .fe-changelog-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1.65rem 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fe-changelog * {
+    scroll-behavior: auto;
+  }
+}

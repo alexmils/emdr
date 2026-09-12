@@ -11,4 +11,4 @@ When the task touches **UI, UX, layout, visual design, typography, spacing, comp
 2. Explicit invoke: `/nura-ui-designer` or “nura-ui-designer”.
 3. Still obey `nura-brand`, `product-ui`, `page-copy-design-review`, and `verify-before-done`.
 4. Do **not** use the retired `apple-ui` skill or Apple HIG / Inter / `#007AFF` for Nura product work.
-5. **Fraunces** = marketing hero / major landing section titles only. Never on `/app`, `/admin`, or legal/long-form (`/terms`, `/privacy`) — those use Source Sans 3.
+5. **Fraunces** = home hero title only (decorative). Never on other landing sections, `/app`, `/admin`, or legal/long-form (`/terms`, `/privacy`) — those use Source Sans 3.

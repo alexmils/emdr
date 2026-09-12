@@ -12,8 +12,6 @@ type AuthShellProps = {
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
-  /** Hide “Home” — useful for in-app flows like onboarding. */
-  hideHomeLink?: boolean;
   /** Hide the right-pane ball mockup (rare). */
   hideVisual?: boolean;
   /** Center title, body, and footer (method-picker screens). */
@@ -25,32 +23,31 @@ export function AuthShell({
   subtitle,
   children,
   footer,
-  hideHomeLink = false,
   hideVisual = false,
   align = "start",
 }: AuthShellProps) {
-  const alignClass =
-    align === "center" ? " auth-shell-main--center" : "";
+  const isCenter = align === "center";
+  const alignClass = isCenter ? " auth-shell-main--center" : "";
 
   return (
     <div className={`auth-shell${hideVisual ? " auth-shell--solo" : ""}`}>
       <ConversionTags />
       <div className="auth-shell-pane auth-shell-pane--form">
-        <header className="auth-shell-chrome">
-          <div className="auth-shell-brand">
-            <BrandLockup href="/" tone="color" />
-          </div>
-          {!hideHomeLink ? (
-            <Link href="/" className="auth-shell-home-link">
-              Home
-            </Link>
-          ) : (
-            <span className="auth-shell-chrome-end" aria-hidden="true" />
-          )}
-        </header>
+        {!isCenter ? (
+          <header className="auth-shell-chrome">
+            <div className="auth-shell-brand">
+              <BrandLockup href="/" tone="color" />
+            </div>
+          </header>
+        ) : null}
 
         <div className={`auth-shell-main${alignClass}`}>
           <div className="auth-shell-body">
+            {isCenter ? (
+              <div className="auth-shell-brand auth-shell-brand--stack">
+                <BrandLockup href="/" tone="color" />
+              </div>
+            ) : null}
             <div className="auth-shell-intro">
               <h1
                 id="auth-shell-title"

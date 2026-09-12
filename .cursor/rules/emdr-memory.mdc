@@ -13,7 +13,7 @@ Before starting any task in this repository:
 
 After completing each change session (before ending your turn):
 
-1. **Append** a concise bullet under the correct heading in `CHANGELOG.md` `[Unreleased]` (Added / Changed / Fixed / Removed). Newest entry at the bottom of that subsection.
+1. **Classify, then append** — follow `.cursor/rules/changelog-split.mdc`. Public `/changelog` = in-app user features only. Admin / platform / marketing / SEO / Docker / rules → prefix **`[internal]`**. Mixed work → two bullets. Newest entry at the bottom of Added / Changed / Fixed / Removed.
 2. **Add a Mem0 memory** via `add_memory` with:
    - `user_id: "emdr"`
    - `text`: one short paragraph — date (YYYY-MM-DD), what changed, key files/paths, ports or config if relevant. Prefix with `[EMDR]`.

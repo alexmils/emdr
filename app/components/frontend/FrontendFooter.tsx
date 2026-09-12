@@ -11,16 +11,22 @@ import {
 import { BrandLockup } from "@/app/components/BrandLockup";
 import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
 import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
+import { LetterRevealHeading } from "@/app/components/frontend/LetterRevealHeading";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import { TRIAL_DAYS } from "@/lib/billing-constants";
 import "./frontend-footer.css";
 
 const FOOTER_LINKS = [
-  { href: "/", label: "Home" },
   { href: "/blog", label: "Blog" },
-  { href: "/resources", label: "Resources" },
+  { href: "/learn", label: "Learn" },
   { href: "/about", label: "About" },
+  { href: "/changelog", label: "What's new" },
+] as const;
+
+const FOOTER_LEGAL = [
+  { href: "/safety", label: "Safety" },
+  { href: "/limits", label: "Limits" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ] as const;
@@ -83,9 +89,9 @@ export function FrontendFooter() {
 
       <div className="fe-site-footer-inner">
         <div className="fe-site-footer-cta">
-          <h2 className="fe-site-footer-cta-title">
+          <LetterRevealHeading className="fe-site-footer-cta-title">
             Support that stays calm — start when you are ready
-          </h2>
+          </LetterRevealHeading>
           <p className="fe-site-footer-cta-sub">
             Built for practice between sessions. Create an account for a{" "}
             {TRIAL_DAYS}-day trial, or sign in if you already use {BRAND_SPOKEN}.
@@ -176,11 +182,20 @@ export function FrontendFooter() {
                   {l.label}
                 </Link>
               ))}
-              <CookieSettingsButton className="fe-site-footer-cookie-btn" />
             </nav>
-            <p className="fe-site-footer-copy">
-              © {new Date().getFullYear()} {BRAND_SPOKEN} | All rights reserved
-            </p>
+            <div className="fe-site-footer-meta">
+              <p className="fe-site-footer-copy">
+                © {new Date().getFullYear()} {BRAND_SPOKEN} | All rights reserved
+              </p>
+              <nav className="fe-site-footer-legal" aria-label="Legal">
+                {FOOTER_LEGAL.map((l) => (
+                  <Link key={l.href} href={l.href}>
+                    {l.label}
+                  </Link>
+                ))}
+                <CookieSettingsButton className="fe-site-footer-cookie-btn" />
+              </nav>
+            </div>
           </div>
         </div>
       </div>

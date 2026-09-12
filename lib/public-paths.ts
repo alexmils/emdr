@@ -8,8 +8,11 @@ const FRONTEND_PREFIXES = [
   "/about",
   "/editorial",
   "/emdr",
-  "/resources",
+  "/learn",
   "/blog",
+  "/changelog",
+  "/safety",
+  "/limits",
 ] as const;
 
 const AUTH_PUBLIC_PREFIXES = [

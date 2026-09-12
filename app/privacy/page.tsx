@@ -1,5 +1,4 @@
 ﻿import { HelpChatLink } from "@/app/components/HelpChatWidget";
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import {
   BRAND_DOMAIN,
@@ -26,12 +25,6 @@ export default function PrivacyPage() {
   return (
     <FrontendShell>
       <article className="frontend-legal frontend-legal--long">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { label: "Privacy" },
-          ]}
-        />
         <h1>Privacy policy</h1>
         <p className="frontend-legal-meta">
           Version {LEGAL_DOC_VERSION.privacy} · Last updated 12 September 2026

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { changelogFileMtime } from "@/lib/changelog-public";
 import {
   clusterSitemapPaths,
   latestClusterModified,
@@ -12,6 +13,9 @@ const STATIC_LASTMOD: Record<string, string> = {
   "/privacy": "2026-09-12",
   "/terms": "2026-09-12",
   "/about/clinical-team": "2026-09-12",
+  "/changelog": "2026-09-12",
+  "/safety": "2026-09-12",
+  "/limits": "2026-09-12",
 };
 
 function atUtc(isoDate: string): Date {
@@ -31,17 +35,22 @@ export function buildPublicSitemap(origin: string): MetadataRoute.Sitemap {
     "/about/clinical-team",
     "/editorial",
     "/emdr",
-    "/resources",
+    "/learn",
     "/blog",
+    "/changelog",
     "/privacy",
     "/terms",
+    "/safety",
+    "/limits",
   ] as const;
 
   const pages: MetadataRoute.Sitemap = staticPaths.map((path) => {
     const lastModified =
-      path === "/" || path === "/blog" || path === "/resources"
-        ? clusterLatest
-        : atUtc(STATIC_LASTMOD[path] ?? "2026-09-12");
+      path === "/changelog"
+        ? changelogFileMtime() ?? atUtc(STATIC_LASTMOD[path] ?? "2026-09-12")
+        : path === "/" || path === "/blog" || path === "/learn"
+          ? clusterLatest
+          : atUtc(STATIC_LASTMOD[path] ?? "2026-09-12");
     return {
       url: path === "/" ? `${base}/` : `${base}${path}`,
       lastModified,

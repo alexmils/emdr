@@ -56,6 +56,7 @@ type PageDefault = {
 export const RETIRED_SEO_TITLES = new Set([
   "About",
   "EMDR Support",
+  "EMDR therapy online in the app",
   "Resources",
   "Terms",
   "Nura — guided EMDR, therapy resources, and support",
@@ -65,6 +66,7 @@ export const RETIRED_SEO_TITLES = new Set([
 export const RETIRED_SEO_DESCRIPTIONS = new Set([
   "A calm place for guided EMDR sessions, therapy resources, and support. Self-help — not a licensed therapist.",
   "What EMDR is, how visual sets work, and how a Nura session is structured.",
+  "What guided EMDR therapy looks like in the Nura app: intake, grounding, visual sets, and check-ins. Online, on your schedule — not a licensed therapist.",
   "Guides for EMDR and therapy support on Nura.",
   "Privacy policy for Nura",
   "Privacy policy for NuraHelp",
@@ -73,7 +75,7 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
 ]);
 
 /** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
-export const SEO_COPY_REVISION = "emdr-therapy-online-app-1";
+export const SEO_COPY_REVISION = "emdr-ai-guided-safety-1";
 
 export function documentTitle(pageTitle: string): string {
   const suffix = ` — ${BRAND_SPOKEN}`;
@@ -130,25 +132,33 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
-    title: "EMDR therapy online in the app",
+    title: "AI-guided EMDR therapy online — bilateral stimulation app",
     description:
-      "What guided EMDR therapy looks like in the Nura app: intake, grounding, visual sets, and check-ins. Online, on your schedule — not a licensed therapist.",
+      "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule. Self-help — not a licensed therapist.",
   },
   {
-    id: "resources",
-    path: "/resources",
-    label: "Resources",
-    title: "EMDR therapy resources in the app",
+    id: "learn",
+    path: "/learn",
+    label: "Learn",
+    title: "EMDR therapy — where to start",
     description:
-      "Public guides on EMDR therapy, visual sets with a moving ball, and practice between sessions.",
+      "Short EMDR guides by topic — understand, practice, and safety. Full archive on the blog.",
   },
   {
     id: "blog",
     path: "/blog",
     label: "Blog",
-    title: "EMDR therapy online — guides and visual sets",
+    title: "EMDR therapy blog — guides and visual sets",
     description:
-      "Articles on EMDR therapy, visual sets with a moving ball, and practice between sessions. Self-help, not a licensed therapist.",
+      "Articles on EMDR therapy, visual sets, and practice between sessions. Newest first — self-help, not a licensed therapist.",
+  },
+  {
+    id: "changelog",
+    path: "/changelog",
+    label: "What's new",
+    title: "What's new",
+    description:
+      "Product notes for the Nura EMDR therapy online app — session updates, fixes, and removals.",
   },
   {
     id: "privacy",
@@ -163,6 +173,22 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "Terms",
     title: "Terms of service",
     description: `Terms for using Nura, the online EMDR therapy app operated by Receptly LLC. Self-help software — not a substitute for professional clinical care.`,
+  },
+  {
+    id: "safety",
+    path: "/safety",
+    label: "Safety",
+    title: "Using AI-guided EMDR safely — when to stop and get help",
+    description:
+      "How to use Nura’s AI-guided EMDR safely: when to stop a session, when to see a clinician, and crisis lines if you are not safe. Not emergency care.",
+  },
+  {
+    id: "limits",
+    path: "/limits",
+    label: "Limits",
+    title: "What Nura does not do — the limits of AI-guided EMDR",
+    description:
+      "An honest list of what Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care. What a self-help tool can and cannot do alone.",
   },
 ];
 

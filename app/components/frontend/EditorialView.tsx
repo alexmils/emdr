@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import "./public-cluster.css";
 
@@ -7,13 +6,6 @@ export function EditorialView() {
   return (
     <article className="fe-cluster">
       <div className="fe-cluster-inner">
-        <FrontendBreadcrumbs
-          items={[
-            { href: "/", label: "Home" },
-            { href: "/about", label: "About" },
-            { label: "How we write" },
-          ]}
-        />
         <p className="fe-cluster-kicker">Editorial</p>
         <h1>How we write these guides</h1>
         <p className="fe-cluster-dek">

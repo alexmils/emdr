@@ -21,10 +21,13 @@ const PUBLIC_PREFIXES = [
   "/about",
   "/editorial",
   "/emdr",
-  "/resources",
+  "/learn",
   "/blog",
+  "/changelog",
   "/privacy",
   "/terms",
+  "/safety",
+  "/limits",
 ] as const;
 
 export function normalizePathname(pathname: string): string {

@@ -33,8 +33,11 @@ export const AI_GROUNDING_ALLOW = [
   "/emdr",
   "/about",
   "/editorial",
-  "/resources",
+  "/learn",
   "/blog",
+  "/changelog",
+  "/safety",
+  "/limits",
   "/llms.txt",
   "/sitemap.xml",
 ] as const;

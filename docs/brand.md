@@ -19,7 +19,7 @@ Operator entity: `lib/legal-entity.ts` (**Receptly LLC**).
 | Current product | Nura · EMDR Support | Feature, not a second company name |
 | Never in public | NuraHelp / NuraHelp AI / Nura Help | Retired; rewrite via `rewriteRetiredBrandCopy` |
 
-Do not lead with “AI” in titles, hero copy, or the wordmark.
+Titles, hero copy, and H1s may lead with “AI” for the product — Nura is **AI-guided EMDR** (the position and the search term). The wordmark and brand name stay **Nura** — never “Nura AI” or “NuraHelp AI”.
 
 ## Position
 
@@ -62,16 +62,16 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 
 ### Marketing (`.frontend-home`)
 
-Fraunces is the **decorative** display face for marketing **hero and major section titles only** — not for dense reading, legal docs, or app chrome:
+Fraunces is the **decorative** display face for the marketing **home hero title only** — not for section titles, dense reading, legal docs, or app chrome:
 
 | Role | Font | Notes |
 |---|---|---|
-| Hero / landing section titles | **Fraunces** | Weight 400; italic for emphasis. One signature moment per composition |
-| Legal / long-form public docs (`/terms`, `/privacy`, …) | **Source Sans 3** | Headings **600**, body **400** — same sober scale as product. Never Fraunces on “OUR SERVICES”-style legal headings |
+| Home hero title | **Fraunces** | Weight 400; italic for emphasis. Hero only |
+| Landing sections, Blog, Learn, articles, About/EMDR, legal | **Source Sans 3** | Headings **600**, body **400**. Never Fraunces outside the home hero |
 | Body / UI / nav / buttons | **Source Sans 3** | All other marketing UI |
 | Labels | **Roboto Mono** | Kickers, marquee, uppercase ~0.9375rem |
 
-**Do not** use Fraunces for Termly/legal ALL-CAPS section titles, settings, admin, or `/app`. Ornamental serif next to wave lockup is fine in the hero; on a contract page it looks scattered and hard to scan.
+**Do not** use Fraunces for Blog/Learn titles, pricing/how-it-works section titles, Termly/legal headings, settings, admin, or `/app`. Ornamental serif next to the wave lockup is fine in the home hero only.
 
 Loaded via `next/font` in `app/layout.tsx` (`--font-fraunces`, `--font-source-sans`, `--font-fe-alt`). Scoped on `.frontend-home` in `app/globals.css`. Legal overrides: `.frontend-home .frontend-legal h1–h3` → `--font-sans`.
 
@@ -102,7 +102,7 @@ English, sentence case, short sentences. No hype (“revolutionary”, “neural
 
 **Do not default Free to “moving ball.”** Sets include animation choices (Dot, Flash, …), sound, and optional gamepad rumble. Prefer **visual sets** / **sets you run yourself**. Name the ball only when teaching visual rhythm on an educational page — never as the Free headline.
 
-**Session modes on marketing:** do not say bare “Guided or Free.” Prefer **agent-guided** (session agent through phases) vs **Free** (sets without an agent). Do not lead headlines with “AI.”
+**Session modes on marketing:** do not say bare “Guided or Free.” Prefer **agent-guided** (session agent through phases) vs **Free** (sets without an agent). Headlines may lead with **AI-guided EMDR** (product + search term); keep the wordmark as **Nura**, never “Nura AI.”
 
 ## SEO
 
@@ -114,11 +114,12 @@ The brand name does not need to contain “EMDR”. Pages do.
 | `/about` | Who Nura is, what the app offers, disclaimers |
 | `/editorial` | How public guides are written (self-help, not a named clinician) |
 | `/emdr` | What EMDR is, visual sets, how a session works |
-| `/resources` | Public hub for EMDR guides |
-| `/blog` | Article index |
+| `/learn` | Start-here map (understand / practice / safety) |
+| `/blog` | Article index (cover images, newest first) |
 | `/blog/[slug]` | Individual guides (visual sets, practice, safety) |
+| `/changelog` | Public product notes parsed from `CHANGELOG.md` |
 | `/llms.txt` | AI search: cite public pages, do not train, do not fetch `/app` |
 
-Retired: `/therapy`, `/therapists` → redirect to `/resources`.
+Retired: `/therapy`, `/therapists`, `/resources` → redirect to `/learn`.
 
 Default document title: `Guided EMDR therapy online app — Nura`.

@@ -84,7 +84,7 @@ Origin file: [`app/robots.txt/route.ts`](../app/robots.txt/route.ts) via [`lib/r
 | Crawler class | User-agents | Policy |
 |---|---|---|
 | Ordinary search | `*` | Public pages allowed. `/app`, `/admin`, `/api` disallowed. `Content-Signal: search=yes,ai-input=yes,ai-train=no` |
-| Grounding / AI search | `OAI-SearchBot`, `PerplexityBot`, `ChatGPT-User` | Allow `/`, `/emdr`, `/about`, `/editorial`, `/resources`, `/blog` (plus `/llms.txt`, `/sitemap.xml`). Disallow everything else |
+| Grounding / AI search | `OAI-SearchBot`, `PerplexityBot`, `ChatGPT-User` | Allow `/`, `/emdr`, `/about`, `/editorial`, `/learn`, `/blog`, `/changelog` (plus `/llms.txt`, `/sitemap.xml`). Disallow everything else |
 | Training | `GPTBot`, `ClaudeBot`, `CCBot`, `Google-Extended`, `Applebot-Extended`, `Amazonbot`, `Bytespider`, `meta-externalagent` | `Disallow: /` |
 
 Cloudflare managed robots.txt must stay **off** (`bot_management.is_robots_txt_managed=false`). When on, CF **prepends** named-bot `Disallow: /` groups and a Content-Signal **without** `ai-input=yes`; those named groups override any later `Allow` for the same bot (RFC 9309). Origin already blocks training crawlers.

@@ -11,10 +11,10 @@ __pycache__
 .cursor
 agent-transcripts
 README.md
-CHANGELOG.md
 docs
 tests
 *.md
+!CHANGELOG.md
 start.bat
 reset.bat
 docker-compose.yml

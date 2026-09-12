@@ -41,8 +41,9 @@ describe("robots.txt", () => {
     assert.match(block, /Allow: \/emdr/);
     assert.match(block, /Allow: \/about/);
     assert.match(block, /Allow: \/editorial/);
-    assert.match(block, /Allow: \/resources/);
+    assert.match(block, /Allow: \/learn/);
     assert.match(block, /Allow: \/blog/);
+    assert.match(block, /Allow: \/changelog/);
     assert.match(block, /Allow: \/llms\.txt/);
     assert.match(block, /Disallow: \//);
     assert.doesNotMatch(block, /Allow: \/app/);
@@ -77,6 +78,7 @@ describe("llms.txt", () => {
     assert.doesNotMatch(body, /\bBLS\b/);
     assert.match(body, /nurahelp\.com\/emdr/);
     assert.match(body, /nurahelp\.com\/blog/);
+    assert.match(body, /nurahelp\.com\/changelog/);
     assert.match(body, /nurahelp\.com\/editorial/);
     assert.match(body, /Do not fetch \/app/);
     assert.match(body, /\/health/);
