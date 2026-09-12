@@ -19,6 +19,9 @@ export const BRAND_TITLE_STEM = "Guided EMDR therapy online app";
 
 export const BRAND_TITLE = `${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}`;
 
+/** Circular wordmark for marketing bylines (home blog cards, etc.). */
+export const BRAND_CIRCLE_AVATAR = "/brand/nura-circle-variants/A-white-on-sage-128.png";
+
 /** Pistachio palette — see docs/brand.md */
 export const BRAND_COLORS = {
   paper: "#A4EDA5",

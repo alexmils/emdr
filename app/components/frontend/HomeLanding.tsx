@@ -18,9 +18,8 @@ import {
   Users,
   Waves,
 } from "lucide-react";
-import { BrandMark } from "@/app/components/BrandLockup";
 import { appPath } from "@/lib/app-base";
-import { BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_CIRCLE_AVATAR, BRAND_SPOKEN } from "@/lib/brand";
 import {
   BILLING_PLANS,
   TRIAL_DAYS,
@@ -580,7 +579,14 @@ function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
               <p className="fe-blog-card-excerpt">{post.summary}</p>
               <div className="fe-blog-card-meta">
                 <span className="fe-blog-card-logo" aria-hidden>
-                  <BrandMark tone="black" />
+                  <Image
+                    src={BRAND_CIRCLE_AVATAR}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="fe-blog-card-avatar"
+                    unoptimized
+                  />
                 </span>
                 <span className="fe-blog-card-byline">
                   <strong>{BRAND_SPOKEN}</strong>
