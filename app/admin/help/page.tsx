@@ -516,6 +516,7 @@ function HelpAdminInner() {
             </label>
             <p className="admin-panel-sub mt-1">
               Which connector answers the Need help chat. Keys stay in Admin → AI &amp; Voice.
+              Default is OpenAI <code className="admin-code">gpt-5-nano</code> (cheapest FAQ lane).
             </p>
             <select
               id="help-ai-provider"

@@ -14,8 +14,8 @@ describe("help settings", () => {
     const s = normalizeHelpSettings(undefined);
     assert.equal(s.enabled, true);
     assert.equal(s.aiFirstReply, true);
-    assert.equal(s.aiProvider, "");
-    assert.equal(s.aiModel, "");
+    assert.equal(s.aiProvider, "openai");
+    assert.equal(s.aiModel, "gpt-5-nano");
     assert.equal(s.notifyAdminsByEmail, true);
     assert.ok(s.welcomeMessage.includes("Nura assistant"));
     assert.equal(s.welcomeMessage.includes("NuraHelp AI"), false);
@@ -30,12 +30,19 @@ describe("help settings", () => {
     });
     assert.equal(s.aiProvider, "openai");
     assert.equal(s.aiModel, "gpt-4.1-mini");
+    const platformDefault = normalizeHelpSettings({
+      ...DEFAULT_HELP_SETTINGS,
+      aiProvider: "",
+      aiModel: "",
+    });
+    assert.equal(platformDefault.aiProvider, "");
+    assert.equal(platformDefault.aiModel, "");
     const bad = normalizeHelpSettings({
       ...DEFAULT_HELP_SETTINGS,
       aiProvider: "not-a-provider" as never,
       aiModel: "  x  ",
     });
-    assert.equal(bad.aiProvider, "");
+    assert.equal(bad.aiProvider, "openai");
     assert.equal(bad.aiModel, "x");
   });
 

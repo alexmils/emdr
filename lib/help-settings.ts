@@ -27,8 +27,10 @@ export type HelpSettings = {
 export const DEFAULT_HELP_SETTINGS: HelpSettings = {
   enabled: true,
   aiFirstReply: true,
-  aiProvider: "",
-  aiModel: "",
+  // Cheapest OpenAI text lane — good for FAQ / product support chat
+  // ($0.05 in / $0.40 out per 1M). Guided sessions stay on gpt-4.1-mini.
+  aiProvider: "openai",
+  aiModel: "gpt-5-nano",
   welcomeMessage:
     "Hi — I’m the Nura assistant. Ask about billing, your account, or how sessions work. For emergencies, contact local emergency services.",
   allowedTopics:
@@ -47,9 +49,15 @@ export function normalizeHelpSettings(raw: unknown): HelpSettings {
   return {
     enabled: r.enabled !== false,
     aiFirstReply: r.aiFirstReply !== false,
-    aiProvider: isHelpAiProvider(r.aiProvider) ? r.aiProvider : "",
+    aiProvider: isHelpAiProvider(r.aiProvider)
+      ? r.aiProvider
+      : r.aiProvider === ""
+        ? ""
+        : DEFAULT_HELP_SETTINGS.aiProvider,
     aiModel:
-      typeof r.aiModel === "string" ? r.aiModel.trim().slice(0, 200) : "",
+      typeof r.aiModel === "string"
+        ? r.aiModel.trim().slice(0, 200)
+        : DEFAULT_HELP_SETTINGS.aiModel,
     welcomeMessage: remapHelpField(
       typeof r.welcomeMessage === "string" && r.welcomeMessage.trim()
         ? r.welcomeMessage.trim()
