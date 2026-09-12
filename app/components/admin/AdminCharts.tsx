@@ -1,12 +1,21 @@
 "use client";
 
+import { useId, useState } from "react";
+
 /** Lightweight SVG charts for admin overview — no chart library. */
 
 export type StackedBarPoint = {
   label: string;
+  /** Display heights (already scaled). */
   a: number;
   b: number;
   c: number;
+  /** Raw values for hover tooltip. */
+  tip?: {
+    messages: number;
+    tokens: number;
+    newUsers: number;
+  };
 };
 
 const COLORS = {
@@ -15,6 +24,12 @@ const COLORS = {
   c: "#E8A87C",
 };
 
+const SERIES = [
+  { key: "a" as const, label: "Messages", color: COLORS.a },
+  { key: "b" as const, label: "Tokens", color: COLORS.b },
+  { key: "c" as const, label: "New users", color: COLORS.c },
+];
+
 export function AdminStackedBars({
   points,
   height = 180,
@@ -22,76 +37,126 @@ export function AdminStackedBars({
   points: StackedBarPoint[];
   height?: number;
 }) {
+  const tipId = useId();
+  const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...points.map((p) => p.a + p.b + p.c));
-  const barW = 28;
-  const gap = 18;
-  const padX = 12;
-  const padTop = 12;
-  const padBottom = 28;
-  const chartH = height - padTop - padBottom;
-  const width = padX * 2 + points.length * barW + (points.length - 1) * gap;
+  const active = hover != null ? points[hover] : null;
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="admin-chart-svg"
-      role="img"
-      aria-label="Activity last 7 days"
+    <div
+      className="admin-stacked"
+      onMouseLeave={() => setHover(null)}
     >
-      {points.map((p, i) => {
-        const x = padX + i * (barW + gap);
-        const total = p.a + p.b + p.c;
-        const h = (total / max) * chartH;
-        const yBase = padTop + chartH;
-        const ha = total ? (p.a / max) * chartH : 0;
-        const hb = total ? (p.b / max) * chartH : 0;
-        const hc = total ? (p.c / max) * chartH : 0;
-        const yA = yBase - h;
-        const yB = yA + ha;
-        const yC = yB + hb;
-        return (
-          <g key={`${p.label}-${i}`}>
-            {ha > 0 && (
-              <rect x={x} y={yA} width={barW} height={ha} fill={COLORS.a} />
-            )}
-            {hb > 0 && (
-              <rect x={x} y={yB} width={barW} height={hb} fill={COLORS.b} />
-            )}
-            {hc > 0 && (
-              <rect x={x} y={yC} width={barW} height={hc} fill={COLORS.c} />
-            )}
-            {total === 0 && (
-              <rect
-                x={x}
-                y={yBase - 4}
-                width={barW}
-                height={4}
-                rx={2}
-                fill="var(--border)"
-              />
-            )}
-            <rect
-              x={x}
-              y={yA}
-              width={barW}
-              height={Math.max(h, 4)}
-              rx={6}
-              fill="transparent"
-              stroke="none"
-            />
-            <text
-              x={x + barW / 2}
-              y={height - 8}
-              textAnchor="middle"
-              className="admin-chart-axis"
+      <div className="admin-stacked-plot" style={{ height }}>
+        {points.map((p, i) => {
+          const total = p.a + p.b + p.c;
+          const pct = Math.max(
+            total > 0 ? (total / max) * 100 : 0,
+            total > 0 ? 2 : 0
+          );
+          const isOn = hover === i;
+          return (
+            <div
+              key={`${p.label}-${i}`}
+              className={`admin-stacked-col${isOn ? " is-on" : ""}`}
+              onMouseEnter={() => setHover(i)}
+              onFocus={() => setHover(i)}
+              onBlur={() => setHover(null)}
+              tabIndex={0}
+              role="group"
+              aria-label={`${p.label}: ${p.tip?.messages ?? p.a} messages, ${p.tip?.tokens ?? p.b} tokens, ${p.tip?.newUsers ?? p.c} new users`}
+              aria-describedby={isOn ? tipId : undefined}
             >
-              {p.label}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+              <div className="admin-stacked-track">
+                {total > 0 ? (
+                  <div
+                    className="admin-stacked-bar"
+                    style={{ height: `${pct}%` }}
+                  >
+                    {p.a > 0 && (
+                      <div
+                        className="admin-stacked-seg"
+                        style={{ flexGrow: p.a, background: COLORS.a }}
+                      />
+                    )}
+                    {p.b > 0 && (
+                      <div
+                        className="admin-stacked-seg"
+                        style={{ flexGrow: p.b, background: COLORS.b }}
+                      />
+                    )}
+                    {p.c > 0 && (
+                      <div
+                        className="admin-stacked-seg"
+                        style={{ flexGrow: p.c, background: COLORS.c }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="admin-stacked-empty" aria-hidden />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="admin-stacked-days" aria-hidden>
+        {points.map((p, i) => (
+          <span
+            key={`day-${p.label}-${i}`}
+            className={`admin-stacked-day${hover === i ? " is-on" : ""}`}
+          >
+            {p.label}
+          </span>
+        ))}
+      </div>
+
+      {active && hover != null && (
+        <div
+          id={tipId}
+          className="admin-chart-tooltip"
+          role="tooltip"
+          style={{
+            left: `${Math.min(
+              88,
+              Math.max(12, ((hover + 0.5) / Math.max(points.length, 1)) * 100)
+            )}%`,
+          }}
+        >
+          <p className="admin-chart-tooltip-title">{active.label}</p>
+          <ul className="admin-chart-tooltip-list">
+            {SERIES.map((s) => {
+              const raw =
+                s.key === "a"
+                  ? (active.tip?.messages ?? active.a)
+                  : s.key === "b"
+                    ? (active.tip?.tokens ?? active.b)
+                    : (active.tip?.newUsers ?? active.c);
+              const display =
+                s.key === "b" && active.tip
+                  ? formatTipTokens(raw)
+                  : String(raw);
+              return (
+                <li key={s.key}>
+                  <i style={{ background: s.color }} />
+                  <span>{s.label}</span>
+                  <strong>{display}</strong>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
   );
+}
+
+function formatTipTokens(n: number) {
+  if (n < 1000) return String(Math.round(n));
+  if (n < 1_000_000) {
+    return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)}k`;
+  }
+  return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
 export function AdminSegmentBar({

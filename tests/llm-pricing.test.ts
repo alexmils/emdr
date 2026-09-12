@@ -34,6 +34,28 @@ describe("llm-pricing", () => {
     const rate = resolveTokenRate("deepseek", "deepseek-unknown-xyz");
     assert.equal(rate.inputPerMillion, 0.27);
   });
+
+  it("estimates ElevenLabs multilingual cost per character", () => {
+    // 1K chars at $0.10 / 1K = $0.10 = 100_000 micros
+    const micros = estimateCostUsdMicros(
+      "elevenlabs",
+      "eleven_multilingual_v2",
+      1000,
+      0
+    );
+    assert.equal(micros, 100_000);
+  });
+
+  it("estimates ElevenLabs flash at half rate", () => {
+    // 1K chars at $0.05 / 1K = $0.05 = 50_000 micros
+    const micros = estimateCostUsdMicros(
+      "elevenlabs",
+      "eleven_flash_v2_5",
+      1000,
+      0
+    );
+    assert.equal(micros, 50_000);
+  });
 });
 
 describe("admin-format llm helpers", () => {

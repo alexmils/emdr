@@ -4,14 +4,16 @@ import { getLlmRuntimeConfig } from "@/lib/platform-settings";
 import { withAuth } from "@/lib/api-auth";
 
 export async function POST(request: Request) {
-  return withAuth(async () => {
+  return withAuth(async (ctx) => {
     const { text } = await request.json();
     if (!text || typeof text !== "string") {
       return NextResponse.json({ error: "Missing text" }, { status: 400 });
     }
 
     const settings = await getLlmRuntimeConfig();
-    const audio = await synthesizeSpeech(settings, text);
+    const audio = await synthesizeSpeech(settings, text, {
+      userId: ctx.user.id,
+    });
     if (!audio) {
       return NextResponse.json(
         {

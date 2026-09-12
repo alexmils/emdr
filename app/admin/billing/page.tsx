@@ -44,7 +44,11 @@ function AdminBillingPageInner() {
   const [rows, setRows] = useState<AdminBillingRow[]>([]);
   const [usage, setUsage] = useState<UserUsageRow[]>([]);
   const [llmMonth, setLlmMonth] = useState<LlmUsageTotals | null>(null);
+  const [llmWeek, setLlmWeek] = useState<LlmUsageTotals | null>(null);
   const [llmAll, setLlmAll] = useState<LlmUsageTotals | null>(null);
+  const [voiceMonth, setVoiceMonth] = useState<LlmUsageTotals | null>(null);
+  const [voiceWeek, setVoiceWeek] = useState<LlmUsageTotals | null>(null);
+  const [voiceAll, setVoiceAll] = useState<LlmUsageTotals | null>(null);
   const [stripeConfigured, setStripeConfigured] = useState(false);
   const [catalogReady, setCatalogReady] = useState(false);
   const [webhookReady, setWebhookReady] = useState(false);
@@ -85,7 +89,16 @@ function AdminBillingPageInner() {
       }>("/api/admin/billing"),
       fetchJson<{
         usage: UserUsageRow[];
-        llm?: { allTime: LlmUsageTotals; thisMonth: LlmUsageTotals };
+        llm?: {
+          allTime: LlmUsageTotals;
+          thisMonth: LlmUsageTotals;
+          thisWeek?: LlmUsageTotals;
+        };
+        voice?: {
+          allTime: LlmUsageTotals;
+          thisMonth: LlmUsageTotals;
+          thisWeek?: LlmUsageTotals;
+        };
       }>("/api/admin/usage"),
     ]);
     setRows(billingRes.rows ?? []);
@@ -93,6 +106,10 @@ function AdminBillingPageInner() {
     setUsage(usageRes.usage ?? []);
     setLlmAll(usageRes.llm?.allTime ?? null);
     setLlmMonth(usageRes.llm?.thisMonth ?? null);
+    setLlmWeek(usageRes.llm?.thisWeek ?? null);
+    setVoiceAll(usageRes.voice?.allTime ?? null);
+    setVoiceMonth(usageRes.voice?.thisMonth ?? null);
+    setVoiceWeek(usageRes.voice?.thisWeek ?? null);
     applyStripeResponse(billingRes);
   }, []);
   useEffect(() => {
@@ -546,18 +563,47 @@ function AdminBillingPageInner() {
           <section className="admin-panel">
             <h2 className="admin-panel-title">Usage</h2>
             <p className="mb-3 text-sm text-[var(--text-muted)]">
-              AI tokens and estimated provider cost (USD list prices). Not charged
-              to users.
+              AI tokens, ElevenLabs voice characters, and estimated provider cost
+              (USD list prices). Not charged to users.
             </p>
-            {(llmMonth || llmAll) && (
+            {(llmMonth || llmWeek || llmAll) && (
               <div className="admin-stat-grid mb-4">
+                <article className="admin-stat-card">
+                  <p className="admin-stat-label">AI cost (week)</p>
+                  <p className="admin-stat-value">
+                    {formatUsdMicros(llmWeek?.costUsdMicros ?? 0)}
+                  </p>
+                  <p className="admin-stat-hint">
+                    {formatTokenCount(
+                      Math.max(
+                        0,
+                        (llmWeek?.totalTokens ?? 0) -
+                          (voiceWeek?.totalTokens ?? 0)
+                      )
+                    )}{" "}
+                    tokens
+                    {(voiceWeek?.totalTokens ?? 0) > 0
+                      ? ` · ${formatTokenCount(voiceWeek?.totalTokens ?? 0)} voice chars`
+                      : ""}
+                  </p>
+                </article>
                 <article className="admin-stat-card">
                   <p className="admin-stat-label">AI cost (month)</p>
                   <p className="admin-stat-value">
                     {formatUsdMicros(llmMonth?.costUsdMicros ?? 0)}
                   </p>
                   <p className="admin-stat-hint">
-                    {formatTokenCount(llmMonth?.totalTokens ?? 0)} tokens
+                    {formatTokenCount(
+                      Math.max(
+                        0,
+                        (llmMonth?.totalTokens ?? 0) -
+                          (voiceMonth?.totalTokens ?? 0)
+                      )
+                    )}{" "}
+                    tokens
+                    {(voiceMonth?.totalTokens ?? 0) > 0
+                      ? ` · ${formatTokenCount(voiceMonth?.totalTokens ?? 0)} voice chars`
+                      : ""}
                   </p>
                 </article>
                 <article className="admin-stat-card">
@@ -566,8 +612,26 @@ function AdminBillingPageInner() {
                     {formatUsdMicros(llmAll?.costUsdMicros ?? 0)}
                   </p>
                   <p className="admin-stat-hint">
-                    {formatTokenCount(llmAll?.totalTokens ?? 0)} tokens ·{" "}
-                    {llmAll?.callCount ?? 0} calls
+                    {formatTokenCount(
+                      Math.max(
+                        0,
+                        (llmAll?.totalTokens ?? 0) - (voiceAll?.totalTokens ?? 0)
+                      )
+                    )}{" "}
+                    tokens · {llmAll?.callCount ?? 0} calls
+                    {(voiceAll?.totalTokens ?? 0) > 0
+                      ? ` · ${formatTokenCount(voiceAll?.totalTokens ?? 0)} voice chars`
+                      : ""}
+                  </p>
+                </article>
+                <article className="admin-stat-card">
+                  <p className="admin-stat-label">ElevenLabs voice (month)</p>
+                  <p className="admin-stat-value">
+                    {formatTokenCount(voiceMonth?.totalTokens ?? 0)}
+                  </p>
+                  <p className="admin-stat-hint">
+                    {formatUsdMicros(voiceMonth?.costUsdMicros ?? 0)} ·{" "}
+                    {voiceMonth?.callCount ?? 0} calls
                   </p>
                 </article>
               </div>
@@ -581,6 +645,8 @@ function AdminBillingPageInner() {
                     <th>Messages</th>
                     <th>AI tokens</th>
                     <th>Est. AI cost</th>
+                    <th>Voice chars</th>
+                    <th>Est. voice cost</th>
                     <th>Last activity</th>
                   </tr>
                 </thead>
@@ -607,6 +673,16 @@ function AdminBillingPageInner() {
                         ) : null}
                       </td>
                       <td>{formatUsdMicros(u.llmCostUsdMicros)}</td>
+                      <td>
+                        {formatTokenCount(u.voiceChars ?? 0)}
+                        {(u.voiceCallCount ?? 0) > 0 ? (
+                          <span className="text-[var(--text-muted)]">
+                            {" "}
+                            · {u.voiceCallCount} calls
+                          </span>
+                        ) : null}
+                      </td>
+                      <td>{formatUsdMicros(u.voiceCostUsdMicros ?? 0)}</td>
                       <td>{formatDateTime(u.lastActivityAt)}</td>
                     </tr>
                   ))}

@@ -44,7 +44,10 @@ export async function POST(request: Request) {
     lastPreviewAt.set(cooldownKey, now);
 
     const settings = await getLlmRuntimeConfig();
-    const audio = await synthesizeSpeech(settings, PREVIEW_TEXT, { voiceId });
+    const audio = await synthesizeSpeech(settings, PREVIEW_TEXT, {
+      voiceId,
+      userId: auth.user.id,
+    });
     if (!audio) {
       return NextResponse.json(
         { error: "Could not generate preview. Check the Voice API key." },

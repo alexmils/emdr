@@ -73,6 +73,11 @@ export default function AdminOverviewPage() {
       a: d.messages,
       b: Math.round(d.tokens / 100),
       c: d.newUsers * 5,
+      tip: {
+        messages: d.messages,
+        tokens: d.tokens,
+        newUsers: d.newUsers,
+      },
     }));
   }, [stats]);
 
@@ -106,8 +111,8 @@ export default function AdminOverviewPage() {
     );
   }
 
-  const weekTokens = stats.series7d.reduce((s, d) => s + d.tokens, 0);
-  const weekCost = stats.series7d.reduce((s, d) => s + d.costUsdMicros, 0);
+  const weekTokens = stats.llm.tokensThisWeek;
+  const weekCost = stats.llm.costUsdMicrosThisWeek;
   const weekMessages = stats.series7d.reduce((s, d) => s + d.messages, 0);
 
   let healthScore = stats.healthScore;
@@ -143,6 +148,16 @@ export default function AdminOverviewPage() {
             </p>
           </article>
           <article className="admin-dash-kpi">
+            <p className="admin-stat-label">AI cost (week)</p>
+            <p className="admin-stat-value">{formatUsdMicros(weekCost)}</p>
+            <p className="admin-stat-hint">
+              {formatTokenCount(weekTokens)} tokens
+              {stats.voice.charsThisWeek > 0
+                ? ` · ${formatTokenCount(stats.voice.charsThisWeek)} voice chars`
+                : ""}
+            </p>
+          </article>
+          <article className="admin-dash-kpi">
             <p className="admin-stat-label">AI cost (month)</p>
             <p className="admin-stat-value">
               {formatUsdMicros(stats.llm.costUsdMicrosThisMonth)}
@@ -170,13 +185,8 @@ export default function AdminOverviewPage() {
               <div>
                 <h2 className="admin-panel-title">Last 7 days</h2>
                 <p className="admin-panel-sub">
-                  Stacked activity — messages, tokens (÷100), new users (×5)
-                </p>
-              </div>
-              <div className="admin-dash-hero-metric">
-                <p className="admin-stat-label">Week AI cost</p>
-                <p className="admin-dash-hero-value">
-                  {formatUsdMicros(weekCost)}
+                  Messages, tokens (÷100), new users (×5). Hover a day for exact
+                  counts.
                 </p>
               </div>
             </div>
@@ -217,6 +227,18 @@ export default function AdminOverviewPage() {
                   current={stats.llm.tokensThisMonth}
                   previous={stats.llm.tokensLastMonth}
                 />
+              </div>
+            </div>
+            <div className="admin-dash-side-row">
+              <div>
+                <p className="admin-stat-label">ElevenLabs voice (month)</p>
+                <p className="admin-dash-side-value">
+                  {formatTokenCount(stats.voice.charsThisMonth)}
+                </p>
+                <p className="admin-stat-hint">
+                  {formatUsdMicros(stats.voice.costUsdMicrosThisMonth)} ·{" "}
+                  {stats.voice.callsThisMonth} calls
+                </p>
               </div>
             </div>
             <div className="admin-dash-side-row">

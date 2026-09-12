@@ -169,14 +169,18 @@ export async function chatCompletion(
 export async function synthesizeSpeech(
   settings: LlmRuntimeConfig,
   text: string,
-  options?: { voiceId?: string }
+  options?: { voiceId?: string; userId?: string | null }
 ): Promise<ArrayBuffer | null> {
   const cfg = settings.connectors.elevenlabs;
   const key = cfg.apiKey || process.env.ELEVENLABS_API_KEY || "";
   if (!key) return null;
 
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
   const voiceId =
     options?.voiceId?.trim() || cfg.voiceId || "EXAVITQu4vr4xnSDxMaL";
+  const model = cfg.model || "eleven_multilingual_v2";
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
     {
@@ -186,11 +190,26 @@ export async function synthesizeSpeech(
         "xi-api-key": key,
       },
       body: JSON.stringify({
-        text,
-        model_id: cfg.model || "eleven_multilingual_v2",
+        text: trimmed,
+        model_id: model,
       }),
     }
   );
   if (!res.ok) return null;
+
+  // ElevenLabs bills per character — store as prompt_tokens for admin cost mix.
+  const charCount = Array.from(trimmed).length;
+  const userId = options?.userId?.trim();
+  if (userId && charCount > 0) {
+    void recordLlmUsage({
+      userId,
+      provider: "elevenlabs",
+      model,
+      purpose: "voice",
+      promptTokens: charCount,
+      completionTokens: 0,
+    }).catch((err) => console.warn("[llm] voice usage record failed:", err));
+  }
+
   return res.arrayBuffer();
 }

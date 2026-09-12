@@ -45,6 +45,16 @@ export type AdminDashboardStats = {
     tokensAllTime: number;
     costUsdMicrosAllTime: number;
     callsThisMonth: number;
+    /** Last 7 days (incl. voice). */
+    costUsdMicrosThisWeek: number;
+    tokensThisWeek: number;
+  };
+  voice: {
+    charsThisMonth: number;
+    costUsdMicrosThisMonth: number;
+    charsThisWeek: number;
+    costUsdMicrosThisWeek: number;
+    callsThisMonth: number;
   };
   series7d: AdminDayPoint[];
   llmByPurpose: AdminLlmSlice[];
@@ -72,12 +82,14 @@ const PURPOSE_LABELS: Record<string, string> = {
   guided_chat: "Guided chat",
   interpreter: "Interpreter",
   help: "Help",
+  voice: "ElevenLabs voice",
 };
 
 const PROVIDER_LABELS: Record<string, string> = {
   openai: "OpenAI",
   deepseek: "DeepSeek",
   claude: "Claude",
+  elevenlabs: "ElevenLabs",
 };
 
 function dayLabel(d: Date): string {
@@ -124,6 +136,13 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     llmMonth,
     llmLastMonth,
     llmAll,
+    llmWeek,
+    llmTokensMonth,
+    llmTokensLastMonth,
+    llmTokensAll,
+    llmTokensWeek,
+    voiceMonth,
+    voiceWeek,
     msgSeries,
     userSeries,
     llmSeries,
@@ -172,6 +191,23 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       [lastMonthStart.toISOString(), monthStart.toISOString()]
     ),
     getLlmUsageTotals(),
+    getLlmUsageTotals({ since: sevenDaysAgo }),
+    getLlmUsageTotals({ since: monthStart, excludePurposes: ["voice"] }),
+    pool.query<{
+      total_tokens: string;
+      cost_usd_micros: string;
+    }>(
+      `SELECT COALESCE(SUM(total_tokens), 0) AS total_tokens,
+              COALESCE(SUM(cost_usd_micros), 0) AS cost_usd_micros
+       FROM llm_usage_events
+       WHERE purpose <> 'voice'
+         AND created_at >= $1 AND created_at < $2`,
+      [lastMonthStart.toISOString(), monthStart.toISOString()]
+    ),
+    getLlmUsageTotals({ excludePurposes: ["voice"] }),
+    getLlmUsageTotals({ since: sevenDaysAgo, excludePurposes: ["voice"] }),
+    getLlmUsageTotals({ since: monthStart, purposes: ["voice"] }),
+    getLlmUsageTotals({ since: sevenDaysAgo, purposes: ["voice"] }),
     pool.query<{ d: string; c: number }>(
       `SELECT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS d,
               COUNT(*)::int AS c
@@ -190,7 +226,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     ),
     pool.query<{ d: string; tokens: string; cost: string }>(
       `SELECT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS d,
-              COALESCE(SUM(total_tokens), 0) AS tokens,
+              COALESCE(SUM(total_tokens) FILTER (WHERE purpose <> 'voice'), 0) AS tokens,
               COALESCE(SUM(cost_usd_micros), 0) AS cost
        FROM llm_usage_events
        WHERE created_at >= $1
@@ -288,15 +324,24 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       paidSharePct,
     },
     llm: {
-      tokensThisMonth: llmMonth.totalTokens,
+      tokensThisMonth: llmTokensMonth.totalTokens,
       costUsdMicrosThisMonth: llmMonth.costUsdMicros,
-      tokensLastMonth: Number(llmLastMonth.rows[0]?.total_tokens ?? 0),
+      tokensLastMonth: Number(llmTokensLastMonth.rows[0]?.total_tokens ?? 0),
       costUsdMicrosLastMonth: Number(
         llmLastMonth.rows[0]?.cost_usd_micros ?? 0
       ),
-      tokensAllTime: llmAll.totalTokens,
+      tokensAllTime: llmTokensAll.totalTokens,
       costUsdMicrosAllTime: llmAll.costUsdMicros,
       callsThisMonth: llmMonth.callCount,
+      costUsdMicrosThisWeek: llmWeek.costUsdMicros,
+      tokensThisWeek: llmTokensWeek.totalTokens,
+    },
+    voice: {
+      charsThisMonth: voiceMonth.totalTokens,
+      costUsdMicrosThisMonth: voiceMonth.costUsdMicros,
+      charsThisWeek: voiceWeek.totalTokens,
+      costUsdMicrosThisWeek: voiceWeek.costUsdMicros,
+      callsThisMonth: voiceMonth.callCount,
     },
     series7d,
     llmByPurpose: purposeRows.rows.map((r) => ({

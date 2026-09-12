@@ -1,7 +1,11 @@
 import { ensureSchemaReady, getPool } from "@/lib/db";
 import { estimateCostUsdMicros } from "@/lib/llm-pricing";
 
-export type LlmUsagePurpose = "guided_chat" | "interpreter" | "help";
+export type LlmUsagePurpose =
+  | "guided_chat"
+  | "interpreter"
+  | "help"
+  | "voice";
 
 export type LlmUsageTotals = {
   callCount: number;
@@ -107,14 +111,37 @@ function mapTotals(row: {
 
 export async function getLlmUsageTotals(opts?: {
   since?: Date;
+  until?: Date;
+  /** When set, only these purposes. */
+  purposes?: LlmUsagePurpose[];
+  /** When set, exclude these purposes (e.g. voice chars from LLM token totals). */
+  excludePurposes?: LlmUsagePurpose[];
+  provider?: string;
 }): Promise<LlmUsageTotals> {
   await ensureLlmUsageSchema();
   const params: unknown[] = [];
-  let where = "";
+  const clauses: string[] = [];
   if (opts?.since) {
     params.push(opts.since.toISOString());
-    where = `WHERE created_at >= $1`;
+    clauses.push(`created_at >= $${params.length}`);
   }
+  if (opts?.until) {
+    params.push(opts.until.toISOString());
+    clauses.push(`created_at < $${params.length}`);
+  }
+  if (opts?.purposes?.length) {
+    params.push(opts.purposes);
+    clauses.push(`purpose = ANY($${params.length}::text[])`);
+  }
+  if (opts?.excludePurposes?.length) {
+    params.push(opts.excludePurposes);
+    clauses.push(`NOT (purpose = ANY($${params.length}::text[]))`);
+  }
+  if (opts?.provider) {
+    params.push(opts.provider);
+    clauses.push(`provider = $${params.length}`);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
   const { rows } = await getPool().query<{
     call_count: number;
     prompt_tokens: string;

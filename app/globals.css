@@ -4500,7 +4500,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-dash-kpis {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -4569,7 +4569,8 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-chart-wrap {
   margin-top: 0.75rem;
-  overflow-x: auto;
+  overflow: visible;
+  position: relative;
 }
 
 .admin-chart-svg {
@@ -4577,6 +4578,146 @@ body:has(.app-shell.session-immersive) .help-fab {
   width: 100%;
   max-width: 520px;
   height: auto;
+}
+
+.admin-stacked {
+  position: relative;
+  width: 100%;
+}
+
+.admin-stacked-plot {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 140px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.admin-stacked-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0.15rem;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  outline: none;
+}
+
+.admin-stacked-col:focus-visible .admin-stacked-bar,
+.admin-stacked-col.is-on .admin-stacked-bar {
+  filter: brightness(0.97);
+  box-shadow: 0 0 0 2px rgba(132, 176, 103, 0.35);
+}
+
+.admin-stacked-track {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 0;
+}
+
+.admin-stacked-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
+  min-height: 4px;
+}
+
+.admin-stacked-seg {
+  width: 100%;
+  flex-shrink: 0;
+  min-height: 3px;
+}
+
+.admin-stacked-empty {
+  width: 100%;
+  height: 3px;
+  border-radius: 1px 1px 0 0;
+  background: var(--border);
+}
+
+.admin-stacked-days {
+  display: flex;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.45rem;
+}
+
+.admin-stacked-day {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.admin-stacked-day.is-on {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.admin-chart-tooltip {
+  position: absolute;
+  top: 0.35rem;
+  transform: translateX(-50%);
+  z-index: 5;
+  min-width: 9.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: 0 8px 24px rgba(42, 48, 32, 0.12);
+  pointer-events: none;
+}
+
+.admin-chart-tooltip-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-chart-tooltip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-chart-tooltip-list li {
+  display: grid;
+  grid-template-columns: 0.55rem 1fr auto;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.admin-chart-tooltip-list i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 2px;
+}
+
+.admin-chart-tooltip-list strong {
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-chart-axis {

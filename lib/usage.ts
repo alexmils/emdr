@@ -13,6 +13,10 @@ export type UserUsageRow = {
   llmCompletionTokens: number;
   llmTotalTokens: number;
   llmCostUsdMicros: number;
+  /** ElevenLabs billed characters (stored as tokens). */
+  voiceChars: number;
+  voiceCallCount: number;
+  voiceCostUsdMicros: number;
 };
 
 export async function listUserUsage(limit = 50): Promise<UserUsageRow[]> {
@@ -30,33 +34,43 @@ export async function listUserUsage(limit = 50): Promise<UserUsageRow[]> {
     llm_completion_tokens: string;
     llm_total_tokens: string;
     llm_cost_usd_micros: string;
+    voice_chars: string;
+    voice_call_count: number;
+    voice_cost_usd_micros: string;
   }>(
     `SELECT u.id AS user_id, u.email, u.name,
             COUNT(DISTINCT t.id)::int AS thread_count,
             COUNT(m.id)::int AS message_count,
             MAX(GREATEST(t.updated_at, m.created_at)) AS last_activity,
-            COALESCE(lu.call_count, 0)::int AS llm_call_count,
-            COALESCE(lu.prompt_tokens, 0) AS llm_prompt_tokens,
-            COALESCE(lu.completion_tokens, 0) AS llm_completion_tokens,
-            COALESCE(lu.total_tokens, 0) AS llm_total_tokens,
-            COALESCE(lu.cost_usd_micros, 0) AS llm_cost_usd_micros
+            COALESCE(lu.llm_call_count, 0)::int AS llm_call_count,
+            COALESCE(lu.llm_prompt_tokens, 0) AS llm_prompt_tokens,
+            COALESCE(lu.llm_completion_tokens, 0) AS llm_completion_tokens,
+            COALESCE(lu.llm_total_tokens, 0) AS llm_total_tokens,
+            COALESCE(lu.llm_cost_usd_micros, 0) AS llm_cost_usd_micros,
+            COALESCE(lu.voice_chars, 0) AS voice_chars,
+            COALESCE(lu.voice_call_count, 0)::int AS voice_call_count,
+            COALESCE(lu.voice_cost_usd_micros, 0) AS voice_cost_usd_micros
      FROM users u
      LEFT JOIN threads t ON t.user_id = u.id
      LEFT JOIN messages m ON m.thread_id = t.id
      LEFT JOIN (
        SELECT user_id,
-              COUNT(*)::int AS call_count,
-              SUM(prompt_tokens) AS prompt_tokens,
-              SUM(completion_tokens) AS completion_tokens,
-              SUM(total_tokens) AS total_tokens,
-              SUM(cost_usd_micros) AS cost_usd_micros
+              COUNT(*) FILTER (WHERE purpose <> 'voice')::int AS llm_call_count,
+              SUM(prompt_tokens) FILTER (WHERE purpose <> 'voice') AS llm_prompt_tokens,
+              SUM(completion_tokens) FILTER (WHERE purpose <> 'voice') AS llm_completion_tokens,
+              SUM(total_tokens) FILTER (WHERE purpose <> 'voice') AS llm_total_tokens,
+              SUM(cost_usd_micros) FILTER (WHERE purpose <> 'voice') AS llm_cost_usd_micros,
+              SUM(total_tokens) FILTER (WHERE purpose = 'voice') AS voice_chars,
+              COUNT(*) FILTER (WHERE purpose = 'voice')::int AS voice_call_count,
+              SUM(cost_usd_micros) FILTER (WHERE purpose = 'voice') AS voice_cost_usd_micros
        FROM llm_usage_events
        GROUP BY user_id
      ) lu ON lu.user_id = u.id
      GROUP BY u.id, u.email, u.name,
-              lu.call_count, lu.prompt_tokens, lu.completion_tokens,
-              lu.total_tokens, lu.cost_usd_micros
-     ORDER BY COALESCE(lu.cost_usd_micros, 0) DESC,
+              lu.llm_call_count, lu.llm_prompt_tokens, lu.llm_completion_tokens,
+              lu.llm_total_tokens, lu.llm_cost_usd_micros,
+              lu.voice_chars, lu.voice_call_count, lu.voice_cost_usd_micros
+     ORDER BY COALESCE(lu.llm_cost_usd_micros, 0) + COALESCE(lu.voice_cost_usd_micros, 0) DESC,
               COUNT(m.id) DESC,
               u.created_at DESC
      LIMIT $1`,
@@ -77,5 +91,8 @@ export async function listUserUsage(limit = 50): Promise<UserUsageRow[]> {
     llmCompletionTokens: Number(r.llm_completion_tokens),
     llmTotalTokens: Number(r.llm_total_tokens),
     llmCostUsdMicros: Number(r.llm_cost_usd_micros),
+    voiceChars: Number(r.voice_chars),
+    voiceCallCount: Number(r.voice_call_count),
+    voiceCostUsdMicros: Number(r.voice_cost_usd_micros),
   }));
 }

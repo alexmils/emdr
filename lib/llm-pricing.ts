@@ -37,7 +37,17 @@ const PROVIDER_DEFAULTS: Record<string, TokenRate> = {
   openai: { inputPerMillion: 0.4, outputPerMillion: 1.6 },
   deepseek: { inputPerMillion: 0.27, outputPerMillion: 1.1 },
   claude: { inputPerMillion: 0.8, outputPerMillion: 4 },
+  // ElevenLabs bills per character; we store chars as "tokens" for admin totals.
+  // Multilingual v2/v3 ≈ $0.10 / 1K chars → $100 / 1M; Flash/Turbo ≈ half.
+  elevenlabs: { inputPerMillion: 100, outputPerMillion: 0 },
 };
+
+/** ElevenLabs TTS list prices (USD per 1M characters). */
+export function resolveElevenLabsCharRate(model: string): number {
+  const lower = model.toLowerCase();
+  if (/flash|turbo|eleven_flash|eleven_turbo/i.test(lower)) return 50;
+  return 100;
+}
 
 export function resolveTokenRate(
   provider: string,
@@ -84,6 +94,11 @@ export function estimateCostUsdMicros(
   promptTokens: number,
   completionTokens: number
 ): number {
+  if (provider === "elevenlabs") {
+    const perMillion = resolveElevenLabsCharRate(model);
+    const chars = Math.max(0, promptTokens) + Math.max(0, completionTokens);
+    return Math.round((chars / 1_000_000) * perMillion * 1_000_000);
+  }
   const rate = resolveTokenRate(provider, model);
   const input =
     (Math.max(0, promptTokens) / 1_000_000) * rate.inputPerMillion;
