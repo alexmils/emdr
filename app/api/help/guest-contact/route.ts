@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { clientIp } from "@/lib/audit-log";
-import { attachGuestContact, getOrCreateGuestThread } from "@/lib/help-db";
+import {
+  attachGuestContact,
+  findOpenGuestThread,
+  getHelpSettings,
+  getOrCreateGuestThread,
+} from "@/lib/help-db";
 import {
   applyVisitorCookie,
   hashIp,
@@ -15,6 +20,11 @@ import {
 } from "@/lib/turnstile";
 
 export async function POST(request: Request) {
+  const settings = await getHelpSettings();
+  if (!settings.enabled) {
+    return NextResponse.json({ error: "Help chat is disabled" }, { status: 503 });
+  }
+
   const body = (await request.json().catch(() => ({}))) as Record<
     string,
     unknown
@@ -42,11 +52,18 @@ export async function POST(request: Request) {
   const minted = !visitorKey;
   if (!visitorKey) visitorKey = mintVisitorKey();
 
-  const thread = await getOrCreateGuestThread(visitorKey);
+  const ipHash = hashIp(clientIp(request));
+  // Prefer attaching to an existing open thread; create only if they already chatted
+  // or we need a place to store contact for the 1h transcript.
+  let thread = await findOpenGuestThread(visitorKey);
+  if (!thread) {
+    thread = await getOrCreateGuestThread(visitorKey, { ipHash });
+  }
+
   const updated = await attachGuestContact(thread.id, {
     name,
     email: emailRaw,
-    ipHash: hashIp(clientIp(request)),
+    ipHash,
   });
   if (!updated) {
     return NextResponse.json({ error: "Could not save contact" }, { status: 400 });

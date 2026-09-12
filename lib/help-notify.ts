@@ -1,5 +1,9 @@
 import { getPool } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import {
+  escapeHtml,
+  sanitizeEmailHeaderValue,
+} from "@/lib/help-format";
 import { getPlatformSettings } from "@/lib/platform-settings";
 
 export async function notifyAdminsOfHelpMessage(input: {
@@ -23,9 +27,11 @@ export async function notifyAdminsOfHelpMessage(input: {
     process.env.APP_URL ||
     "http://localhost:3471";
   const link = `${base.replace(/\/$/, "")}/admin/help?thread=${input.threadId}`;
-  const subject = `Help chat: ${input.fromLabel}`;
-  const text = `${input.fromLabel} wrote:\n\n${input.preview}\n\nOpen inbox: ${link}`;
-  const html = `<p><strong>${input.fromLabel.replace(/</g, "&lt;")}</strong> wrote:</p><p>${input.preview.replace(/</g, "&lt;")}</p><p><a href="${link}">Open help inbox</a></p>`;
+  const fromLabel = sanitizeEmailHeaderValue(input.fromLabel);
+  const preview = input.preview.slice(0, 200);
+  const subject = sanitizeEmailHeaderValue(`Help chat: ${fromLabel}`);
+  const text = `${fromLabel} wrote:\n\n${preview}\n\nOpen inbox: ${link}`;
+  const html = `<p><strong>${escapeHtml(fromLabel)}</strong> wrote:</p><p>${escapeHtml(preview)}</p><p><a href="${escapeHtml(link)}">Open help inbox</a></p>`;
 
   for (const to of recipients) {
     try {

@@ -213,7 +213,7 @@ Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process o
 - Production admin email historically seeded as platform admin (see Mem0 / ops notes) — password only in operator vault, never in docs.
 - Stripe webhook URL: `https://nurahelp.com/api/webhooks/stripe`
 - Public marketing routes vs `/app` console: middleware + `lib/public-paths.ts`.
-- **Guest help transcript cron:** Coolify (or any scheduler) every **10–15 minutes** → `GET` or `POST` `https://nurahelp.com/api/cron/help-guest-transcripts` with `Authorization: Bearer $CRON_SECRET` (or `x-cron-secret` / `?secret=`). Sends one chat transcript email ~1 hour after last guest activity when email was captured.
+- **Guest help transcript cron:** Coolify (or any scheduler) every **10–15 minutes** → `GET` or `POST` `https://nurahelp.com/api/cron/help-guest-transcripts` with `Authorization: Bearer $CRON_SECRET` or header `x-cron-secret: $CRON_SECRET`. Do **not** put the secret in the query string. Sends one chat transcript email ~1 hour after last guest activity when email was captured.
 
 ---
 

@@ -3,6 +3,8 @@ import { createHash, randomUUID } from "crypto";
 export const HELP_VISITOR_COOKIE = "nura_help_visitor";
 export const HELP_VISITOR_MAX_AGE_SEC = 60 * 60 * 24 * 30; // 30 days
 export const GUEST_HELP_MSG_LIMIT_PER_HOUR = 20;
+export const GUEST_HELP_MSG_LIMIT_PER_IP_HOUR = 40;
+export const GUEST_HELP_THREADS_PER_IP_HOUR = 10;
 export const GUEST_TRANSCRIPT_IDLE_MS = 60 * 60 * 1000; // 1 hour
 
 const UUID_RE =
@@ -12,10 +14,12 @@ export function isValidVisitorKey(value: unknown): value is string {
   return typeof value === "string" && UUID_RE.test(value);
 }
 
+/** Requires AUTH_SECRET — returns null if missing or IP empty. */
 export function hashIp(ip: string | null | undefined): string | null {
   const trimmed = ip?.trim();
   if (!trimmed) return null;
-  const pepper = process.env.AUTH_SECRET?.trim() || "nura-help-visitor";
+  const pepper = process.env.AUTH_SECRET?.trim();
+  if (!pepper) return null;
   return createHash("sha256").update(`${pepper}:${trimmed}`).digest("hex");
 }
 

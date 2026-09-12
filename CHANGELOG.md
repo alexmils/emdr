@@ -196,6 +196,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Billing display currency: plan prices and money formatters default to **USD** (`$4.99` / `$14.99` / `$99`); leftover `€` display strings from admin settings are rewritten on load
 
 ### Fixed
+- GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
 - App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
 - App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
 - App Help flyout opens upward so Terms sits level with Help (not hanging into the foot / status bar)
@@ -348,7 +349,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Production Docker: `WORKDIR` `/app` → `/nura` so standalone traces do not collide with App Router `app/` + console `/app` (fixes unstyled pages and `/` rendering as login/AppAccessGate; vercel/next.js#68690)
 - Declare `gsap` + `lenis` in `package.json` (were local-only; required once marketing home compiles in Docker)
 - **Production runbook**: `docs/production.md` + always-on Cursor rule `.cursor/rules/nura-production.mdc` (Coolify UUIDs, VPS, nginx/Cloudflare path, GHCR deploy, WORKDIR `/nura`)
-- GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; Clarity/GTM stay consent-gated (`MarketingTags`, Connections hint)
+- GA4 public tag: load `gtag.js` + `config` on marketing pages with Google Consent Mode (storage denied until cookie accept) so Google’s tag checker can detect `G-*` without requiring Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
 - Favicon/mark quality: round-cap stroke wave, equal padding both sides, brighter right tip (mint→sage), supersampled PNGs — no flat crop into the letter `n`
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
 - Brand guidelines PDF: `docs/nura-brand-guidelines.pdf` (naming, pistachio primary/secondary/accent, type, logo, voice)
@@ -412,6 +413,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin Email → Templates sidebar no longer `sticky` inside `.admin-canvas` (preview iframe height changes were pinning/unpinning the rail so it walked up and down); rail is in normal flow, preview iframe height is fixed at 420px
 - Admin Email → Templates: live preview sits in a right-hand pane so editing/scrolling the HTML does not move the preview (split workspace; stacks below ~1100px)
 - Admin Email → Templates: picking a template no longer refetches settings (that reload jumped the sidebar under the cursor and looked like Invite/Password changed were clicking themselves)
+- **Guest help hardening**: no DB thread on GET (cookie only); IP hash rate limits; strip `visitorKey` from API; cron auth header-only (no `?secret=`); contact respects help enabled; transcript marked after send; HTML/`&` escape; `AUTH_SECRET` required for IP hash; disabled accounts denied; contact copy matches 1h transcript
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

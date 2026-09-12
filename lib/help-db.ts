@@ -315,7 +315,7 @@ export async function addHelpMessage(input: {
   await db.query(
     `UPDATE help_threads SET
        last_message_at = NOW(),
-       last_activity_at = NOW(),
+       last_activity_at = CASE WHEN $4 = 'user' THEN NOW() ELSE last_activity_at END,
        updated_at = NOW(),
        unread_admin = CASE WHEN $2 THEN TRUE ELSE unread_admin END,
        unread_user = CASE WHEN $3 THEN TRUE ELSE unread_user END,
@@ -441,30 +441,46 @@ export async function deleteKnowledge(id: string) {
   await getPool().query(`DELETE FROM help_knowledge WHERE id = $1`, [id]);
 }
 
-export async function getOrCreateGuestThread(
+export async function findOpenGuestThread(
   visitorKey: string
-): Promise<HelpThread> {
+): Promise<HelpThread | null> {
   await ensureHelpSchema();
-  const db = getPool();
-  const existing = await db.query(
+  const { rows } = await getPool().query(
     `SELECT * FROM help_threads
      WHERE visitor_key = $1 AND status <> 'resolved'
      ORDER BY last_message_at DESC LIMIT 1`,
     [visitorKey]
   );
-  if (existing.rows[0]) return rowThread(existing.rows[0]);
+  return rows[0] ? rowThread(rows[0]) : null;
+}
+
+export async function getOrCreateGuestThread(
+  visitorKey: string,
+  opts?: { ipHash?: string | null }
+): Promise<HelpThread> {
+  await ensureHelpSchema();
+  const db = getPool();
+  const existing = await findOpenGuestThread(visitorKey);
+  if (existing) return existing;
 
   const id = crypto.randomUUID();
-  const { rows } = await db.query(
-    `INSERT INTO help_threads (
-       id, user_id, visitor_key, subject, status,
-       unread_admin, unread_user, last_message_at, last_activity_at,
-       created_at, updated_at
-     ) VALUES ($1,NULL,$2,'Help','open',FALSE,FALSE,NOW(),NOW(),NOW(),NOW())
-     RETURNING *`,
-    [id, visitorKey]
-  );
-  return rowThread(rows[0]);
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO help_threads (
+         id, user_id, visitor_key, guest_ip_hash, subject, status,
+         unread_admin, unread_user, last_message_at, last_activity_at,
+         created_at, updated_at
+       ) VALUES ($1,NULL,$2,$3,'Help','open',FALSE,FALSE,NOW(),NOW(),NOW(),NOW())
+       RETURNING *`,
+      [id, visitorKey, opts?.ipHash ?? null]
+    );
+    return rowThread(rows[0]);
+  } catch (err) {
+    // Concurrent insert on unique visitor_key — re-read.
+    const raced = await findOpenGuestThread(visitorKey);
+    if (raced) return raced;
+    throw err;
+  }
 }
 
 export async function attachGuestContact(
@@ -497,6 +513,36 @@ export async function countGuestUserMessagesLastHour(
        AND role = 'user'
        AND created_at >= NOW() - INTERVAL '1 hour'`,
     [threadId]
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function countGuestUserMessagesByIpHashLastHour(
+  ipHash: string
+): Promise<number> {
+  await ensureHelpSchema();
+  const { rows } = await getPool().query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+     FROM help_messages m
+     JOIN help_threads t ON t.id = m.thread_id
+     WHERE t.guest_ip_hash = $1
+       AND m.role = 'user'
+       AND m.created_at >= NOW() - INTERVAL '1 hour'`,
+    [ipHash]
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function countGuestThreadsByIpHashLastHour(
+  ipHash: string
+): Promise<number> {
+  await ensureHelpSchema();
+  const { rows } = await getPool().query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count FROM help_threads
+     WHERE guest_ip_hash = $1
+       AND visitor_key IS NOT NULL
+       AND created_at >= NOW() - INTERVAL '1 hour'`,
+    [ipHash]
   );
   return Number(rows[0]?.count ?? 0);
 }

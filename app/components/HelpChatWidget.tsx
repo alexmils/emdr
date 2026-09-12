@@ -75,6 +75,9 @@ export function HelpChatWidget({ showFab = true }: Props) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [contactTurnstileToken, setContactTurnstileToken] = useState<
+    string | null
+  >(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -303,7 +306,8 @@ export function HelpChatWidget({ showFab = true }: Props) {
 
   const saveContact = async () => {
     if (contactSaving) return;
-    const token = contactTurnstileRef.current?.getToken() ?? turnstileToken;
+    const token =
+      contactTurnstileRef.current?.getToken() ?? contactTurnstileToken;
     if (!token) {
       setContactError("Complete the security check first.");
       return;
@@ -324,6 +328,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
       if (!res.ok) {
         setContactError(data.error ?? "Could not save");
         contactTurnstileRef.current?.reset();
+        setContactTurnstileToken(null);
         return;
       }
       setHasContact(true);
@@ -332,6 +337,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
     } catch {
       setContactError("Network error");
       contactTurnstileRef.current?.reset();
+      setContactTurnstileToken(null);
     } finally {
       setContactSaving(false);
     }
@@ -508,7 +514,8 @@ export function HelpChatWidget({ showFab = true }: Props) {
               Want a reply by email?
             </h3>
             <p className="help-contact-lead">
-              If you leave, we can email you when support replies.
+              Leave your email and we’ll send a copy of this chat about an hour
+              after you’re done, and reply here if you still need us.
             </p>
             <label className="help-contact-label">
               Name
@@ -532,7 +539,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
             <TurnstileField
               ref={contactTurnstileRef}
               action="help-guest"
-              onToken={setTurnstileToken}
+              onToken={setContactTurnstileToken}
               className="help-drawer-turnstile"
             />
             {contactError && (
@@ -545,7 +552,8 @@ export function HelpChatWidget({ showFab = true }: Props) {
                 disabled={
                   contactSaving ||
                   !contactName.trim() ||
-                  !contactEmail.trim()
+                  !contactEmail.trim() ||
+                  !contactTurnstileToken
                 }
                 onClick={() => void saveContact()}
               >

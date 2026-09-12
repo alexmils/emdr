@@ -1,5 +1,19 @@
 import type { HelpMessage, HelpThread } from "@/lib/help-db";
 
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Strip CR/LF so email subjects cannot be injected. */
+export function sanitizeEmailHeaderValue(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim().slice(0, 200);
+}
+
 export function formatHelpTranscript(messages: HelpMessage[]): {
   text: string;
   html: string;
@@ -14,8 +28,8 @@ export function formatHelpTranscript(messages: HelpMessage[]): {
     .map((m) => {
       const who =
         m.role === "user" ? "You" : m.role === "admin" ? "Support" : "Nura";
-      const safe = m.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      return `<p><strong>${who}:</strong><br>${safe.replace(/\n/g, "<br>")}</p>`;
+      const safe = escapeHtml(m.content).replace(/\n/g, "<br>");
+      return `<p><strong>${who}:</strong><br>${safe}</p>`;
     })
     .join("");
   return { text, html };
@@ -31,4 +45,13 @@ export function helpThreadDisplayLabel(thread: HelpThread): string {
     thread.guestEmail?.trim() ||
     "Guest visitor"
   );
+}
+
+/** Client-safe thread payload (no visitorKey / ip hash). */
+export function toPublicHelpThread(thread: HelpThread): Omit<
+  HelpThread,
+  "visitorKey"
+> & { visitorKey?: never } {
+  const { visitorKey: _omit, ...rest } = thread;
+  return rest;
 }

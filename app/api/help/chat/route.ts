@@ -4,13 +4,17 @@ import { getUserById } from "@/lib/users";
 import { clientIp } from "@/lib/audit-log";
 import {
   addHelpMessage,
+  countGuestThreadsByIpHashLastHour,
+  countGuestUserMessagesByIpHashLastHour,
+  countGuestUserMessagesLastHour,
+  findOpenGuestThread,
   getHelpSettings,
   getOrCreateGuestThread,
   getOrCreateOpenThread,
   listUserMessages,
   markThreadReadByUser,
-  countGuestUserMessagesLastHour,
 } from "@/lib/help-db";
+import { toPublicHelpThread } from "@/lib/help-format";
 import { buildHelpAiMessages } from "@/lib/help-rag";
 import { chatCompletion } from "@/lib/llm";
 import { getLlmRuntimeConfig } from "@/lib/platform-settings";
@@ -18,6 +22,8 @@ import { notifyAdminsOfHelpMessage } from "@/lib/help-notify";
 import {
   applyVisitorCookie,
   GUEST_HELP_MSG_LIMIT_PER_HOUR,
+  GUEST_HELP_MSG_LIMIT_PER_IP_HOUR,
+  GUEST_HELP_THREADS_PER_IP_HOUR,
   hashIp,
   mintVisitorKey,
   readVisitorKeyFromCookies,
@@ -31,12 +37,19 @@ import { getPool } from "@/lib/db";
 async function resolveHelpActor(): Promise<
   | { kind: "user"; userId: string; email: string }
   | { kind: "admin"; message: string }
+  | { kind: "disabled"; message: string }
   | { kind: "guest" }
 > {
   const session = await getSession();
   if (!session) return { kind: "guest" };
   const user = await getUserById(session.sub);
-  if (!user || user.status === "disabled") return { kind: "guest" };
+  if (!user) return { kind: "guest" };
+  if (user.status === "disabled") {
+    return {
+      kind: "disabled",
+      message: "This account is disabled.",
+    };
+  }
   if (user.role === "user") {
     return { kind: "user", userId: user.id, email: user.email };
   }
@@ -59,7 +72,7 @@ export async function GET() {
   }
 
   const actor = await resolveHelpActor();
-  if (actor.kind === "admin") {
+  if (actor.kind === "admin" || actor.kind === "disabled") {
     return NextResponse.json({ error: actor.message }, { status: 403 });
   }
 
@@ -71,26 +84,28 @@ export async function GET() {
       enabled: true,
       mode: "user",
       welcomeMessage: settings.welcomeMessage,
-      thread,
+      thread: toPublicHelpThread(thread),
       messages,
       hasContact: true,
     });
   }
 
+  // Guest: mint cookie if needed, but do not create a DB thread until first message.
   let visitorKey = await readVisitorKeyFromCookies();
   const minted = !visitorKey;
   if (!visitorKey) visitorKey = mintVisitorKey();
-  const thread = await getOrCreateGuestThread(visitorKey);
-  const messages = await listUserMessages(thread.id);
+
+  const thread = await findOpenGuestThread(visitorKey);
+  const messages = thread ? await listUserMessages(thread.id) : [];
   const out = NextResponse.json({
     enabled: true,
     mode: "guest" as const,
     welcomeMessage: settings.welcomeMessage,
-    thread,
+    thread: thread ? toPublicHelpThread(thread) : null,
     messages,
-    hasContact: Boolean(thread.guestEmail),
-    guestName: thread.guestName ?? null,
-    guestEmail: thread.guestEmail ?? null,
+    hasContact: Boolean(thread?.guestEmail),
+    guestName: thread?.guestName ?? null,
+    guestEmail: thread?.guestEmail ?? null,
   });
   if (minted) applyVisitorCookie(out, visitorKey);
   return out;
@@ -103,7 +118,7 @@ export async function POST(request: Request) {
   }
 
   const actor = await resolveHelpActor();
-  if (actor.kind === "admin") {
+  if (actor.kind === "admin" || actor.kind === "disabled") {
     return NextResponse.json({ error: actor.message }, { status: 403 });
   }
 
@@ -139,15 +154,34 @@ export async function POST(request: Request) {
   const minted = !visitorKey;
   if (!visitorKey) visitorKey = mintVisitorKey();
 
-  const thread = await getOrCreateGuestThread(visitorKey);
   const ipHash = hashIp(clientIp(request));
-  if (ipHash && !thread.guestEmail) {
+  if (ipHash) {
+    const threadsFromIp = await countGuestThreadsByIpHashLastHour(ipHash);
+    const existing = await findOpenGuestThread(visitorKey);
+    if (!existing && threadsFromIp >= GUEST_HELP_THREADS_PER_IP_HOUR) {
+      return NextResponse.json(
+        { error: "Too many chats from this network. Try again later." },
+        { status: 429 }
+      );
+    }
+    const msgsFromIp = await countGuestUserMessagesByIpHashLastHour(ipHash);
+    if (msgsFromIp >= GUEST_HELP_MSG_LIMIT_PER_IP_HOUR) {
+      return NextResponse.json(
+        { error: "Too many messages. Try again in a bit." },
+        { status: 429 }
+      );
+    }
+  }
+
+  const thread = await getOrCreateGuestThread(visitorKey, { ipHash });
+  if (ipHash) {
     await getPool().query(
       `UPDATE help_threads SET guest_ip_hash = COALESCE(guest_ip_hash, $2)
        WHERE id = $1`,
       [thread.id, ipHash]
     );
   }
+
   const recent = await countGuestUserMessagesLastHour(thread.id);
   if (recent >= GUEST_HELP_MSG_LIMIT_PER_HOUR) {
     return NextResponse.json(

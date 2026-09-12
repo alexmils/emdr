@@ -7,9 +7,7 @@ function authorizeCron(request: Request): boolean {
   const auth = request.headers.get("authorization");
   if (auth === `Bearer ${secret}`) return true;
   const header = request.headers.get("x-cron-secret");
-  if (header === secret) return true;
-  const url = new URL(request.url);
-  return url.searchParams.get("secret") === secret;
+  return header === secret;
 }
 
 async function run(request: Request) {
