@@ -128,16 +128,19 @@ function CreateAccountForm() {
         checked={ageConfirmed}
         onChange={(e) => setAgeConfirmed(e.target.checked)}
       />
-      <span>I am 18 years of age or older</span>
+      <span>I am 18 or older</span>
     </label>
   );
 
-  const legal = (
-    <p className="auth-method-legal">
-      By continuing you agree to our{" "}
-      <AuthLink href="/terms">Terms</AuthLink> and{" "}
-      <AuthLink href="/privacy">Privacy</AuthLink>.
-    </p>
+  const legalBlock = (
+    <div className="auth-legal-block">
+      {ageGate}
+      <p className="auth-method-legal">
+        By continuing you agree to our{" "}
+        <AuthLink href="/terms">Terms</AuthLink> and{" "}
+        <AuthLink href="/privacy">Privacy</AuthLink>.
+      </p>
+    </div>
   );
 
   if (step === "methods") {
@@ -149,7 +152,6 @@ function CreateAccountForm() {
         footer={footer}
       >
         {error ? <AuthError message={error} /> : null}
-        {ageGate}
         <div className="auth-method-stack">
           <GoogleAuthButton
             next={next ?? undefined}
@@ -167,7 +169,7 @@ function CreateAccountForm() {
             Continue with email
           </button>
         </div>
-        {legal}
+        {legalBlock}
       </AuthShell>
     );
   }
@@ -220,7 +222,6 @@ function CreateAccountForm() {
         <p className="text-caption mb-4 text-left">
           Use at least 8 characters with a letter and a number.
         </p>
-        {ageGate}
         <TurnstileField
           ref={turnstileRef}
           action="signup"
@@ -233,7 +234,7 @@ function CreateAccountForm() {
         >
           {loading ? "Creating…" : "Create account"}
         </button>
-        {legal}
+        {legalBlock}
         <button
           type="button"
           className="auth-method-back"
