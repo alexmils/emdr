@@ -1,11 +1,10 @@
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+﻿import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
-import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 
-export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("terms");
@@ -24,7 +23,7 @@ export default function TermsPage() {
         <h1>Terms of service</h1>
         <p>
           This is a placeholder terms page for {BRAND_LEGAL}. The product is
-          intended as an EMDR Support tool — not a substitute for professional
+          intended as an EMDR Support tool â€” not a substitute for professional
           clinical care.
         </p>
         <p>Replace this stub with your full terms before production launch.</p>

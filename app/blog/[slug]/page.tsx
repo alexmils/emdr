@@ -1,4 +1,4 @@
-import { ClusterArticleView } from "@/app/components/frontend/ClusterArticleView";
+﻿import { ClusterArticleView } from "@/app/components/frontend/ClusterArticleView";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL, BRAND_SPOKEN } from "@/lib/brand";
 import {
@@ -6,7 +6,6 @@ import {
   listClusterArticles,
 } from "@/lib/content-cluster";
 import { getPublicAppUrl } from "@/lib/platform-settings";
-import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import {
   breadcrumbJsonLd,
   localeAlternates,
@@ -16,7 +15,7 @@ import { siteOrigin } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -36,7 +35,7 @@ export async function generateMetadata({
     description: article.description,
     alternates: localeAlternates(`/blog/${article.slug}`),
     openGraph: {
-      title: `${article.title} — ${BRAND_SPOKEN}`,
+      title: `${article.title} â€” ${BRAND_SPOKEN}`,
       description: article.description,
       type: "article",
       locale: "en",

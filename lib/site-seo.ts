@@ -156,9 +156,7 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
   },
 ];
 
-export function isSeoPageId(value: string): value is SeoPageId {
-  return (SEO_PAGE_IDS as readonly string[]).includes(value);
-}
+export { isSeoPageId } from "@/lib/seo-config";
 
 export function siteOrigin(publicAppUrl?: string): string {
   const raw = (publicAppUrl || "").trim() || brandMetadataBase().origin;

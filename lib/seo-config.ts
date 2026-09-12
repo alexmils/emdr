@@ -13,6 +13,10 @@ export const SEO_PAGE_IDS = [
 
 export type SeoPageId = (typeof SEO_PAGE_IDS)[number];
 
+export function isSeoPageId(value: string): value is SeoPageId {
+  return (SEO_PAGE_IDS as readonly string[]).includes(value);
+}
+
 export type SeoPageOverride = {
   title?: string;
   description?: string;

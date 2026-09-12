@@ -1,12 +1,11 @@
-import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+﻿import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL } from "@/lib/brand";
 import { getPlatformSettings } from "@/lib/platform-settings";
-import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 
-export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("privacy");

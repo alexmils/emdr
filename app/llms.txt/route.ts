@@ -1,9 +1,9 @@
-import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
+﻿import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { getPublicAppUrl } from "@/lib/platform-settings";
 import { buildLlmsTxt } from "@/lib/llms-txt";
 import { siteOrigin } from "@/lib/site-seo";
 
-export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 
 export async function GET() {
   let publicUrl: string | undefined;

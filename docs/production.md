@@ -87,9 +87,9 @@ Origin file: [`app/robots.txt/route.ts`](../app/robots.txt/route.ts) via [`lib/r
 | Grounding / AI search | `OAI-SearchBot`, `PerplexityBot`, `ChatGPT-User` | Allow `/`, `/emdr`, `/about`, `/editorial`, `/resources`, `/blog` (plus `/llms.txt`, `/sitemap.xml`). Disallow everything else |
 | Training | `GPTBot`, `ClaudeBot`, `CCBot`, `Google-Extended`, `Applebot-Extended`, `Amazonbot`, `Bytespider`, `meta-externalagent` | `Disallow: /` |
 
-**Turn off** Cloudflare → Security → Bot traffic → “Set your preference to block training in robots.txt”. The managed file **prepends** named-bot `Disallow: /` groups and a Content-Signal **without** `ai-input=yes`. Those named groups override any later `Allow` for the same bot (RFC 9309). Origin already blocks training crawlers, so the managed file is redundant and blocks the AI-search channel.
+Cloudflare managed robots.txt must stay **off** (`bot_management.is_robots_txt_managed=false`). When on, CF **prepends** named-bot `Disallow: /` groups and a Content-Signal **without** `ai-input=yes`; those named groups override any later `Allow` for the same bot (RFC 9309). Origin already blocks training crawlers.
 
-Do **not** set Cloudflare `ai_bots_protection` to block-all — that 403s search/grounding crawlers regardless of robots.txt.
+Do **not** set Cloudflare `ai_bots_protection` to `block` / block-all — that 403s search/grounding crawlers regardless of robots.txt. Prefer `disabled` or `only_on_ad_pages`.
 
 Keep Bot Fight Mode for junk scrapers; verified search bots should remain allowed.
 

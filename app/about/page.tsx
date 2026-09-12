@@ -1,13 +1,12 @@
-import { FrontendShell } from "@/app/components/frontend/FrontendShell";
+﻿import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
-import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/public-page-cache";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("about");
@@ -27,7 +26,7 @@ export default function AboutPage() {
         <p>{BRAND_TAGLINE}</p>
         <p>
           {BRAND_SPOKEN} is a calm workspace for guided EMDR sessions and therapy
-          resources — structured support in the app, on your schedule. Sessions
+          resources â€” structured support in the app, on your schedule. Sessions
           follow a clear protocol with optional voice guidance, or you can use
           Free mode for visual sets on your own.
         </p>
