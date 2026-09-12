@@ -456,7 +456,6 @@
   margin: 0;
   font-size: 1rem;
   color: var(--fe-ft-muted);
-  max-width: 28rem;
   line-height: 1.4;
 }
 
@@ -566,10 +565,6 @@
 
   .fe-site-footer-nav {
     justify-content: center;
-  }
-
-  .fe-site-footer-copy {
-    max-width: 22rem;
   }
 }
 

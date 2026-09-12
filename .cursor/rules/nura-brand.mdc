@@ -14,7 +14,8 @@ Full spec: [`docs/brand.md`](docs/brand.md). Constants: [`lib/brand.ts`](lib/bra
 | Layer | Name | Where |
 |---|---|---|
 | Brand / chrome | Nura | Sidebar, headers, email from-name, Stripe Checkout, WebAuthn `rpName`, lockup |
-| Legal operator | Receptly LLC | Terms, Privacy, footer copyright, JSON-LD `legalName` |
+| Legal operator | Receptly LLC | Terms, Privacy, JSON-LD `legalName` |
+| Marketing footer line | © {year} Nura \| All rights reserved | Site footer only — operator stays on legal pages |
 | Product feature | EMDR Support | Not the company name |
 | Never in public | NuraHelp / NuraHelp AI | Domain host only — rewrite leftovers via `rewriteRetiredBrandCopy` |
 

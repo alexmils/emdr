@@ -201,6 +201,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `buildPageMetadata` / blog articles emit `hreflang` `en` + `x-default` (ready before a second locale)
 - `/app` crawl: shared `shouldNoindexPath` so `/app/resources` stays behind login + `X-Robots-Tag` + robots `Disallow: /app`
 - Billing display currency: plan prices and money formatters default to **USD** (`$4.99` / `$14.99` / `$99`); leftover `€` display strings from admin settings are rewritten on load
+- Marketing footer copyright: `© {year} Nura | All rights reserved` — drop Receptly LLC and the tagline from that line (operator stays on Terms, Privacy, JSON-LD)
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)

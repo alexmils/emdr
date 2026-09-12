@@ -12,8 +12,7 @@ import { BrandLockup } from "@/app/components/BrandLockup";
 import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
 import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
-import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
-import { legalEntityDisplayName } from "@/lib/legal-entity";
+import { BRAND_SPOKEN } from "@/lib/brand";
 import { TRIAL_DAYS } from "@/lib/billing-constants";
 import "./frontend-footer.css";
 
@@ -181,8 +180,7 @@ export function FrontendFooter() {
               <CookieSettingsButton className="fe-site-footer-cookie-btn" />
             </nav>
             <p className="fe-site-footer-copy">
-              © {new Date().getFullYear()} {legalEntityDisplayName()}.{" "}
-              {BRAND_SPOKEN}. {BRAND_TAGLINE}
+              © {new Date().getFullYear()} {BRAND_SPOKEN} | All rights reserved
             </p>
           </div>
         </div>

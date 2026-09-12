@@ -13,7 +13,8 @@ Operator entity: `lib/legal-entity.ts` (**Receptly LLC**).
 | Layer | Name | Where |
 |---|---|---|
 | Brand / UI chrome | Nura | Header, sidebar, email from-name, Stripe Checkout, lockup |
-| Legal operator | Receptly LLC | Terms, Privacy, footer copyright, JSON-LD `legalName` |
+| Legal operator | Receptly LLC | Terms, Privacy, JSON-LD `legalName` |
+| Marketing footer line | © {year} Nura \| All rights reserved | Site footer only — operator stays on legal pages |
 | Domain | nurahelp.com | Host only. Do not write “NuraHelp” in UI copy. |
 | Current product | Nura · EMDR Support | Feature, not a second company name |
 | Never in public | NuraHelp / NuraHelp AI / Nura Help | Retired; rewrite via `rewriteRetiredBrandCopy` |
