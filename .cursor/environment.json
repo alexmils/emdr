@@ -1,0 +1,17 @@
+{
+  "name": "NuraHelp",
+  "user": "ubuntu",
+  "install": ".cursor/install.sh",
+  "start": ".cursor/start.sh",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "npm run dev",
+      "description": "Next.js dev server (Turbopack) on http://localhost:3471"
+    }
+  ],
+  "ports": [
+    { "name": "web", "port": 3471 },
+    { "name": "postgres", "port": 5434 }
+  ]
+}

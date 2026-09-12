@@ -67,6 +67,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Guided Voice Mode**: ChatGPT-style voice in Guided sessions — browser Web Speech mic, ElevenLabs replies, live transcript; interpreter `startSet` auto-starts the moving ball when ready (`AgentOverlay`, `useGuidedVoiceMode`, `lib/browser-speech.ts`)
 - **Help chat widget**: compact bottom-right panel (~360×512 max) instead of full-height side drawer; transparent click-outside; slide-up open
 - **Cloudflare Turnstile** on password auth forms (login, create-account, forgot/reset/create-password): widget embed + canonical siteverify (`lib/turnstile.ts`); env `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAMES`; `TurnstileField` renders after Script `onReady` (no `turnstile.ready()` with async Script)
+- **Cloud Agent dev environment** (`.cursor/environment.json` + `.cursor/install.sh` + `.cursor/start.sh`): reproducible setup without Docker — installs PostgreSQL 16, runs `npm ci`, bootstraps `.env` (generated `AUTH_SECRET`); per-boot `start.sh` brings up Postgres on **5434** and ensures the `emdr` role/db; auto-starts `npm run dev` terminal on **3471**
 
 ### Changed
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
