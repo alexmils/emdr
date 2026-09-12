@@ -192,26 +192,27 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-[var(--separator-opaque)]" />
-        <span className="text-caption">or</span>
-        <div className="h-px flex-1 bg-[var(--separator-opaque)]" />
+      <div className="auth-alt-methods">
+        <div className="auth-alt-methods-divider flex items-center gap-3">
+          <div className="h-px flex-1 bg-[var(--separator-opaque)]" />
+          <span className="text-caption">or</span>
+          <div className="h-px flex-1 bg-[var(--separator-opaque)]" />
+        </div>
+
+        <GoogleAuthButton next={next} from="login" disabled={busy} />
+
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void signInWithPasskey()}
+          className="btn-secondary auth-alt-methods-passkey w-full disabled:opacity-60"
+        >
+          {passkeyLoading ? "Waiting for passkey…" : "Sign in with passkey"}
+        </button>
+        <p className="auth-passkey-hint text-caption">
+          Use Face ID, Touch ID, Windows Hello, or a security key.
+        </p>
       </div>
-
-      <GoogleAuthButton next={next} from="login" disabled={busy} />
-
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => void signInWithPasskey()}
-        className="btn-secondary mt-3 w-full disabled:opacity-60"
-      >
-        {passkeyLoading ? "Waiting for passkey…" : "Sign in with passkey"}
-      </button>
-      <p className="text-caption mt-3 text-center">
-        Use Face ID, Touch ID, Windows Hello, or a security key. Add a passkey
-        in Settings after signing in with your password.
-      </p>
     </AuthShell>
   );
 }

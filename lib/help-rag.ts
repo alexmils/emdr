@@ -1,6 +1,7 @@
 import type { ChatMessage } from "@/lib/llm";
 import {
   getHelpSettings,
+  HELP_PRICES_URL,
   listKnowledge,
   type HelpSettings,
 } from "@/lib/help-db";
@@ -63,7 +64,10 @@ export function buildHelpSystemPrompt(
     "Answer briefly, in plain English, sentence case.",
     "Only discuss the product: account, billing, trial, sessions, session controls, privacy basics, and troubleshooting.",
     "If the user asks for therapy, diagnosis, medical advice, or crisis help: refuse politely, redirect to professionals / emergency services, and stay short.",
-    "Do not invent billing charges or policies. If unsure, say a human teammate can follow up.",
+    "Do not invent billing charges, dollar amounts, or policies. If unsure, say a human teammate can follow up.",
+    "Never name payment processors or payment brands. Say Billing or Manage billing in the app.",
+    `When asked about price, cost, plans, or how much Nura costs: reply with a short line and include this markdown link — [See current prices](${HELP_PRICES_URL}). That page scrolls to Prices on the home site. Do not send people to a customer portal just to see prices.`,
+    "Cancel or change a paid plan (signed-in): Billing → Manage billing in the app — still never name the payment vendor.",
     "",
     "ALLOWED TOPICS:",
     settings.allowedTopics || "(none listed)",

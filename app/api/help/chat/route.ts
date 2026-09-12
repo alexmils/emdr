@@ -204,13 +204,15 @@ export async function POST(request: Request) {
     thread.guestName?.trim() ||
     `guest:${visitorKey.slice(0, 8)}`;
 
-  if (settings.notifyAdminsByEmail) {
-    void notifyAdminsOfHelpMessage({
-      fromLabel,
-      preview: text.slice(0, 200),
-      threadId: thread.id,
-    }).catch((err) => console.error("[help/notify]", err));
-  }
+  const priorUserMessageCount = history.filter((m) => m.role === "user").length;
+  void notifyAdminsOfHelpMessage({
+    fromLabel,
+    preview: text.slice(0, 200),
+    threadId: thread.id,
+    priorUserMessageCount,
+    ipHash,
+    sendEmailEnabled: settings.notifyAdminsByEmail,
+  }).catch((err) => console.error("[help/notify]", err));
 
   const assistantMsg = await maybeAiReply({
     threadId: thread.id,
@@ -249,13 +251,15 @@ async function handleUserPost(input: {
     forAdminUnread: true,
   });
 
-  if (input.settings.notifyAdminsByEmail) {
-    void notifyAdminsOfHelpMessage({
-      fromLabel: input.email,
-      preview: input.text.slice(0, 200),
-      threadId: thread.id,
-    }).catch((err) => console.error("[help/notify]", err));
-  }
+  const priorUserMessageCount = history.filter((m) => m.role === "user").length;
+  void notifyAdminsOfHelpMessage({
+    fromLabel: input.email,
+    preview: input.text.slice(0, 200),
+    threadId: thread.id,
+    priorUserMessageCount,
+    ipHash: null,
+    sendEmailEnabled: input.settings.notifyAdminsByEmail,
+  }).catch((err) => console.error("[help/notify]", err));
 
   const assistantMsg = await maybeAiReply({
     threadId: thread.id,

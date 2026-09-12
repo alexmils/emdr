@@ -1,0 +1,24 @@
+{
+  "name": "Nura Admin",
+  "short_name": "Nura Admin",
+  "description": "Nura support and admin console",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#3D4129",
+  "theme_color": "#3D4129",
+  "icons": [
+    {
+      "src": "/brand/nura-circle-variants/A-white-on-sage-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

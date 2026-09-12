@@ -29,6 +29,19 @@ describe("resolveAccessRedirect", () => {
     );
   });
 
+  it("keeps onboarding query flags for new signups", () => {
+    assert.equal(
+      resolveAccessRedirect({
+        role: "user",
+        needsOnboarding: true,
+        needsPayment: true,
+        canUseApp: false,
+        next: "/app/onboarding?registered=1",
+      }),
+      "/app/onboarding?registered=1"
+    );
+  });
+
   it("sends unpaid finished-onboarding users to billing", () => {
     assert.equal(
       resolveAccessRedirect({

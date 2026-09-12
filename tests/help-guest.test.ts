@@ -12,10 +12,11 @@ import {
   escapeHtml,
   formatHelpTranscript,
   helpThreadDisplayLabel,
+  parseHelpBubbleSegments,
   sanitizeEmailHeaderValue,
   toPublicHelpThread,
 } from "@/lib/help-format";
-import type { HelpThread } from "@/lib/help-db";
+import { rewriteHelpKnowledgeCopy, type HelpThread } from "@/lib/help-db";
 
 describe("help visitor helpers", () => {
   it("validates visitor UUID keys", () => {
@@ -155,5 +156,32 @@ describe("helpThreadDisplayLabel", () => {
       guestEmail: null,
     } as HelpThread;
     assert.equal(helpThreadDisplayLabel(user), "Alex");
+  });
+});
+
+describe("help bubble links and knowledge copy", () => {
+  it("parses markdown and bare price URLs", () => {
+    const segs = parseHelpBubbleSegments(
+      "See [current prices](https://nurahelp.com/#prices) or https://nurahelp.com/#prices."
+    );
+    const links = segs.filter((s) => s.type === "link");
+    assert.equal(links.length, 2);
+    assert.equal(links[0]?.type === "link" && links[0].label, "current prices");
+    assert.equal(
+      links[0]?.type === "link" && links[0].href,
+      "https://nurahelp.com/#prices"
+    );
+    assert.equal(
+      links[1]?.type === "link" && links[1].href,
+      "https://nurahelp.com/#prices"
+    );
+  });
+
+  it("scrubs payment vendor names from help knowledge", () => {
+    const cleaned = rewriteHelpKnowledgeCopy(
+      "Manage or cancel from Billing → Manage billing (Stripe Customer Portal)."
+    );
+    assert.doesNotMatch(cleaned, /Stripe/i);
+    assert.match(cleaned, /Manage billing/);
   });
 });

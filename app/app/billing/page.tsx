@@ -10,6 +10,11 @@ import {
   type BillingPlanMeta,
 } from "@/lib/billing-constants";
 import { shouldOfferBillingPortal } from "@/lib/checkout-rules";
+import {
+  metaMoneyFromPlanPrice,
+  trackMetaEvent,
+} from "@/lib/meta-pixel";
+import { ConversionTags } from "@/app/components/ConversionTags";
 import { UpgradeModal } from "@/app/components/UpgradeModal";
 
 const BILLING_FLIP_MS = 620;
@@ -47,6 +52,7 @@ function BillingPageInner() {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
   const checkout = params.get("checkout");
+  const activated = params.get("activated");
   const [status, setStatus] = useState<Status | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -65,8 +71,29 @@ function BillingPageInner() {
 
   useEffect(() => {
     void refresh();
-    if (checkout === "success") setMsg("Subscription updated.");
+    if (checkout === "success") {
+      setMsg("Subscription updated.");
+      trackMetaEvent(
+        "Subscribe",
+        { content_category: "subscription" },
+        { onceKey: "subscribe_checkout" }
+      );
+    }
     if (checkout === "canceled") setMsg("Checkout canceled.");
+    if (activated === "1") {
+      trackMetaEvent(
+        "Purchase",
+        { content_category: "subscription", content_name: "activate_trial" },
+        { onceKey: "purchase_activate" }
+      );
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("activated")) {
+          url.searchParams.delete("activated");
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
+      }
+    }
     // Drop session_id from the URL after the first status sync so refreshes
     // cannot re-apply an old Checkout session over a newer subscription.
     if (sessionId && typeof window !== "undefined") {
@@ -76,7 +103,7 @@ function BillingPageInner() {
         window.history.replaceState({}, "", url.pathname + url.search);
       }
     }
-  }, [refresh, checkout, sessionId]);
+  }, [refresh, checkout, sessionId, activated]);
 
   useEffect(() => {
     return () => {
@@ -139,7 +166,17 @@ function BillingPageInner() {
         setMsg(data.error ?? "Checkout unavailable");
         return;
       }
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        const money = metaMoneyFromPlanPrice(
+          status?.plans?.[plan]?.displayPrice ?? BILLING_PLANS[plan].displayPrice
+        );
+        trackMetaEvent("InitiateCheckout", {
+          ...money,
+          content_name: plan,
+          content_category: "subscription",
+        });
+        window.location.href = data.url;
+      }
     } catch {
       setMsg("Could not start checkout.");
     } finally {
@@ -167,6 +204,7 @@ function BillingPageInner() {
 
   return (
     <div className="billing-page">
+      <ConversionTags />
       <Link href="/app" className="billing-back">
         ← Back to session
       </Link>

@@ -1,6 +1,8 @@
+import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
+
 /**
  * Decorative right-pane mockup for auth: flat ball sweeping edge ↔ edge,
- * plus calm supporting copy so the pane isn’t empty.
+ * SEO-leaning supporting copy, and quiet follow-us social chrome.
  * Pure CSS motion; respects reduced-motion.
  */
 export function AuthSessionMockup() {
@@ -19,11 +21,19 @@ export function AuthSessionMockup() {
           </div>
         </div>
         <div className="auth-visual-copy">
-          <p className="auth-visual-kicker">EMDR Support</p>
-          <p className="auth-visual-title">A quiet rhythm — left, then right</p>
+          <p className="auth-visual-kicker">Self-help EMDR</p>
+          <p className="auth-visual-title">EMDR therapy online</p>
           <p className="auth-visual-lead">
-            Settle in. The ball moves at your pace.
+            AI agent-guided sessions and Free visual sets in a calm app.
           </p>
+        </div>
+        <div className="auth-visual-social-wrap" aria-label="Follow Nura">
+          <BrandSocialLinks
+            className="auth-visual-social"
+            linkClassName="auth-visual-social-link"
+            iconSize={16}
+            labelled={false}
+          />
         </div>
       </div>
     </div>

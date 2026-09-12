@@ -2,6 +2,7 @@ import {
   BRAND_DESCRIPTION,
   BRAND_DOMAIN,
   BRAND_PRODUCT,
+  BRAND_SOCIAL,
   BRAND_SPOKEN,
   brandMetadataBase,
 } from "@/lib/brand";
@@ -50,6 +51,7 @@ export function buildHomeJsonLd(origin = jsonLdOrigin()) {
           url: logoUrl,
         },
         description: BRAND_DESCRIPTION,
+        sameAs: [BRAND_SOCIAL.instagram, BRAND_SOCIAL.facebook],
       },
       {
         "@type": "SoftwareApplication",

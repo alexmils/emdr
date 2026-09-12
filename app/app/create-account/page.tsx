@@ -20,6 +20,7 @@ import {
   initialCreateAccountStep,
 } from "@/lib/auth/create-account-ui";
 import { googleAuthErrorMessage } from "@/lib/auth/google-ui";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 
 function CreateAccountForm() {
@@ -94,6 +95,12 @@ function CreateAccountForm() {
         turnstileRef.current?.reset();
         return;
       }
+
+      trackMetaEvent(
+        "CompleteRegistration",
+        { status: true, content_name: "email" },
+        { onceKey: "complete_registration" }
+      );
 
       const dest = next
         ? safeAppNext(next, `${APP_BASE}/onboarding`)

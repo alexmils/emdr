@@ -9,6 +9,10 @@ import {
   type BillingPlanId,
   type BillingPlanMeta,
 } from "@/lib/billing-constants";
+import {
+  metaMoneyFromPlanPrice,
+  trackMetaEvent,
+} from "@/lib/meta-pixel";
 
 type UpgradeReason = "trial_limit_reached" | "bls_limit_reached" | "generic";
 
@@ -106,6 +110,14 @@ export function UpgradeModal({
           code?: string;
         };
         if (activateRes.ok) {
+          trackMetaEvent(
+            "Purchase",
+            {
+              content_category: "subscription",
+              content_name: plan,
+            },
+            { onceKey: "purchase_activate" }
+          );
           window.location.href = "/app/billing?activated=1";
           return;
         }
@@ -129,6 +141,14 @@ export function UpgradeModal({
         return;
       }
       if (data.url) {
+        const money = metaMoneyFromPlanPrice(
+          plans[plan]?.displayPrice ?? BILLING_PLANS[plan].displayPrice
+        );
+        trackMetaEvent("InitiateCheckout", {
+          ...money,
+          content_name: plan,
+          content_category: "subscription",
+        });
         window.location.href = data.url;
         return;
       }
@@ -138,7 +158,7 @@ export function UpgradeModal({
     } finally {
       setBusy(false);
     }
-  }, [plan, activateCurrent]);
+  }, [plan, activateCurrent, plans]);
 
   if (!open) return null;
 

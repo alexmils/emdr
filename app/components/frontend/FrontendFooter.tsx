@@ -8,8 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { BookOpen, Info, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { BrandLockup } from "@/app/components/BrandLockup";
+import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
 import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
 import { BRAND_SPOKEN, BRAND_TAGLINE } from "@/lib/brand";
@@ -25,24 +26,6 @@ const FOOTER_LINKS = [
   { href: "/editorial", label: "How we write" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
-] as const;
-
-const SOCIAL_LINKS = [
-  {
-    href: `mailto:hello@nurahelp.com`,
-    label: "Email Nura",
-    icon: Mail,
-  },
-  {
-    href: "/resources",
-    label: "Resources",
-    icon: BookOpen,
-  },
-  {
-    href: "/about",
-    label: "About",
-    icon: Info,
-  },
 ] as const;
 
 function MarqueeChunk() {
@@ -129,28 +112,19 @@ export function FrontendFooter() {
         <div className="fe-site-footer-panel">
           <div className="fe-site-footer-brand-row">
             <BrandLockup href="/" tone="white" className="fe-site-footer-logo" />
-            <div className="fe-site-footer-social" aria-label="Quick links">
-              {SOCIAL_LINKS.map(({ href, label, icon: Icon }) =>
-                href.startsWith("mailto:") ? (
-                  <a
-                    key={label}
-                    href={href}
-                    className="fe-site-footer-social-link"
-                    aria-label={label}
-                  >
-                    <Icon size={18} strokeWidth={1.6} aria-hidden />
-                  </a>
-                ) : (
-                  <Link
-                    key={label}
-                    href={href}
-                    className="fe-site-footer-social-link"
-                    aria-label={label}
-                  >
-                    <Icon size={18} strokeWidth={1.6} aria-hidden />
-                  </Link>
-                )
-              )}
+            <div className="fe-site-footer-social" aria-label="Social">
+              <BrandSocialLinks
+                className="fe-site-footer-social-brand"
+                linkClassName="fe-site-footer-social-link"
+                labelled={false}
+              />
+              <a
+                href="mailto:hello@nurahelp.com"
+                className="fe-site-footer-social-link"
+                aria-label="Email Nura"
+              >
+                <Mail size={18} strokeWidth={1.6} aria-hidden />
+              </a>
             </div>
           </div>
 

@@ -43,7 +43,7 @@ Hero: **EMDR therapy online.** *in a calm app.* (tagline still: Support for ther
 
 - Pistachio palette: Paper/mint `#A4EDA5` · Sage `#84B067` (buttons, wordmark) · Ink `#2A3020` (body) · Pistachio `#C6D67E` **focus/hover only, never body or default field borders** · Olive `#948F4E` (muted) · Sidebar `#3D4129`
 - Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
-- **Product type** (`/app`, `.app-shell`): **Source Sans 3 only** — remaps `--font-display` to sans (same idea as admin). No Fraunces in product chrome.
+- **Product type** (`/app`, `.app-shell`, `.auth-shell`): **Source Sans 3 only** — remaps `--font-display` to sans (same idea as admin). No Fraunces in product chrome or auth titles.
 - **Admin type** (`/admin`, `.admin-shell`): **Source Sans 3 only** — sober UI; remaps `--font-display` to `--font-sans` so titles/KPIs are not ornamental Fraunces
 - **Marketing type** (`.frontend-home`): Fraunces **only** for hero / major landing section titles + Source Sans 3 body + Roboto Mono kickers. **Legal / long-form public docs** (`/terms`, `/privacy`, …) use **Source Sans 3** for h1–h3 and body (weight 600 headings) — never Fraunces on “OUR SERVICES”-style contract headings. See **Frontend typography** below.
 - Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
@@ -71,6 +71,8 @@ Loaded via `next/font` in `app/layout.tsx`. Scoped on `.frontend-home` in `app/g
 ## Copy
 
 English, sentence case, short. No hype (“revolutionary”, “blockchain”, “neural networks”).
+
+**Marketing:** do not explain the product in body paragraphs — titles, labels, cards, and visuals do the work (see `.cursor/rules/marketing-no-explain-copy.mdc`). Product/auth/onboarding may use short microcopy where needed.
 
 ### Never say BLS to users
 

@@ -14,6 +14,12 @@ export const BRAND_PRODUCT = "EMDR Support";
 /** Site host only — not a brand word for UI. */
 export const BRAND_DOMAIN = "nurahelp.com";
 
+/** Official social profiles (footer + Organization sameAs). */
+export const BRAND_SOCIAL = {
+  instagram: "https://www.instagram.com/nurahelpco/",
+  facebook: "https://www.facebook.com/profile.php?id=61594147808052",
+} as const;
+
 export const BRAND_TAGLINE = "Support for therapy. Starting with EMDR.";
 
 export const BRAND_DESCRIPTION =

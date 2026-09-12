@@ -15,6 +15,10 @@ import {
   type BillingPlanMeta,
 } from "@/lib/billing-constants";
 import { APP_BASE } from "@/lib/app-base";
+import {
+  metaMoneyFromPlanPrice,
+  trackMetaEvent,
+} from "@/lib/meta-pixel";
 
 type BillingStatus = {
   accessTier: string;
@@ -41,6 +45,7 @@ function OnboardingFlow() {
   const checkout = params.get("checkout");
   const sessionId = params.get("session_id");
   const canceledPlan = params.get("plan");
+  const registered = params.get("registered");
 
   const [step, setStep] = useState<Step>("plan");
   const [afterAgeStep, setAfterAgeStep] = useState<Exclude<Step, "age">>("plan");
@@ -88,6 +93,19 @@ function OnboardingFlow() {
           }
         }
 
+        if (registered === "1" && typeof window !== "undefined") {
+          trackMetaEvent(
+            "CompleteRegistration",
+            { status: true, content_name: "google" },
+            { onceKey: "complete_registration" }
+          );
+          const url = new URL(window.location.href);
+          if (url.searchParams.has("registered")) {
+            url.searchParams.delete("registered");
+            window.history.replaceState({}, "", url.pathname + url.search);
+          }
+        }
+
         let nextStep: Exclude<Step, "age"> = "plan";
         let redirectAway = false;
 
@@ -104,6 +122,18 @@ function OnboardingFlow() {
             nextStep = "tutorial";
             if (checkout === "success") {
               setSuccess("Payment method saved. Your trial is ready.");
+              const money = metaMoneyFromPlanPrice(
+                data.plans?.[data.plan as BillingPlanId]?.displayPrice
+              );
+              trackMetaEvent(
+                "StartTrial",
+                {
+                  ...money,
+                  content_name: data.plan,
+                  content_category: "subscription",
+                },
+                { onceKey: "start_trial" }
+              );
             }
           }
         } else if (checkout === "canceled") {
@@ -140,7 +170,7 @@ function OnboardingFlow() {
     return () => {
       cancelled = true;
     };
-  }, [checkout, refreshStatus, router, sessionId]);
+  }, [checkout, refreshStatus, registered, router, sessionId]);
 
   const confirmAge = async () => {
     if (!ageConfirmed || busy) return;
@@ -180,6 +210,14 @@ function OnboardingFlow() {
         return;
       }
       if (data.url) {
+        const money = metaMoneyFromPlanPrice(
+          status?.plans?.[plan]?.displayPrice ?? BILLING_PLANS[plan].displayPrice
+        );
+        trackMetaEvent("InitiateCheckout", {
+          ...money,
+          content_name: plan,
+          content_category: "subscription",
+        });
         window.location.href = data.url;
         return;
       }

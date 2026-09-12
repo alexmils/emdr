@@ -39,6 +39,7 @@ import {
   type AdminNavItem,
 } from "@/lib/admin-nav";
 import { AdminSearch } from "@/app/components/admin/AdminSearch";
+import { AdminPushToggle } from "@/app/components/admin/AdminPushToggle";
 
 type AdminUser = {
   email: string;
@@ -419,6 +420,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         ) : null}
         <div className="admin-topbar">
           <AdminSearch isPlatformAdmin={user?.role === "platform_admin"} />
+          <AdminPushToggle />
         </div>
         {children}
       </div>

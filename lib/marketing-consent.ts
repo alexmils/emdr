@@ -42,9 +42,16 @@ export function isMarketingPublicPath(pathname: string): boolean {
   return matchesPrefix(path, PUBLIC_PREFIXES);
 }
 
-/** Where GTM / Clarity / GA4 may load (same as marketing public). */
+/** Where GTM / Clarity / GA4 may load (marketing + conversion funnels). */
 export function isGtmAllowedPath(pathname: string): boolean {
-  return isMarketingPublicPath(pathname);
+  if (isMarketingPublicPath(pathname)) return true;
+  const path = normalizePathname(pathname);
+  const funnels = [
+    "/app/create-account",
+    "/app/onboarding",
+    "/app/billing",
+  ] as const;
+  return funnels.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
 export function consentToMode(choice: ConsentChoice | null): ConsentModeState {

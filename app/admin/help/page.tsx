@@ -8,6 +8,7 @@ import {
   AdminSettingToggle,
   AdminSettingToggleStack,
 } from "@/app/components/admin/AdminSettingToggle";
+import HelpBubbleText from "@/app/components/HelpBubbleText";
 
 const TABS = ["inbox", "knowledge", "settings"] as const;
 type Tab = (typeof TABS)[number];
@@ -318,7 +319,7 @@ function HelpAdminInner() {
                         }`}
                       >
                         <span className="help-bubble-label">{m.role}</span>
-                        {m.content}
+                        <HelpBubbleText text={m.content} />
                       </div>
                     ))}
                   </div>
@@ -500,8 +501,8 @@ function HelpAdminInner() {
                   title="Email admins"
                   status={
                     settings.notifyAdminsByEmail
-                      ? "On — email on each new help message"
-                      : "Off — inbox only, no email"
+                      ? "On — one email per thread (guests: new IP only); later messages use push"
+                      : "Off — no email (push still works if enabled in the top bar)"
                   }
                   checked={settings.notifyAdminsByEmail}
                   tone={settings.notifyAdminsByEmail ? "ok" : "neutral"}

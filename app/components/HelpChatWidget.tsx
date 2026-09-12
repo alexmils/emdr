@@ -20,6 +20,7 @@ import {
 } from "@/app/components/TurnstileField";
 import { TURNSTILE_TOKEN_FIELD } from "@/lib/turnstile-shared";
 import { playHelpReplyPop } from "@/lib/help-reply-sound";
+import HelpBubbleText from "@/app/components/HelpBubbleText";
 
 const OPEN_EVENT = "emdr-open-help";
 const HELP_KEYBOARD_VAR = "--help-keyboard-inset";
@@ -392,6 +393,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
+            data-lenis-prevent
           >
             <header className="help-drawer-head">
               <div className="help-drawer-brand">
@@ -448,7 +450,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
                   {m.role === "admin" && (
                     <span className="help-bubble-label">Support</span>
                   )}
-                  {m.content}
+                  <HelpBubbleText text={m.content} />
                 </div>
               ))}
               {sending && (
@@ -536,6 +538,7 @@ export function HelpChatWidget({ showFab = true }: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={contactTitleId}
+            data-lenis-prevent
           >
             <h3 id={contactTitleId} className="help-contact-title">
               Before you leave

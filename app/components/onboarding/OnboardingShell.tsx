@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { BrandLockup } from "@/app/components/BrandLockup";
+import { ConversionTags } from "@/app/components/ConversionTags";
 import "@/app/components/frontend/frontend-fonts.css";
 import "@/app/components/frontend/frontend-buttons.css";
 import "./onboarding-shell.css";
@@ -27,14 +28,15 @@ export function OnboardingShell({
 }: OnboardingShellProps) {
   return (
     <div className="frontend-home ob-shell">
+      <ConversionTags />
       <div className="ob-shell-inner">
         <header className="ob-shell-header">
           <p className="ob-shell-brand">
             <BrandLockup href="/" tone="color" />
           </p>
           {kicker ? <p className="ob-kicker">{kicker}</p> : null}
-          <h1 className="ob-title">{title}</h1>
-          {lead ? <p className="ob-lead">{lead}</p> : null}
+          <h1 className="ob-title ui-page-title">{title}</h1>
+          {lead ? <p className="ob-lead ui-page-lead">{lead}</p> : null}
         </header>
 
         <div className="ob-panel">{children}</div>

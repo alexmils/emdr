@@ -238,7 +238,7 @@ export async function GET(request: Request) {
       needsOnboarding: entitlement.needsOnboarding,
       needsPayment: entitlement.needsPayment,
       canUseApp: entitlement.canUseApp,
-      next: isNew ? `${APP_BASE}/onboarding` : parsed.next,
+      next: isNew ? `${APP_BASE}/onboarding?registered=1` : parsed.next,
     });
 
     const res = NextResponse.redirect(new URL(dest, appBase));

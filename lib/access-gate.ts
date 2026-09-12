@@ -32,6 +32,15 @@ export function resolveAccessRedirect(input: AccessRedirectInput): string {
     return "/admin";
   }
   if (input.needsOnboarding) {
+    const next = input.next?.trim();
+    if (
+      next &&
+      (next === `${APP_BASE}/onboarding` ||
+        next.startsWith(`${APP_BASE}/onboarding?`) ||
+        next.startsWith(`${APP_BASE}/onboarding/`))
+    ) {
+      return safeAppNext(next, `${APP_BASE}/onboarding`);
+    }
     return `${APP_BASE}/onboarding`;
   }
   if (input.needsPayment && !input.canUseApp) {

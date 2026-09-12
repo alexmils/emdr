@@ -15,7 +15,7 @@ Whenever you **create or change a page / screen / layout / user-facing UI** (mar
 2. **/writing-copy** (`~/.cursor/skills/writing-copy/SKILL.md`) — clarity over cleverness; one idea per block; CTA says what happens; microcopy is actionable.
 3. **/frontend-design** (`~/.agents/skills/frontend-design/SKILL.md`) — hierarchy, type scale, spacing, contrast; not a generic SaaS card; brand still reads as Nura (see `nura-brand`).
 
-Also obey **nura-brand** (spoken Nura, no BLS jargon, pistachio tokens, marketing vs product type).
+Also obey **nura-brand** (spoken Nura, no BLS jargon, pistachio tokens, marketing vs product type). On **marketing** pages, also obey **marketing-no-explain-copy** — no body paragraphs that explain; show with hierarchy, cards, and visuals.
 
 ## If anything fails the review
 
@@ -26,6 +26,7 @@ Also obey **nura-brand** (spoken Nura, no BLS jargon, pistachio tokens, marketin
 ## Pass criteria (quick)
 
 - [ ] No repeated phrase across kicker / title / lead / CTA
+- [ ] Marketing: no explanatory body copy (see **marketing-no-explain-copy**)
 - [ ] A new user understands what to do in ~2 seconds
 - [ ] Type and spacing are readable on mobile (~390×844)
 - [ ] One clear primary action; secondary chrome does not compete

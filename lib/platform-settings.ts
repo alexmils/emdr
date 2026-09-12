@@ -126,6 +126,12 @@ export type PlatformSettings = {
    * Picked in Admin → Platform → General.
    */
   freeSessionChromeId: number;
+  /** Web Push VAPID for admin PWA (Help inbox). Env VAPID_* overrides when set. */
+  adminPush: {
+    publicKey: string;
+    privateKey: string;
+    subject: string;
+  };
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -168,6 +174,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   appLogoUrl: "",
   guidedChatChromeId: DEFAULT_GUIDED_CHAT_CHROME_ID,
   freeSessionChromeId: DEFAULT_FREE_SESSION_CHROME_ID,
+  adminPush: { publicKey: "", privateKey: "", subject: "" },
 };
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
@@ -308,6 +315,21 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     appLogoUrl: normalizeBrandAssetUrl(r.appLogoUrl),
     guidedChatChromeId: clampGuidedChatChromeId(r.guidedChatChromeId),
     freeSessionChromeId: clampFreeSessionChromeId(r.freeSessionChromeId),
+    adminPush: normalizeAdminPush(
+      (r as Partial<PlatformSettings>).adminPush
+    ),
+  };
+}
+
+function normalizeAdminPush(raw: unknown): PlatformSettings["adminPush"] {
+  if (!raw || typeof raw !== "object") {
+    return { publicKey: "", privateKey: "", subject: "" };
+  }
+  const r = raw as Partial<PlatformSettings["adminPush"]>;
+  return {
+    publicKey: typeof r.publicKey === "string" ? r.publicKey.trim() : "",
+    privateKey: typeof r.privateKey === "string" ? r.privateKey.trim() : "",
+    subject: typeof r.subject === "string" ? r.subject.trim() : "",
   };
 }
 

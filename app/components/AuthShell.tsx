@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { BrandLockup } from "@/app/components/BrandLockup";
 import { AuthSessionMockup } from "@/app/components/AuthSessionMockup";
+import { ConversionTags } from "@/app/components/ConversionTags";
 
 type AuthShellProps = {
   title: string;
@@ -33,29 +34,33 @@ export function AuthShell({
 
   return (
     <div className={`auth-shell${hideVisual ? " auth-shell--solo" : ""}`}>
+      <ConversionTags />
       <div className="auth-shell-pane auth-shell-pane--form">
-        {!hideHomeLink ? (
-          <Link href="/" className="auth-shell-home-link">
-            Home
-          </Link>
-        ) : null}
+        <header className="auth-shell-chrome">
+          <div className="auth-shell-brand">
+            <BrandLockup href="/" tone="color" />
+          </div>
+          {!hideHomeLink ? (
+            <Link href="/" className="auth-shell-home-link">
+              Home
+            </Link>
+          ) : (
+            <span className="auth-shell-chrome-end" aria-hidden="true" />
+          )}
+        </header>
 
         <div className={`auth-shell-main${alignClass}`}>
           <div className="auth-shell-body">
-            <div className="auth-shell-brand">
-              <BrandLockup href="/" tone="color" />
-            </div>
-
             <div className="auth-shell-intro">
               <h1
                 id="auth-shell-title"
-                className="auth-shell-title"
+                className="auth-shell-title ui-page-title"
                 tabIndex={-1}
               >
                 {title}
               </h1>
               {subtitle ? (
-                <p className="auth-shell-subtitle">{subtitle}</p>
+                <p className="auth-shell-subtitle ui-page-lead">{subtitle}</p>
               ) : null}
             </div>
 
@@ -168,10 +173,7 @@ export function AuthLink({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="text-footnote font-medium text-[var(--accent)] hover:underline"
-    >
+    <Link href={href} className="auth-link">
       {children}
     </Link>
   );

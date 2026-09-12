@@ -11,6 +11,24 @@ import {
   type PlatformSettings,
 } from "@/lib/platform-settings";
 
+/** Canonical public prices URL for help answers (home Prices section). */
+export const HELP_PRICES_URL = "https://nurahelp.com/#prices";
+
+const HELP_BILLING_BODY =
+  `New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of Free mode. After the trial, the chosen weekly, monthly, or yearly plan renews. Current public prices: ${HELP_PRICES_URL} . To change or cancel after signing in, use Billing → Manage billing in the app. Never name payment processors in replies.`;
+
+const HELP_PRICING_BODY =
+  `When someone asks about price, cost, or plans, send them to ${HELP_PRICES_URL} (Prices on the home page). Do not invent dollar amounts. Do not tell them to open a customer portal only to see prices. Never name payment processors or payment brands in replies.`;
+
+/** Scrub vendor names and stale portal wording from stored help copy. */
+export function rewriteHelpKnowledgeCopy(text: string): string {
+  return rewriteRetiredBrandCopy(text)
+    .replace(/\s*\(Stripe Customer Portal\)\.?/gi, ".")
+    .replace(/Stripe Customer Portal/gi, "Manage billing in the app")
+    .replace(/\bvia Stripe\b/gi, "in the app")
+    .replace(/\bStripe\b/gi, "billing");
+}
+
 export type HelpThreadStatus = "open" | "waiting" | "resolved";
 export type HelpMessageRole = "user" | "assistant" | "admin";
 
@@ -110,6 +128,13 @@ export async function ensureHelpSchema(): Promise<void> {
     ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS contact_captured_at TIMESTAMPTZ;
     ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ;
     ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS transcript_sent_at TIMESTAMPTZ;
+    ALTER TABLE help_threads ADD COLUMN IF NOT EXISTS admin_email_sent_at TIMESTAMPTZ;
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS help_admin_email_ips (
+      ip_hash TEXT PRIMARY KEY,
+      sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
   await db.query(`
     UPDATE help_threads
@@ -136,8 +161,13 @@ export async function ensureHelpSchema(): Promise<void> {
       },
       {
         title: "Billing and trial",
-        body: "New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of Free mode. After the trial, the chosen weekly, monthly, or yearly plan renews. Manage or cancel from Billing → Manage billing (Stripe Customer Portal).",
+        body: HELP_BILLING_BODY,
         tags: ["billing", "trial"],
+      },
+      {
+        title: "Pricing",
+        body: HELP_PRICING_BODY,
+        tags: ["billing", "pricing", "prices"],
       },
       {
         title: "Session modes",
@@ -159,9 +189,52 @@ export async function ensureHelpSchema(): Promise<void> {
     }
   }
 
+  await syncCanonicalHelpKnowledge(db);
   await remapRetiredHelpKnowledge(db);
 
   helpSchemaDone = true;
+}
+
+async function syncCanonicalHelpKnowledge(
+  db: ReturnType<typeof getPool>
+): Promise<void> {
+  const docs: { title: string; body: string; tags: string[] }[] = [
+    {
+      title: "Billing and trial",
+      body: HELP_BILLING_BODY,
+      tags: ["billing", "trial"],
+    },
+    {
+      title: "Pricing",
+      body: HELP_PRICING_BODY,
+      tags: ["billing", "pricing", "prices"],
+    },
+  ];
+  for (const doc of docs) {
+    const { rows } = await db.query<{ id: string; body: string }>(
+      `SELECT id, body FROM help_knowledge WHERE title = $1 LIMIT 1`,
+      [doc.title]
+    );
+    const existing = rows[0];
+    if (!existing) {
+      await db.query(
+        `INSERT INTO help_knowledge (id, title, body, tags, enabled, created_at, updated_at)
+         VALUES ($1,$2,$3,$4::jsonb,TRUE,NOW(),NOW())`,
+        [crypto.randomUUID(), doc.title, doc.body, JSON.stringify(doc.tags)]
+      );
+      continue;
+    }
+    const needsRefresh =
+      /stripe/i.test(existing.body) ||
+      !existing.body.includes("nurahelp.com/#prices");
+    if (!needsRefresh) continue;
+    await db.query(
+      `UPDATE help_knowledge
+       SET body = $1, tags = $2::jsonb, updated_at = NOW()
+       WHERE id = $3`,
+      [doc.body, JSON.stringify(doc.tags), existing.id]
+    );
+  }
 }
 
 async function remapRetiredHelpKnowledge(
@@ -171,8 +244,8 @@ async function remapRetiredHelpKnowledge(
     `SELECT id, title, body FROM help_knowledge`
   );
   for (const row of rows) {
-    const title = rewriteRetiredBrandCopy(row.title);
-    const body = rewriteRetiredBrandCopy(row.body);
+    const title = rewriteHelpKnowledgeCopy(row.title);
+    const body = rewriteHelpKnowledgeCopy(row.body);
     if (title === row.title && body === row.body) continue;
     await db.query(
       `UPDATE help_knowledge SET title = $1, body = $2, updated_at = NOW() WHERE id = $3`,

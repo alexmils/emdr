@@ -1,5 +1,25 @@
+import type { Metadata, Viewport } from "next";
 import { AdminShell } from "@/app/components/admin/AdminShell";
 import { ToastProvider } from "@/app/components/Toast";
+
+export const metadata: Metadata = {
+  title: "Nura Admin",
+  applicationName: "Nura Admin",
+  manifest: "/admin/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Nura Admin",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: "/brand/nura-circle-variants/A-white-on-sage-128.png",
+    apple: "/brand/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#3D4129",
+};
 
 export default function AdminLayout({
   children,

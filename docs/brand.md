@@ -52,7 +52,7 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 ### Product (`/app`, `.app-shell`)
 
 - **Source Sans 3 only** (`--font-sans`) for titles, body, and chrome
-- `.app-shell` / `.settings-shell` remap `--font-display` → `--font-sans` (no ornamental Fraunces in product)
+- `.app-shell` / `.settings-shell` / `.auth-shell` remap `--font-display` → `--font-sans` (no ornamental Fraunces in product or auth)
 
 ### Admin (`/admin`, `.admin-shell`)
 

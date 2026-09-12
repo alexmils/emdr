@@ -15,6 +15,10 @@ describe("homepage JSON-LD", () => {
     ]);
     assert.equal(data["@graph"][0]?.name, BRAND_SPOKEN);
     assert.equal(data["@graph"][0]?.legalName, "Receptly LLC");
+    assert.deepEqual(data["@graph"][0]?.sameAs, [
+      "https://www.instagram.com/nurahelpco/",
+      "https://www.facebook.com/profile.php?id=61594147808052",
+    ]);
     assert.equal(data["@graph"][1]?.operatingSystem, "Web");
     assert.equal(data["@graph"][1]?.name, BRAND_SPOKEN);
   });

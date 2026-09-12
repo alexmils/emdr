@@ -20,6 +20,19 @@ import type {
 } from "@/lib/site-analytics-types";
 import type { SeoPageId } from "@/lib/seo-config";
 import { fileToOgImageDataUrl } from "@/lib/avatar-client";
+import { parseAnalyticsIgnoreIps } from "@/lib/analytics-ignore";
+
+function ignoreIpRowsFromRaw(raw: string): string[] {
+  const list = parseAnalyticsIgnoreIps(raw);
+  return list.length > 0 ? list : [""];
+}
+
+function ignoreIpsFromRows(rows: string[]): string {
+  return rows
+    .map((row) => row.trim())
+    .filter(Boolean)
+    .join(", ");
+}
 
 const TABS = [
   "overview",
@@ -149,6 +162,9 @@ function ConnectionConnectModal({
   onOpenGtm: () => void;
 }) {
   const [draft, setDraft] = useState(initial);
+  const [ipRows, setIpRows] = useState(() =>
+    ignoreIpRowsFromRaw(initial.ignoreIps)
+  );
   const [check, setCheck] = useState<SeoConnCheck>({ status: "idle" });
   const [testing, setTesting] = useState(false);
   const titles: Record<ConnId, string> = {
@@ -349,19 +365,65 @@ function ConnectionConnectModal({
                   Visits from these addresses skip Analytics, Clarity, and Tag
                   Manager.
                 </p>
-                <label className="admin-field-label">
-                  IP addresses
-                  <input
-                    className="field"
-                    placeholder="1.2.3.4, 5.6.7.8"
-                    value={draft.ignoreIps}
-                    disabled={busy}
-                    autoFocus
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, ignoreIps: e.target.value }))
-                    }
-                  />
-                </label>
+                <div className="admin-field-label">
+                  <span>IP addresses</span>
+                  <div className="admin-ip-list">
+                    {ipRows.map((ip, index) => (
+                      <div key={index} className="admin-ip-row">
+                        <input
+                          className="field admin-ip-input"
+                          placeholder="1.2.3.4"
+                          value={ip}
+                          disabled={busy}
+                          autoFocus={index === 0}
+                          aria-label={`Ignored IP ${index + 1}`}
+                          onChange={(e) => {
+                            const next = ipRows.map((row, i) =>
+                              i === index ? e.target.value : row
+                            );
+                            setIpRows(next);
+                            setDraft((d) => ({
+                              ...d,
+                              ignoreIps: ignoreIpsFromRows(next),
+                            }));
+                          }}
+                        />
+                        {ipRows.length > 1 ? (
+                          <button
+                            type="button"
+                            className="btn btn-ghost admin-ip-remove"
+                            disabled={busy}
+                            aria-label={`Remove IP ${index + 1}`}
+                            onClick={() => {
+                              const next = ipRows.filter((_, i) => i !== index);
+                              const rows = next.length > 0 ? next : [""];
+                              setIpRows(rows);
+                              setDraft((d) => ({
+                                ...d,
+                                ignoreIps: ignoreIpsFromRows(rows),
+                              }));
+                            }}
+                          >
+                            Remove
+                          </button>
+                        ) : null}
+                        {index === ipRows.length - 1 ? (
+                          <button
+                            type="button"
+                            className="btn btn-ghost admin-ip-add"
+                            disabled={busy}
+                            onClick={() => {
+                              const next = [...ipRows, ""];
+                              setIpRows(next);
+                            }}
+                          >
+                            Add
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </>
             ) : null}
 

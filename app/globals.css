@@ -59,6 +59,18 @@
   --ui-control: 1.0625rem;
   --ui-control-h: 3rem;
 
+  /*
+   * Page intro pairing (auth / onboarding / session gates) — Source Sans only.
+   * Thick title + thin large lead (~55–60% of title size), Linear/Notion-style.
+   */
+  --ui-page-title-size: clamp(1.75rem, 4vw, 2.25rem);
+  --ui-page-title-weight: 700;
+  --ui-page-title-tracking: -0.03em;
+  --ui-page-title-leading: 1.15;
+  --ui-page-lead-size: clamp(1.0625rem, 2.5vw, 1.25rem);
+  --ui-page-lead-weight: 300;
+  --ui-page-lead-leading: 1.5;
+
   /* Settings aliases (work outside .settings-shell too) */
   --settings-title: var(--ui-display);
   --settings-section: var(--ui-headline);
@@ -108,6 +120,27 @@ button {
   font-size: var(--ui-title);
   font-weight: 600;
   line-height: 1.3;
+}
+
+/* Shared page intro: heavy title + thin large lead (Source Sans) */
+.ui-page-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--ui-page-title-size);
+  font-weight: var(--ui-page-title-weight);
+  letter-spacing: var(--ui-page-title-tracking);
+  line-height: var(--ui-page-title-leading);
+  color: var(--ink, #2a3020);
+}
+
+.ui-page-lead {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--ui-page-lead-size);
+  font-weight: var(--ui-page-lead-weight);
+  line-height: var(--ui-page-lead-leading);
+  color: var(--text-secondary);
+  max-width: 24rem;
 }
 
 .text-headline {
@@ -201,6 +234,10 @@ button {
 .app-shell h6 {
   font-family: var(--font-sans);
   font-weight: 600;
+}
+
+.app-shell h1 {
+  font-weight: var(--ui-page-title-weight);
 }
 
 .app-sidebar {
@@ -807,18 +844,20 @@ body:has(.app-shell.session-immersive) .help-fab {
 .session-start-title {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: var(--ui-title);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  font-size: var(--ui-page-title-size);
+  font-weight: var(--ui-page-title-weight);
+  letter-spacing: var(--ui-page-title-tracking);
+  line-height: var(--ui-page-title-leading);
   color: var(--text);
 }
 
 .session-start-subtitle {
   margin: 0.65rem 0 0;
-  font-size: var(--ui-muted);
+  font-family: var(--font-sans);
+  font-size: var(--ui-page-lead-size);
+  font-weight: var(--ui-page-lead-weight);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: var(--ui-page-lead-leading);
 }
 
 .session-start-cards {
@@ -6981,10 +7020,59 @@ body:has(.app-shell.session-immersive) .help-fab {
   z-index: 20;
   display: flex;
   align-items: center;
+  gap: 0.75rem;
   padding: 0.85rem 2rem;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
   backdrop-filter: blur(8px);
+}
+
+.admin-push-wrap {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.admin-push-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-page, #edf9ed);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-push-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.admin-push-btn-on {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-page));
+  color: var(--accent);
+}
+
+.admin-push-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.admin-push-hint {
+  margin: 0;
+  max-width: 14rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  text-align: right;
 }
 
 .admin-search {
@@ -7140,6 +7228,26 @@ body:has(.app-shell.session-immersive) .help-fab {
 @media (max-width: 640px) {
   .admin-topbar {
     padding: 0.7rem 1.15rem;
+  }
+
+  .admin-push-btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .admin-push-btn {
+    padding: 0 0.65rem;
+  }
+
+  .admin-push-hint {
+    display: none;
   }
 
   .admin-mode-banner {
@@ -8819,13 +8927,26 @@ select.field option:disabled {
 }
 
 /* —— Auth shell: split form + session mockup —— */
+/* Product auth: Source Sans only — Fraunces stays on marketing (.frontend-home) */
 .auth-shell {
   --auth-form-max: 26rem;
+  --font-display: var(--font-sans);
   display: flex;
   min-height: 100dvh;
   width: 100%;
   background: #fff;
   color: var(--ink, #2a3020);
+  font-family: var(--font-sans);
+}
+
+.auth-shell h1,
+.auth-shell h2,
+.auth-shell h3,
+.auth-shell h4,
+.auth-shell h5,
+.auth-shell h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--ui-page-title-weight);
 }
 
 .auth-shell-pane--form {
@@ -8839,20 +8960,53 @@ select.field option:disabled {
     max(1.25rem, env(safe-area-inset-bottom));
 }
 
+/* Top chrome: logo + Home on one row, vertically centered */
+.auth-shell-chrome {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-height: 2.25rem;
+  margin: 0 0 1.35rem;
+}
+
+.auth-shell-brand {
+  grid-column: 2;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+.auth-shell-brand .brand-logo {
+  height: 2.1rem;
+  max-width: min(16rem, 70vw);
+}
+
+.auth-shell-home-link,
+.auth-shell-chrome-end {
+  grid-column: 3;
+  justify-self: end;
+}
+
 .auth-shell-home-link {
-  position: absolute;
-  top: max(1rem, env(safe-area-inset-top));
-  right: 1.25rem;
   z-index: 2;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  line-height: 1;
+  color: var(--sage, #84b067);
   text-decoration: none;
 }
 
 .auth-shell-home-link:hover {
-  color: var(--earth, #84b067);
+  color: var(--accent-hover, #6f9a58);
   text-decoration: underline;
+}
+
+.auth-shell-home-link:focus-visible {
+  outline: 2px solid var(--pistachio, #c6d67e);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .auth-shell-main {
@@ -8871,18 +9025,6 @@ select.field option:disabled {
   padding-bottom: 1rem;
 }
 
-/* Mobile: logo centered above the title */
-.auth-shell-brand {
-  display: flex;
-  justify-content: center;
-  margin: 0 0 1.35rem;
-}
-
-.auth-shell-brand .brand-logo {
-  height: 2.1rem;
-  max-width: min(16rem, 70vw);
-}
-
 .auth-shell-intro {
   margin-bottom: 1.5rem;
   text-align: left;
@@ -8893,18 +9035,14 @@ select.field option:disabled {
   text-align: center;
 }
 
-.auth-shell-main--center .auth-shell-subtitle {
+.auth-shell-main--center .auth-shell-subtitle,
+.auth-shell-main--center .ui-page-lead {
   margin-left: auto;
   margin-right: auto;
 }
 
 .auth-shell-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  /* Size/weight from .ui-page-title tokens */
   color: var(--ink, #2a3020);
 }
 
@@ -8918,10 +9056,7 @@ select.field option:disabled {
 }
 
 .auth-shell-subtitle {
-  margin: 0.5rem 0 0;
-  font-size: 0.9375rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
+  /* Size/weight from .ui-page-lead tokens */
   max-width: 22rem;
 }
 
@@ -8988,6 +9123,42 @@ select.field option:disabled {
   color: var(--text-secondary);
 }
 
+.auth-shell-body:has(.auth-alt-methods) .auth-shell-footer {
+  margin-top: 2rem;
+}
+
+.auth-alt-methods {
+  margin-top: 1.25rem;
+}
+
+.auth-alt-methods-divider {
+  margin: 0 0 1.25rem;
+}
+
+.auth-alt-methods-passkey {
+  margin-top: 0.75rem;
+}
+
+.auth-passkey-hint {
+  margin: 0.875rem auto 0;
+  max-width: 20rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Account CTAs (Sign in / Create one) — keep accent; legal overrides below */
+.auth-link {
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--accent, #84b067);
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
 .auth-method-stack {
   display: flex;
   flex-direction: column;
@@ -9048,6 +9219,23 @@ select.field option:disabled {
   line-height: 1.4;
   color: var(--text-secondary);
   text-align: center;
+}
+
+/* Terms/Privacy: same size/weight/color as legal sentence — not accent CTAs */
+.auth-method-legal .auth-link,
+.ob-age-legal .auth-link {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.auth-method-legal .auth-link:hover,
+.ob-age-legal .auth-link:hover {
+  color: var(--text, #2a3020);
+  text-decoration-color: currentColor;
 }
 
 .auth-method-back {
@@ -9223,9 +9411,9 @@ select.field option:disabled {
 
 .auth-visual-title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--ink, #2a3020);
@@ -9233,9 +9421,47 @@ select.field option:disabled {
 
 .auth-visual-lead {
   margin: 0.55rem 0 0;
-  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  font-weight: 300;
   line-height: 1.45;
   color: color-mix(in srgb, var(--ink, #2a3020) 58%, transparent);
+}
+
+/* Quiet follow-us — not social-login pills */
+.auth-visual-social-wrap {
+  margin-top: 1.35rem;
+}
+
+.auth-visual-social {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.auth-visual-social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink, #2a3020) 48%, transparent);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.auth-visual-social-link:hover {
+  color: var(--sage, #84b067);
+  background: color-mix(in srgb, var(--sage, #84b067) 12%, transparent);
+}
+
+.auth-visual-social-link:focus-visible {
+  outline: 2px solid var(--pistachio, #c6d67e);
+  outline-offset: 2px;
 }
 
 @keyframes auth-ball-sweep {
@@ -9260,11 +9486,6 @@ select.field option:disabled {
     padding: 1.5rem 2rem 2rem;
   }
 
-  .auth-shell-home-link {
-    top: 1.5rem;
-    right: 2rem;
-  }
-
   .auth-shell-title {
     font-size: 2.25rem;
   }
@@ -9277,23 +9498,27 @@ select.field option:disabled {
   }
 
   .auth-shell-pane--form {
-    /* Reserve space so absolute brand/Home never sit on top of tall forms */
-    padding: 5.25rem 3rem 2.5rem;
+    padding: 1.85rem 3rem 2.5rem;
     border-right: 1px solid color-mix(in srgb, var(--ink, #2a3020) 6%, transparent);
   }
 
-  .auth-shell-home-link {
-    top: 1.85rem;
-    right: 3rem;
+  /* Desktop: logo left, Home right — same row, vertically centered */
+  .auth-shell-chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
   }
 
-  /* Desktop: logo top-left of the form pane (Qatalog-style chrome) */
   .auth-shell-brand {
-    position: absolute;
-    top: 1.85rem;
-    left: 3rem;
-    margin: 0;
+    grid-column: auto;
     justify-content: flex-start;
+  }
+
+  .auth-shell-home-link,
+  .auth-shell-chrome-end {
+    grid-column: auto;
+    justify-self: auto;
   }
 
   .auth-shell-main {
@@ -9806,7 +10031,7 @@ select.field option:disabled {
 
 .help-drawer {
   --help-panel-max: min(
-    32rem,
+    38rem,
     calc(
       100dvh - 2rem - env(safe-area-inset-top, 0px) -
         env(safe-area-inset-bottom, 0px) - var(--help-keyboard-inset, 0px)
@@ -9819,7 +10044,7 @@ select.field option:disabled {
   );
   display: flex;
   flex-direction: column;
-  width: min(calc(100% - 2rem), 22.5rem);
+  width: min(calc(100% - 2rem), 26rem);
   height: var(--help-panel-max);
   max-height: var(--help-panel-max);
   pointer-events: auto;
@@ -9828,6 +10053,7 @@ select.field option:disabled {
   border-radius: 16px;
   box-shadow: 0 16px 48px rgba(42, 48, 32, 0.18);
   overflow: hidden;
+  overscroll-behavior: contain;
   animation: help-drawer-in 0.22s var(--ease, ease-out);
 }
 
@@ -9847,6 +10073,7 @@ select.field option:disabled {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-shrink: 0;
   padding: 0.9rem 1rem 0.75rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-elevated);
@@ -9900,9 +10127,12 @@ select.field option:disabled {
 }
 
 .help-drawer-body {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
@@ -9921,6 +10151,7 @@ select.field option:disabled {
 }
 
 .help-drawer-foot {
+  flex-shrink: 0;
   padding: 0.75rem 1rem 0.85rem;
   border-top: 1px solid var(--border);
   background: var(--bg-elevated);
@@ -10157,6 +10388,22 @@ a.help-drawer-signin.btn-primary {
   font-weight: 600;
   text-transform: capitalize;
   opacity: 0.75;
+}
+
+.help-bubble-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.help-bubble-user .help-bubble-link {
+  color: inherit;
+}
+
+.help-bubble-assistant .help-bubble-link,
+.help-bubble-admin .help-bubble-link {
+  color: var(--accent);
 }
 
 .help-admin-grid {
@@ -10660,6 +10907,31 @@ a.help-drawer-signin.btn-primary {
   gap: 0.85rem;
 }
 
+.admin-ip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-ip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin-ip-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.admin-ip-add,
+.admin-ip-remove {
+  flex-shrink: 0;
+  min-height: 2.5rem;
+  padding-inline: 0.85rem;
+}
+
 .admin-seo-og-preview {
   width: 9.5rem;
   height: 5rem;
@@ -10961,10 +11233,10 @@ a.help-drawer-signin.btn-primary {
 .workspace-main h2.informed-consent-title {
   margin: 0 0 0.65rem;
   font-family: var(--font-sans);
-  font-size: clamp(1.5rem, 4.5vw, 1.875rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  font-size: var(--ui-page-title-size);
+  font-weight: var(--ui-page-title-weight);
+  letter-spacing: var(--ui-page-title-tracking);
+  line-height: var(--ui-page-title-leading);
   font-optical-sizing: none;
   font-variation-settings: normal;
   color: var(--text, #2a3020);
@@ -10973,10 +11245,10 @@ a.help-drawer-signin.btn-primary {
 .informed-consent-title {
   margin: 0 0 0.65rem;
   font-family: var(--font-sans);
-  font-size: clamp(1.5rem, 4.5vw, 1.875rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  font-size: var(--ui-page-title-size);
+  font-weight: var(--ui-page-title-weight);
+  letter-spacing: var(--ui-page-title-tracking);
+  line-height: var(--ui-page-title-leading);
   font-optical-sizing: none;
   font-variation-settings: normal;
   color: var(--text, #2a3020);
@@ -10984,8 +11256,10 @@ a.help-drawer-signin.btn-primary {
 
 .informed-consent-lead {
   margin: 0 0 1.15rem;
-  font-size: 1.125rem;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: var(--ui-page-lead-size);
+  font-weight: var(--ui-page-lead-weight);
+  line-height: var(--ui-page-lead-leading);
   color: var(--text-secondary, #6b7160);
 }
 

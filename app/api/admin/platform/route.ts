@@ -10,43 +10,53 @@ import {
 } from "@/lib/platform-settings";
 import { clientIp, writeAuditEvent } from "@/lib/audit-log";
 
+/** Strip secrets before sending Platform settings to the browser. */
+function redactPlatformSettings(settings: PlatformSettings): PlatformSettings {
+  return {
+    ...settings,
+    stripe: {
+      demoMode: settings.stripe.demoMode,
+      sandbox: {
+        ...settings.stripe.sandbox,
+        secretKey: "",
+        webhookSecret: "",
+      },
+      live: {
+        ...settings.stripe.live,
+        secretKey: "",
+        webhookSecret: "",
+      },
+    },
+    email: {
+      ...settings.email,
+      brevoApiKey: "",
+      gmailClientId: "",
+      gmailClientSecret: "",
+      gmailRefreshToken: "",
+    },
+    seo: {
+      ...settings.seo,
+      gscVerification: "",
+      bingVerification: "",
+      googleServiceAccountJson: "",
+    },
+    adminPush: {
+      publicKey: settings.adminPush.publicKey ? "[set]" : "",
+      privateKey: "",
+      subject: settings.adminPush.subject || "",
+    },
+  };
+}
+
 export async function GET() {
   const auth = await requirePlatformSettingsAccess();
   if (!isAuthContext(auth)) return auth;
 
   try {
     const settings = await getPlatformSettings();
-    // Stripe / email secrets are edited on dedicated admin pages — never send to Platform UI.
+    // Stripe / email / SEO / VAPID secrets — never send to Platform UI.
     return NextResponse.json({
-      settings: {
-        ...settings,
-        stripe: {
-          demoMode: settings.stripe.demoMode,
-          sandbox: {
-            ...settings.stripe.sandbox,
-            secretKey: "",
-            webhookSecret: "",
-          },
-          live: {
-            ...settings.stripe.live,
-            secretKey: "",
-            webhookSecret: "",
-          },
-        },
-        email: {
-          ...settings.email,
-          brevoApiKey: "",
-          gmailClientId: "",
-          gmailClientSecret: "",
-          gmailRefreshToken: "",
-        },
-        seo: {
-          ...settings.seo,
-          gscVerification: "",
-          bingVerification: "",
-          googleServiceAccountJson: "",
-        },
-      },
+      settings: redactPlatformSettings(settings),
     });
   } catch (err) {
     console.error("[admin/platform GET]", err);
@@ -93,7 +103,7 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Stripe / email credentials are managed on dedicated admin routes.
+    // Stripe / email / SEO / VAPID credentials are not edited on this page.
     const next = await savePlatformSettings({
       ...current,
       ...body,
@@ -110,6 +120,7 @@ export async function PUT(request: Request) {
       stripe: current.stripe,
       email: current.email,
       seo: current.seo,
+      adminPush: current.adminPush,
     });
 
     await writeAuditEvent({
@@ -124,35 +135,7 @@ export async function PUT(request: Request) {
     });
 
     return NextResponse.json({
-      settings: {
-        ...next,
-        stripe: {
-          demoMode: next.stripe.demoMode,
-          sandbox: {
-            ...next.stripe.sandbox,
-            secretKey: "",
-            webhookSecret: "",
-          },
-          live: {
-            ...next.stripe.live,
-            secretKey: "",
-            webhookSecret: "",
-          },
-        },
-        email: {
-          ...next.email,
-          brevoApiKey: "",
-          gmailClientId: "",
-          gmailClientSecret: "",
-          gmailRefreshToken: "",
-        },
-        seo: {
-          ...next.seo,
-          gscVerification: "",
-          bingVerification: "",
-          googleServiceAccountJson: "",
-        },
-      },
+      settings: redactPlatformSettings(next),
     });
   } catch (err) {
     console.error("[admin/platform PUT]", err);

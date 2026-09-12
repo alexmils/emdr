@@ -238,6 +238,10 @@
   gap: 0.5rem;
 }
 
+.fe-site-footer-social-brand {
+  display: contents;
+}
+
 .fe-site-footer-social-link {
   display: inline-flex;
   align-items: center;

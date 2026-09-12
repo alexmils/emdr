@@ -355,9 +355,13 @@ describe("marketing consent paths", () => {
     assert.ok(!isMarketingPublicPath("/admin/seo"));
   });
 
-  it("gates GTM to the same marketing paths", () => {
+  it("allows GTM on marketing and conversion funnels", () => {
     assert.ok(isGtmAllowedPath("/emdr"));
+    assert.ok(isGtmAllowedPath("/app/create-account"));
+    assert.ok(isGtmAllowedPath("/app/onboarding"));
+    assert.ok(isGtmAllowedPath("/app/billing"));
     assert.ok(!isGtmAllowedPath("/app/settings"));
+    assert.ok(!isGtmAllowedPath("/app/login"));
   });
 
   it("maps consent to Google Consent Mode", () => {

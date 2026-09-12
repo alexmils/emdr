@@ -80,8 +80,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Public **`GET /health`**: cheap app + Postgres probe (200/503 JSON) for Coolify and Docker; Dockerfile `HEALTHCHECK` hits `/health` instead of `/`
 - **Guest help chat**: marketing Need help works without sign-in via HttpOnly `nura_help_visitor` cookie; exit-intent name+email capture; Turnstile `help-guest`; auto transcript email ~1h after last activity (`/api/cron/help-guest-transcripts` + `CRON_SECRET`); admin inbox shows guest threads
 - **Help chat AI provider/model**: Admin → Help → Settings can pin DeepSeek / OpenAI / Claude and a model for Need help (empty = platform default from AI & Voice); default **OpenAI `gpt-5-nano`** (cheapest FAQ lane; guided sessions stay on `gpt-4.1-mini`)
+- **Meta Pixel conversion events**: `CompleteRegistration` (email + Google signup), `InitiateCheckout`, `StartTrial` (onboarding checkout success), `Subscribe` / `Purchase` (billing upgrade / activate); GTM on create-account / onboarding / billing via `ConversionTags` + `lib/meta-pixel.ts`
 
 ### Changed
+- **Cursor rule `marketing-no-explain-copy`**: marketing surfaces must not use body text to explain — hierarchy, cards, labels, visuals + CTA; linked from `page-copy-design-review` and `nura-brand`
+- **Login passkey hint**: Google/passkey block grouped in `.auth-alt-methods`; hint uses `.auth-passkey-hint` with more line-height and `2rem` footer gap on login (less cramped vs Reset it / Create one)
+- **Product page type pairing** (`/app` + auth + onboarding): shared `--ui-page-title-*` / `--ui-page-lead-*` tokens + `.ui-page-title` / `.ui-page-lead` — Source Sans **700** title (`clamp` 1.75–2.25rem) + **300** lead (~1.06–1.25rem, muted); wired on AuthShell, OnboardingShell, session start, informed consent
+- **Auth chrome**: logo + Home in one `.auth-shell-chrome` row (vertically centered); Home uses sage `#84B067`; Instagram/Facebook moved to right visual pane as quiet follow-us icons (not form footer); SEO visual copy “Self-help EMDR” / “EMDR therapy online” / AI agent-guided + Free visual sets; Terms/Privacy in `.auth-method-legal` inherit muted sentence size (accent kept for Sign in / Create one)
 - **Legal / long-form type**: `/terms` + `/privacy` use Source Sans 3 (headings 600) — Fraunces reserved for marketing hero/section titles only; documented in `docs/brand.md`, `nura-brand`, `nura-ui-designer`
 - **`/terms` Termly body**: strip all inline Word/Termly styles (gray `#595959`, 11pt, white span chips); unified ink color, weight 400 body / 600 headings, ~1.125rem size so sections read evenly
 - **Legal contact**: public support emails removed; **Need help** opens the help chat (`HelpChatLink` / Termly `data-open-help`); marketing help drawer stays usable on narrow screens when opened from a link
@@ -91,11 +96,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Feedback NPS overlay**: stronger olive dim (~62% ink) + frosted `backdrop-filter` blur so content behind the modal stays unreadable
 - **Admin shell spacing**: wider canvas gutters (topbar / banner / page header / main ~2rem), slightly roomier sidebar inset; Feedback page wraps content in `admin-main` (was flush to the edge)
 - **Admin copy**: drop marketing/disclaimer subtitles (“not the logged-in app”, “not shown publicly”, etc.) — short operational lines only (Feedback, SEO, Resources, Overview, Help)
+- **Footer social**: Instagram + Facebook icons beside the footer lockup (`BRAND_SOCIAL` in `lib/brand.ts`); Organization JSON-LD `sameAs` updated; same icons under the account link on auth screens via `BrandSocialLinks` in `AuthShell`
 - **`/terms`**: hosts prepared Termly Terms of Service HTML (`content/legal/terms-of-service.termly.html` → `lib/legal/terms-body.generated.ts`) with in-page TOC jump links + Nura product-notice addendum (not therapy / risk / crisis / agent / account delete); Termly free plan cannot publish a second policy
 - **App account menu**: Help flyout opens on hover — plain list (Privacy policy, Cookie policy, Terms of service), no icons; tap toggles on mobile
 - **18+ age confirm**: moved off create-account into first onboarding step after signup (`POST /api/consents` `age_18`); create-account keeps Terms/Privacy only; age copy “Are you 18 or older?”; **all** onboarding titles use Source Sans (no Fraunces); larger wave lockup; plan step drops “Getting started” kicker; trial note leads with **AI-guided** sessions + Free session time, card saved, no charge for N days (explicit AI override vs usual nura-brand “don’t lead with AI”)
 - **Informed consent gate**: Source Sans title (no Fraunces); larger lead + checklist type; session header trail (Charges + “I need help now”) vertically centered with title + not-therapy strip; mobile trail no longer `display: contents` (was escaping to the top)
-- **/app typography**: Fraunces removed from product chrome (`.app-shell` remaps `--font-display` → Source Sans); Fraunces stays marketing-only (`.frontend-home` hero / sections)
+- **/app typography**: Fraunces removed from product chrome (`.app-shell` + `.auth-shell` remap `--font-display` → Source Sans); Fraunces stays marketing-only (`.frontend-home` hero / sections)
 - **Session not-therapy strip**: “Not a therapist. Not for emergencies.” (replaces unclear “Self-help support — …”)
 - **/app AI-guided copy**: sidebar upgrade, mode picker, home empty, UpgradeModal — “AI-guided” (matches onboarding trial note)
 - **Mobile session header**: disclaimer on its own row under title; hide “Charges in…” on narrow; crisis pill short label “Need help”
@@ -201,6 +207,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Clarity public tag: load on marketing pages + pass `consentv2` (cookies off until analytics accept); enable Consent Mode in the Clarity project; Privacy cookie copy updated (`MarketingTags`, `lib/marketing-consent.ts`)
 - GA4: after Accept analytics cookies, fire a `page_view` immediately (denied→granted) so Realtime / “No data received” can clear without a second navigation
 - Marketing tags: client loads live IDs from `GET /api/marketing/tags` so ISR/Docker builds without DB never ship empty GA4/GTM/Clarity after deploy
+- Admin SEO Ignored IPs: multi-row inputs with Add / Remove (still saved as one comma-separated list)
 - App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
 - App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
 - App Help flyout opens upward so Terms sits level with Help (not hanging into the foot / status bar)
@@ -421,7 +428,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Help guest contact**: drop in-chat “Leave your email…” link — name/email modal only on close chat / leave tab (after they messaged)
 - **Help chat chrome**: sage circle mark (`A-white-on-sage`) in header; 3-dot typing bubble while waiting for the assistant reply
 - **Help reply sound**: soft Web Audio bubble-pop when the assistant message arrives
-- **Help leave-chat modal copy**: “Before you leave” — without email we can’t follow up; CTA “Keep in touch by email” (support exit-intent pattern)
+- **Help pricing answers**: never name payment brands; price questions get a link to `https://nurahelp.com/#prices` (home Prices). Knowledge seeds + system prompt updated; help bubbles linkify URLs
+- **Help admin notify**: email at most once per thread (guests: only from a new IP); Web Push for Admin PWA via top-bar **Alerts** (`/admin/sw.js`, VAPID auto or `VAPID_*` env)
+- **Help notify hardening**: Platform API redacts/locks `adminPush` VAPID secrets; email claim rolls back if send fails; atomic per-IP email claim; VAPID generate under advisory lock; push click URLs same-origin `/admin` only
+- **Help chat panel**: slightly larger (~26×38rem); message list scrolls in-panel (Lenis `prevent` + `overscroll-behavior`) so the page behind does not steal the wheel
+- **Prod Web Push**: Coolify `nurahelp` env now has `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` (container recreated)
+
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

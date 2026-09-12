@@ -29,6 +29,14 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       lerp: 0.1,
       smoothWheel: true,
       wheelMultiplier: 0.9,
+      // Nested panels (Need help chat) must keep their own wheel scroll.
+      prevent: (node) =>
+        Boolean(
+          node instanceof Element &&
+            node.closest(
+              "[data-lenis-prevent], .help-drawer, .help-contact-modal, .help-drawer-body"
+            )
+        ),
     });
     setLandingLenis(lenis);
 
