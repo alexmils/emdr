@@ -419,6 +419,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin Email → Templates: picking a template no longer refetches settings (that reload jumped the sidebar under the cursor and looked like Invite/Password changed were clicking themselves)
 - **Guest help hardening**: no DB thread on GET (cookie only); IP hash rate limits; strip `visitorKey` from API; cron auth header-only (no `?secret=`); contact respects help enabled; transcript marked after send; HTML/`&` escape; `AUTH_SECRET` required for IP hash; disabled accounts denied; contact copy matches 1h transcript
 - **Help guest contact**: drop in-chat “Leave your email…” link — name/email modal only on close chat / leave tab (after they messaged)
+- **Help chat chrome**: sage circle mark (`A-white-on-sage`) in header; 3-dot typing bubble while waiting for the assistant reply
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

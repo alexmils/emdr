@@ -9,9 +9,11 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { APP_BASE, LOGIN_PATH } from "@/lib/app-base";
+import { BRAND_CIRCLE_AVATAR, BRAND_SPOKEN } from "@/lib/brand";
 import {
   TurnstileField,
   type TurnstileFieldHandle,
@@ -244,6 +246,10 @@ export function HelpChatWidget({ showFab = true }: Props) {
     };
   }, [open, mode, hasContact, contactDismissed, messages.length]);
 
+  useEffect(() => {
+    if (sending) scrollToEnd();
+  }, [sending, messages.length]);
+
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
@@ -379,11 +385,21 @@ export function HelpChatWidget({ showFab = true }: Props) {
             aria-labelledby={titleId}
           >
             <header className="help-drawer-head">
-              <div>
-                <h2 id={titleId} className="help-drawer-title">
-                  Need help?
-                </h2>
-                <p className="help-drawer-sub">Product support chat</p>
+              <div className="help-drawer-brand">
+                <Image
+                  src={BRAND_CIRCLE_AVATAR}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="help-drawer-logo"
+                  unoptimized
+                />
+                <div>
+                  <h2 id={titleId} className="help-drawer-title">
+                    Need help?
+                  </h2>
+                  <p className="help-drawer-sub">Product support chat</p>
+                </div>
               </div>
               <button
                 ref={closeBtnRef}
@@ -426,6 +442,17 @@ export function HelpChatWidget({ showFab = true }: Props) {
                   {m.content}
                 </div>
               ))}
+              {sending && (
+                <div
+                  className="help-bubble help-bubble-assistant help-bubble-typing"
+                  aria-live="polite"
+                  aria-label={`${BRAND_SPOKEN} is typing`}
+                >
+                  <span className="help-typing-dot" />
+                  <span className="help-typing-dot" />
+                  <span className="help-typing-dot" />
+                </div>
+              )}
               {error && !adminBlocked && (
                 <p className="help-drawer-error">{error}</p>
               )}

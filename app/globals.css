@@ -9852,6 +9852,21 @@ select.field option:disabled {
   background: var(--bg-elevated);
 }
 
+.help-drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.help-drawer-logo {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
 .help-drawer-title {
   margin: 0;
   font-size: var(--ui-headline, 1.25rem);
@@ -10094,6 +10109,45 @@ a.help-drawer-signin.btn-primary {
   background: var(--accent-subtle);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   border-bottom-left-radius: 4px;
+}
+
+.help-bubble-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.25rem;
+  padding: 0.85rem 1rem;
+  white-space: normal;
+}
+
+.help-typing-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--text-secondary);
+  opacity: 0.35;
+  animation: help-typing-bounce 1.2s ease-in-out infinite;
+}
+
+.help-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.help-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes help-typing-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-0.2rem);
+  }
 }
 
 .help-bubble-label {
