@@ -367,6 +367,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Marketing + mode picker: bare “Guided or Free” → **agent-guided** (session agent) vs **Free** (moving ball only, no agent); FAQ, How it works, SessionStartScreen, brand rule
 - Home blog byline avatar: replace cropped `BrandMark` wave with sage circle wordmark (`A-white-on-sage-128`, `BRAND_CIRCLE_AVATAR`)
 - Free / set copy: drop default “moving ball” marketing pitch — prefer **visual sets** / **sets you run yourself**; Free showcase title **Sets without an agent**; brand rule bans ball-as-product headlines
+- Blog / EMDR “Keep reading”: three cover-image cards (shared `ClusterKeepReading`) instead of a plain link list
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

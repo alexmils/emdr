@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { FrontendBreadcrumbs } from "@/app/components/frontend/FrontendBreadcrumbs";
+import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
+  CLUSTER_TOPIC_LABEL,
   relatedClusterArticles,
   type ClusterArticle,
 } from "@/lib/content-cluster";
@@ -55,23 +57,19 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
           {BRAND_SPOKEN} is self-help software — not a licensed therapist,
           not emergency care, and not a medical device.
         </p>
-
-        {related.length ? (
-          <nav className="fe-cluster-related" aria-label="Related guides">
-            <h2>Keep reading</h2>
-            <ul>
-              {related.map((item) => (
-                <li key={item.slug}>
-                  <Link href={`/blog/${item.slug}`}>{item.title}</Link>
-                </li>
-              ))}
-              <li>
-                <Link href="/resources">All public guides</Link>
-              </li>
-            </ul>
-          </nav>
-        ) : null}
       </div>
+
+      {related.length ? (
+        <ClusterKeepReading
+          posts={related.map((item) => ({
+            slug: item.slug,
+            title: item.title,
+            dek: item.dek,
+            coverUrl: item.coverUrl,
+            tag: CLUSTER_TOPIC_LABEL[item.topic],
+          }))}
+        />
+      ) : null}
     </article>
   );
 }

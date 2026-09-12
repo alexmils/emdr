@@ -1,23 +1,20 @@
-import Link from "next/link";
+import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading";
 import { featuredClusterPosts } from "@/lib/content-cluster";
-import "./public-cluster.css";
 
 export function EmdrKeepReading() {
   const posts = featuredClusterPosts(3);
 
   return (
-    <nav className="fe-cluster-related" aria-label="Keep reading">
-      <h2>Keep reading</h2>
-      <ul>
-        {posts.map((post) => (
-          <li key={post.slug}>
-            <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-          </li>
-        ))}
-        <li>
-          <Link href="/resources">All public guides</Link>
-        </li>
-      </ul>
-    </nav>
+    <ClusterKeepReading
+      posts={posts.map((post) => ({
+        slug: post.slug,
+        title: post.title,
+        dek: post.summary,
+        coverUrl: post.coverUrl,
+        tag: post.tag,
+      }))}
+      indexHref="/blog"
+      indexLabel="All public guides"
+    />
   );
 }

@@ -146,6 +146,11 @@
   max-width: 40rem;
 }
 
+.frontend-legal .fe-cluster-related--cards,
+.fe-cluster .fe-cluster-related--cards {
+  max-width: min(52rem, 100%);
+}
+
 .fe-cluster-group {
   margin: 2.25rem 0 0;
 }
@@ -222,11 +227,123 @@
   margin: 0.35rem 0;
 }
 
+.fe-cluster-related--cards {
+  max-width: min(52rem, 100%);
+  margin: 2.75rem auto 0;
+  padding: 0;
+}
+
+.fe-cluster-related--cards h2 {
+  margin: 0 0 1.15rem;
+  font-size: clamp(1.5rem, 3vw, 1.85rem);
+}
+
+.fe-cluster-card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.35rem 1.15rem;
+}
+
+.fe-cluster-card-grid > li {
+  margin: 0;
+  min-width: 0;
+}
+
+.fe-cluster-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fe-cluster-card:hover .fe-cluster-card-title {
+  color: var(--fe-accent);
+}
+
+.fe-cluster-card:hover .fe-cluster-card-image {
+  transform: scale(1.03);
+}
+
+.fe-cluster-card-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 11;
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fe-muted) 12%, #fff);
+}
+
+.fe-cluster-card-image {
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.fe-cluster-card-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  margin: 0.85rem 0 0;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fe-muted) 28%, transparent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fe-muted);
+  line-height: 1.2;
+}
+
+.fe-cluster-card-title {
+  margin: 0.65rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--fe-fg);
+  transition: color 0.2s ease;
+}
+
+.fe-cluster-card-dek {
+  margin: 0.4rem 0 0;
+  font-size: 0.975rem;
+  line-height: 1.4;
+  color: var(--fe-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fe-cluster-related-more {
+  margin: 1.25rem 0 0;
+  font-size: 1rem;
+}
+
+.fe-cluster-related-more a {
+  color: var(--fe-accent);
+  text-decoration: none;
+}
+
+.fe-cluster-related-more a:hover {
+  color: var(--fe-fg);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .fe-cluster-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin: 2rem 0 0;
+}
+
+@media (min-width: 640px) {
+  .fe-cluster-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 540px) {
