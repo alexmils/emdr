@@ -36,6 +36,14 @@ import {
   clampBlsSpeed,
   getActiveSpeedHz,
 } from "@/lib/bls-speed";
+import {
+  adjustRepeatMode,
+  BLS_REPEATS_DEFAULT,
+  BLS_REPEATS_MAX,
+  BLS_REPEATS_MIN,
+  clampBlsRepeatsCount,
+  formatRepeatsLabel,
+} from "@/lib/bls-repeats";
 import { useGamepadConnected } from "@/lib/useGamepadConnected";
 
 type SectionId =
@@ -308,7 +316,7 @@ export function GearPanel({
               <span className="gear-preview-meta">
                 {formatHz(getActiveSpeedHz(bls))}
                 {" · "}
-                {bls.repeats === "infinity" ? "∞" : bls.repeats}
+                {formatRepeatsLabel(bls.repeats)}
               </span>
             </div>
 
@@ -349,13 +357,46 @@ export function GearPanel({
               </div>
               <div className="gear-quick-group">
                 <div className="gear-quick-seg" role="group" aria-label="Repeats">
-                  <ChoiceChip
-                    selected={bls.repeats === "24"}
-                    ariaLabel="24 repeats"
-                    onClick={() => onChange({ repeats: "24" })}
-                  >
-                    24
-                  </ChoiceChip>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={BLS_REPEATS_MIN}
+                    max={BLS_REPEATS_MAX}
+                    step={1}
+                    className={`gear-choice gear-repeats-input ${
+                      bls.repeats !== "infinity" ? "gear-choice-active" : ""
+                    }`}
+                    aria-label="Repeat count"
+                    value={
+                      typeof bls.repeats === "number"
+                        ? bls.repeats
+                        : BLS_REPEATS_DEFAULT
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const direction = e.key === "ArrowUp" ? 1 : -1;
+                        const base =
+                          bls.repeats === "infinity"
+                            ? BLS_REPEATS_DEFAULT
+                            : bls.repeats;
+                        onChange({
+                          repeats: adjustRepeatMode(base, direction),
+                        });
+                      }
+                    }}
+                    onChange={(e) => {
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      onChange({ repeats: clampBlsRepeatsCount(n) });
+                    }}
+                    onFocus={() => {
+                      if (bls.repeats === "infinity") {
+                        onChange({ repeats: BLS_REPEATS_DEFAULT });
+                      }
+                    }}
+                  />
                   <ChoiceChip
                     selected={bls.repeats === "infinity"}
                     ariaLabel="Unlimited repeats"
@@ -442,13 +483,47 @@ export function GearPanel({
               }
             >
               <div className="gear-choice-row" role="group" aria-label="Repeat mode">
-                <ChoiceChip
-                  selected={bls.repeats === "24"}
-                  ariaLabel="24 repeats"
-                  onClick={() => onChange({ repeats: "24" })}
-                >
-                  24 passes
-                </ChoiceChip>
+                <label className="gear-repeats-field">
+                  <span className="gear-inline-label">Passes</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={BLS_REPEATS_MIN}
+                    max={BLS_REPEATS_MAX}
+                    step={1}
+                    className="gear-number-input"
+                    aria-label="Repeat count"
+                    value={
+                      typeof bls.repeats === "number"
+                        ? bls.repeats
+                        : BLS_REPEATS_DEFAULT
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const direction = e.key === "ArrowUp" ? 1 : -1;
+                        const base =
+                          bls.repeats === "infinity"
+                            ? BLS_REPEATS_DEFAULT
+                            : bls.repeats;
+                        onChange({
+                          repeats: adjustRepeatMode(base, direction),
+                        });
+                      }
+                    }}
+                    onChange={(e) => {
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      onChange({ repeats: clampBlsRepeatsCount(n) });
+                    }}
+                    onFocus={() => {
+                      if (bls.repeats === "infinity") {
+                        onChange({ repeats: BLS_REPEATS_DEFAULT });
+                      }
+                    }}
+                  />
+                </label>
                 <ChoiceChip
                   selected={bls.repeats === "infinity"}
                   ariaLabel="Unlimited repeats"

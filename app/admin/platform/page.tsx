@@ -8,18 +8,30 @@ import {
   AdminSettingToggleStack,
 } from "@/app/components/admin/AdminSettingToggle";
 import { GuidedChatChromePicker } from "@/app/components/admin/GuidedChatChromePicker";
+import { FreeSessionChromePicker } from "@/app/components/admin/FreeSessionChromePicker";
 import type { PlatformSettings } from "@/lib/platform-settings";
 import { DEFAULT_GUIDED_CHAT_CHROME_ID } from "@/lib/guided-chat-chrome";
+import { DEFAULT_FREE_SESSION_CHROME_ID } from "@/lib/free-session-chrome";
 import { fetchJson } from "@/lib/fetch-json";
 import {
   fileToAppLogoDataUrl,
   fileToFaviconDataUrl,
 } from "@/lib/avatar-client";
 
-const TABS = ["general", "access", "features", "ads", "agent"] as const;
+const TABS = [
+  "brand",
+  "guided-chat",
+  "free-session",
+  "access",
+  "features",
+  "ads",
+  "agent",
+] as const;
 type Tab = (typeof TABS)[number];
 const TAB_ITEMS = [
-  { id: "general", label: "General" },
+  { id: "brand", label: "Brand" },
+  { id: "guided-chat", label: "Guided chat" },
+  { id: "free-session", label: "Free session" },
   { id: "access", label: "Access" },
   { id: "features", label: "Features" },
   { id: "ads", label: "Ads" },
@@ -119,7 +131,7 @@ function BrandAssetField({
 }
 
 function AdminPlatformPageInner() {
-  const [tab, setTab] = useAdminTab(TABS, "general");
+  const [tab, setTab] = useAdminTab(TABS, "brand");
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -174,7 +186,7 @@ function AdminPlatformPageInner() {
     <div className="admin-page">
       <AdminPageHeader
         title="Platform"
-        subtitle="Site identity, invites, maintenance, feature flags, ads, and agent protocol notes."
+        subtitle="Brand, guided chat look, invites, maintenance, feature flags, ads, and agent protocol notes."
       />
       <main className="admin-main">
         <AdminTabs
@@ -184,9 +196,9 @@ function AdminPlatformPageInner() {
         />
 
         <form className="admin-form-stack admin-panel" onSubmit={(e) => void save(e)}>
-          {tab === "general" && (
+          {tab === "brand" && (
             <>
-              <h2 className="admin-panel-title">General</h2>
+              <h2 className="admin-panel-title">Brand</h2>
               <label className="admin-field-label">
                 Site name
                 <input
@@ -238,23 +250,6 @@ function AdminPlatformPageInner() {
                 onError={setMsg}
               />
 
-              <div className="admin-field-block">
-                <p className="admin-field-label">Guided chat look</p>
-                <p className="admin-panel-sub">
-                  Click a preview to select how guided chat and Start voice look
-                  for everyone. Save platform settings to apply.
-                </p>
-                <GuidedChatChromePicker
-                  value={
-                    settings.guidedChatChromeId ?? DEFAULT_GUIDED_CHAT_CHROME_ID
-                  }
-                  onChange={(id) =>
-                    setSettings({ ...settings, guidedChatChromeId: id })
-                  }
-                  disabled={busy || assetBusy}
-                />
-              </div>
-
               <label className="admin-field-label">
                 Support email
                 <input
@@ -281,6 +276,44 @@ function AdminPlatformPageInner() {
               <p className="admin-panel-sub">
                 Used in email links when set. Falls back to APP_URL env.
               </p>
+            </>
+          )}
+
+          {tab === "guided-chat" && (
+            <>
+              <h2 className="admin-panel-title">Guided chat look</h2>
+              <p className="admin-panel-sub">
+                Select a look with the radio or title. Click the mockup to view
+                it larger. Save platform settings to apply.
+              </p>
+              <GuidedChatChromePicker
+                value={
+                  settings.guidedChatChromeId ?? DEFAULT_GUIDED_CHAT_CHROME_ID
+                }
+                onChange={(id) =>
+                  setSettings({ ...settings, guidedChatChromeId: id })
+                }
+                disabled={busy || assetBusy}
+              />
+            </>
+          )}
+
+          {tab === "free-session" && (
+            <>
+              <h2 className="admin-panel-title">Free session look</h2>
+              <p className="admin-panel-sub">
+                Select a look with the radio or title. Click the mockup to view
+                it larger. Save platform settings to apply.
+              </p>
+              <FreeSessionChromePicker
+                value={
+                  settings.freeSessionChromeId ?? DEFAULT_FREE_SESSION_CHROME_ID
+                }
+                onChange={(id) =>
+                  setSettings({ ...settings, freeSessionChromeId: id })
+                }
+                disabled={busy || assetBusy}
+              />
             </>
           )}
 

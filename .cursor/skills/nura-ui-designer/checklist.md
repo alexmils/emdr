@@ -5,7 +5,7 @@ Use before ending a UI/UX turn.
 ## Visual
 
 - [ ] Correct surface tokens (marketing vs product vs admin)
-- [ ] Fraunces headings / Source Sans 3 UI / Roboto Mono kickers only
+- [ ] Type: Fraunces headings on marketing + `/app`; **admin = Source Sans 3 only**; Source Sans UI; Roboto Mono kickers on marketing
 - [ ] Pistachio palette only; `#C6D67E` focus/hover only
 - [ ] BrandLockup used; type does not echo rounded wordmark
 - [ ] One primary action; secondary chrome does not compete

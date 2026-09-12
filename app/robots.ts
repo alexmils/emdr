@@ -21,7 +21,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         "/emdr",
         "/resources",
       ],
-      disallow: ["/app", "/admin", "/api", "/design"],
+      disallow: ["/app", "/admin", "/api"],
     },
     sitemap: `${origin}/sitemap.xml`,
   };

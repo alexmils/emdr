@@ -1661,8 +1661,12 @@ body:has(.app-shell.session-immersive) .help-fab {
 .canvas-idle-hint {
   font-size: var(--ui-muted);
   line-height: 1.5;
-  color: #fff;
-  mix-blend-mode: difference;
+  /* Solid ink — never mix-blend-mode:difference (anti-aliased glyphs look horizontally doubled) */
+  color: color-mix(in srgb, var(--fs-title, var(--text)) 72%, transparent);
+}
+
+.canvas-idle-hint--on-dark {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .canvas-idle-hint-strong {
@@ -1802,6 +1806,26 @@ body:has(.app-shell.session-immersive) .help-fab {
     0 0 0 2px var(--accent-subtle);
 }
 
+.bls-repeats-input {
+  width: 2.75rem;
+  max-width: 3.25rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  cursor: text;
+}
+
+.bls-repeats-input::-webkit-outer-spin-button,
+.bls-repeats-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bls-repeats-input:focus {
+  outline: none;
+}
+
 .bls-collapse-btn {
   position: absolute;
   top: 0.35rem;
@@ -1828,6 +1852,79 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--bg-canvas);
   border: none;
   border-radius: 0;
+}
+
+/* Free session chrome (Admin → Platform → Free session) */
+.workspace-main--free-chrome {
+  background: var(--fs-page, var(--bg-page));
+}
+
+.workspace-main--free-chrome .workspace-header {
+  background: var(--fs-header-bg, var(--bg-page));
+  border-bottom-color: var(--fs-header-border, var(--border));
+}
+
+.workspace-main--free-chrome .workspace-title {
+  color: var(--fs-title, var(--text));
+}
+
+.workspace-main--free-chrome .workspace-hint,
+.workspace-main--free-chrome .session-description,
+.workspace-main--free-chrome .billing-charge-hint {
+  color: var(--fs-muted, var(--text-muted));
+}
+
+.workspace-main--free-chrome .workspace-canvas {
+  background: var(--fs-canvas, var(--bg-canvas));
+}
+
+.workspace-main--free-chrome .bls-bar {
+  background: var(--fs-dock-bg, var(--bg-elevated));
+  border-color: var(--fs-dock-border, var(--border));
+}
+
+.workspace-main--free-chrome .bls-group-label {
+  color: var(--fs-label, var(--text-muted));
+}
+
+.workspace-main--free-chrome .bls-group-focused .bls-group-label {
+  color: var(--fs-icon, var(--accent));
+}
+
+.workspace-main--free-chrome .bls-seg {
+  background: var(--fs-seg-bg, var(--bg-muted));
+  border-color: var(--fs-seg-border, var(--border));
+}
+
+.workspace-main--free-chrome .bls-seg-btn {
+  color: var(--fs-muted, var(--text-secondary));
+}
+
+.workspace-main--free-chrome .bls-seg-btn:hover {
+  color: var(--fs-title, var(--text));
+}
+
+.workspace-main--free-chrome .bls-seg-btn-active {
+  background: var(--fs-seg-active-bg, var(--bg-elevated));
+  color: var(--fs-title, var(--text));
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 0 0 1px var(--fs-seg-active-ring, var(--border));
+}
+
+.workspace-main--free-chrome .bls-repeats-input {
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+
+.workspace-main--free-chrome .bls-collapse-btn {
+  color: var(--fs-icon, var(--text-muted));
+}
+
+.workspace-main--free-chrome .bls-collapse-btn:hover {
+  color: var(--fs-title, var(--text));
+  background: var(--fs-seg-bg, var(--bg-muted));
 }
 
 /* Legacy alias */
@@ -3251,6 +3348,56 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--text);
 }
 
+.gear-repeats-input {
+  flex: 1 1 0;
+  min-width: 2.5rem;
+  max-width: 3.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.gear-repeats-input::-webkit-outer-spin-button,
+.gear-repeats-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.gear-repeats-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 auto;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+}
+
+.gear-number-input {
+  width: 4rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.gear-number-input::-webkit-outer-spin-button,
+.gear-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .gear-choice-stack {
   display: flex;
   flex-direction: column;
@@ -4198,9 +4345,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-title {
   margin: 0.15rem 0 0;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans);
   font-size: var(--ui-title);
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .admin-main {
@@ -4242,9 +4389,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-stat-value {
   margin: 0.35rem 0 0;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans);
   font-size: var(--ui-display);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -6063,7 +6210,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   /*
    * Dense admin scale — a step under /app product chrome.
    * Overrides --ui-* only inside this shell so Settings/session stay large.
+   * Admin type is Source Sans only (no ornamental Fraunces).
    */
+  --font-display: var(--font-sans);
   --ui-display: 1.5rem;
   --ui-title: 1.25rem;
   --ui-headline: 1.0625rem;
@@ -6072,8 +6221,19 @@ body:has(.app-shell.session-immersive) .help-fab {
   --ui-caption: 0.8125rem;
   --ui-control: 0.9375rem;
   --ui-control-h: 2.5rem;
+  font-family: var(--font-sans);
   font-size: var(--ui-body);
   line-height: 1.4;
+}
+
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3,
+.admin-shell h4,
+.admin-shell h5,
+.admin-shell h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
 }
 
 .admin-shell .field,
@@ -6837,9 +6997,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-page-title {
   margin: 0;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans);
   font-size: var(--ui-title);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -7428,9 +7588,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-voice-name {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
-  font-weight: 400;
+  font-weight: 600;
   color: var(--text-primary);
   line-height: 1.25;
 }
@@ -9275,8 +9435,9 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-kpi {
   margin-top: 0.25rem;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans);
   font-size: var(--ui-display);
+  font-weight: 600;
   color: var(--text);
 }
 

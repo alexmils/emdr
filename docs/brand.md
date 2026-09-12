@@ -48,14 +48,19 @@ Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, purple “wellness”, hospital bl
 
 ## Type
 
-### Product (`/app`, `/admin`)
+### Product (`/app`)
 
 - Display: **Fraunces** via `next/font/google` (`--font-display`)
 - UI: **Source Sans 3** (`--font-sans`)
 
+### Admin (`/admin`, `.admin-shell`)
+
+- **Source Sans 3 only** (`--font-sans`) for page titles, card titles, headings, KPIs, and labels
+- `.admin-shell` remaps `--font-display` → `--font-sans` so admin chrome stays sober (no ornamental Fraunces)
+
 ### Marketing (`.frontend-home`)
 
-Same pair as product — contrasts the rounded wave wordmark (do not echo it with soft grotesks):
+Same Fraunces + Source Sans pair as product — contrasts the rounded wave wordmark (do not echo it with soft grotesks):
 
 | Role | Font | Notes |
 |---|---|---|

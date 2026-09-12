@@ -141,12 +141,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Auth review fixes: desktop form pane top padding so absolute logo/Home don’t overlap tall forms; create-account OAuth errors stay on methods + strip `?error=` from URL; focus title on step change; mockup copy not `aria-hidden`; Terms on email step; footer tagline wraps before mid widths; `lib/auth/create-account-ui.ts` + tests
 - Pre-push gate: always `npm test` + `npm run lint` (+ ReadLints) before commit/push; **do not** run full `npm run build` as a local gate (Actions Docker build covers compile) — `.cursor/rules/git-commit-push.mdc` + `verify-before-done.mdc`
 - Admin Billing Stripe: Demo mode is a clear status card (on/off line + toggle); Sandbox/Live tabs say **checkout**; webhook/secret tip moved under the tabs — less stacked prose around the switch
+- Admin Platform: split overcrowded General into **Brand** + **Guided chat** + **Free session** tabs (Access / Features / Ads / Agent unchanged); Guided chat and Free session look cards use AI-Voice-style radio + mint selected state
 - Admin setting toggles: shared `AdminSettingToggle` (title + On/Off status + switch) on Platform, Help, Resources, and Billing — same pattern as Stripe Demo mode
 - Admin ElevenLabs Configure: after API key (or env/stored fallback) loads the catalog, Voice and Model are dropdowns from ElevenLabs; optional **Custom voice** / **Custom model** override the list; unknown saved values land in the custom fields instead of being wiped
 - Admin Voice tab: ElevenLabs settings card on top, thin divider, then lazy-loaded voice cards (name, play sample, round select); toast on select; `POST /api/admin/ai/voice-preview`; admin ToastProvider
 - Admin Voice picker review fixes: reload after Configure (`reloadToken`), preview generation token, select lock + quiet save (toast only), voice ID validation + encodeURIComponent, fixed sample text + per-admin preview cooldown, Refresh on empty-key state
 - Admin chrome: drop the pink “Live Stripe is active” top banner; only show the demo/sandbox banner when Demo mode is on (live status stays on Billing → Stripe)
 - Cursor rule `.cursor/rules/turnstile-forms.mdc` (`alwaysApply`) — guest-facing forms must use `TurnstileField` + server `verifyTurnstileToken`
+- Cursor rule `.cursor/rules/admin-settings-selection.mdc` — admin/settings option grids (themes, voices, chrome looks) use AI-Voice-style top-right radio on cards, not border-only
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -332,11 +334,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Design lab Set B: `/design/voice-composer` adds #11–20 full chrome recolors (bubbles, text, chips, composer, Voice)
 - Admin Platform → General: clickable Guided chat look picker (1–20); saves `guidedChatChromeId` and applies in `AgentOverlay`
 - Guided chat chrome review fixes: track `nura-circle-variants` avatars; Voice/mic hover keeps theme; `--gc-card-bg` on overlay; intake respects chrome vars
+- Admin Platform → Free session: clickable look picker (1–10); saves `freeSessionChromeId` and applies header/canvas/dock CSS vars in Free sessions
 - **Admin type scale**: `/admin` chrome aligned with product `--ui-*` tokens (body ~17px, muted 16px, caption 15px) — titles, tabs, tables, SEO Analytics, Connections, search, users, fields/buttons (`globals.css` `.admin-shell`)
 - **Admin SEO share images**: site-wide default Open Graph image + per-page override with upload (jpeg/png/webp) or URL; stored in `app_settings.seo`; public `/og-image` serves data URLs for crawlers
 - **Admin type scale dialed back**: denser tokens on `.admin-shell` only (body ~15px, muted 14px, caption 13px, controls 40px) — still above the old ~12px chrome; `/app` unchanged
 - **Platform brand assets**: Admin → Platform → General can upload favicon + /app sidebar logo (stored in `app_settings`; served at `/brand-assets/favicon` and `/brand-assets/app-logo`); Sidebar + AdminShell use `BrandLockup asset="app"`
 - **Admin SEO client bundle**: stop pulling `pg` into `/admin/seo` — OG helpers in `lib/seo-og-image.ts`; DTOs in `lib/site-seo-types.ts` + `lib/site-analytics-types.ts` (Turbopack followed `import type` from server modules)
+- Free session look cards: AI-Voice-style top-right radio (`.admin-voice-check`) + mint selected state, matching Guided chat
+- **Admin typography**: `/admin` (`.admin-shell`) uses **Source Sans 3 only** for titles, card names, KPIs — remaps `--font-display` to `--font-sans`; Fraunces stays marketing + `/app`; docs/rules updated (`nura-brand`, `product-ui`, `nura-ui-designer`, `docs/brand.md`)
+- Admin Platform chrome pickers: click mockup (or expand icon) opens near-fullscreen lightbox (~96vw×92vh) with large preview + **Use this look**; radio/title still selects; Esc / backdrop / Close dismiss — Guided chat + Free session
+- Free/Guided idle hint (“Press Space or click to start”): removed `mix-blend-mode: difference` that ghosted anti-aliased glyphs; solid ink (or light text on dark Look backgrounds)
+- Free session Adjustments persist across refresh via `localStorage` (`emdr_bls_prefs_v1:<userId>`) — speed, repeats, sound, animation, vibration, look (ball/bg/size); Reset clears stored prefs (`lib/bls-prefs.ts`, `AppProvider`)
+- Free session Speed presets **0.1 · 1 · 5** Hz (was 0.5 · 1 · 2); clamp/migrate in `lib/bls-speed.ts` + prefs; Adjustments sliders match
+- Free session Repeats: numeric count (1–999) + ∞; ArrowUp/Down increment/decrement instead of toggling left/right (`lib/bls-repeats.ts`, dock + Adjustments)
+
+### Removed
+- Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
 
 ---
 

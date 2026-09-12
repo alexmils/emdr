@@ -9,7 +9,8 @@ export type ProtocolPhase =
 
 export type AnimationMode = "dot" | "flash";
 export type SoundMode = "mute" | "click" | "pulse" | "tone";
-export type RepeatMode = "24" | "infinity";
+/** Finite pass count (1–999) or unlimited. */
+export type RepeatMode = number | "infinity";
 export type VibrationMode = "none" | "soft" | "hard";
 
 /** Session start choice: pending until user picks guided or free. */
@@ -106,9 +107,9 @@ export const DEFAULT_VOICE_CONNECTOR = {
 } satisfies ConnectorConfig & { voiceId: string };
 
 export const DEFAULT_BLS: BlsSettings = {
-  speedPresets: [0.5, 1.0, 2.0],
+  speedPresets: [0.1, 1.0, 5.0],
   activeSpeedPreset: 1,
-  repeats: "24",
+  repeats: 24,
   setLengthSec: 38,
   sound: "click",
   animation: "dot",

@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useApp } from "./AppProvider";
 import { BallCanvas } from "./BallCanvas";
+import {
+  freeSessionChromeCssVars,
+  resolveFreeSessionChrome,
+} from "@/lib/free-session-chrome";
 import { BlsToolbar } from "./BlsToolbar";
 import { AgentOverlay } from "./AgentOverlay";
 import { GearPanel } from "./GearPanel";
@@ -64,6 +68,7 @@ export function SessionWorkspace() {
     noteAdSetCompleted,
     voiceEnabled,
     guidedChatChromeId,
+    freeSessionChromeId,
   } = useApp();
   const { user: currentUser } = useCurrentUser();
 
@@ -545,8 +550,19 @@ export function SessionWorkspace() {
 
   return (
     <main
-      className={`workspace-main flex min-h-0 flex-1 flex-col ${running ? "workspace-main--immersive" : ""}`}
-      style={running ? { background: bls.background } : undefined}
+      className={`workspace-main flex min-h-0 flex-1 flex-col${
+        running ? " workspace-main--immersive" : ""
+      }${thread.mode === "free" ? " workspace-main--free-chrome" : ""}`}
+      style={
+        {
+          ...(running ? { background: bls.background } : null),
+          ...(thread.mode === "free"
+            ? freeSessionChromeCssVars(
+                resolveFreeSessionChrome(freeSessionChromeId).theme
+              )
+            : null),
+        } as CSSProperties
+      }
     >
       <header className="workspace-header">
         <div className="workspace-header-row">

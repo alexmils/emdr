@@ -7,15 +7,15 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { AudioLines, Maximize2, Mic, Volume2, X } from "lucide-react";
+import { Maximize2, X } from "lucide-react";
 import {
-  GUIDED_CHAT_CHROMES,
-  guidedChatChromeCssVars,
-  type GuidedChatChrome,
-} from "@/lib/guided-chat-chrome";
-import "./guided-chat-chrome-picker.css";
+  FREE_SESSION_CHROMES,
+  freeSessionChromeCssVars,
+  type FreeSessionChrome,
+} from "@/lib/free-session-chrome";
+import "./free-session-chrome-picker.css";
 
-type GuidedChatChromePickerProps = {
+type FreeSessionChromePickerProps = {
   value: number;
   onChange: (id: number) => void;
   disabled?: boolean;
@@ -25,64 +25,61 @@ function MiniPreview({
   chrome,
   large = false,
 }: {
-  chrome: GuidedChatChrome;
+  chrome: FreeSessionChrome;
   large?: boolean;
 }) {
-  const vars = guidedChatChromeCssVars(chrome.theme) as CSSProperties;
+  const vars = freeSessionChromeCssVars(chrome.theme) as CSSProperties;
   return (
     <div
-      className={`gc-pick-preview${large ? " gc-pick-preview--large" : ""}`}
+      className={`fs-pick-preview${large ? " fs-pick-preview--large" : ""}`}
       style={vars}
       aria-hidden
     >
-      <div className="gc-pick-row">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={chrome.avatar}
-          alt=""
-          width={large ? 40 : 28}
-          height={large ? 40 : 28}
-          className="gc-pick-avatar"
-        />
-        <div className="gc-pick-bubble gc-pick-bubble--agent">
-          <span>Welcome — what would you like to work on?</span>
-          <Volume2
-            size={large ? 20 : 12}
-            strokeWidth={2}
-            className="gc-pick-speak"
-          />
+      <div className="fs-pick-header">
+        <span className="fs-pick-header-title">Free session</span>
+        <span className="fs-pick-header-hint">Calm paced sets</span>
+      </div>
+      <div className="fs-pick-canvas">
+        <span className="fs-pick-idle">Press Space or click to start</span>
+      </div>
+      <div className="fs-pick-dock">
+        <div className="fs-pick-bar">
+          <div className="fs-pick-group">
+            <span className="fs-pick-label">Speed</span>
+            <div className="fs-pick-seg">
+              <span className="fs-pick-chip is-on">1×</span>
+              <span className="fs-pick-chip">2×</span>
+            </div>
+          </div>
+          <div className="fs-pick-group">
+            <span className="fs-pick-label">Repeats</span>
+            <div className="fs-pick-seg">
+              <span className="fs-pick-chip">24</span>
+              <span className="fs-pick-chip is-on">36</span>
+            </div>
+          </div>
+          <div className="fs-pick-group">
+            <span className="fs-pick-label">Stereo</span>
+            <div className="fs-pick-seg">
+              <span className="fs-pick-chip is-on">On</span>
+            </div>
+          </div>
+          <span className="fs-pick-gear" />
         </div>
-      </div>
-      <div className="gc-pick-row gc-pick-row--user">
-        <div className="gc-pick-bubble gc-pick-bubble--user">
-          <span>Not sure yet</span>
-        </div>
-        <span className="gc-pick-user-av">4</span>
-      </div>
-      <div className="gc-pick-chips">
-        <span>Anxiety</span>
-        <span>Stress</span>
-      </div>
-      <div className="gc-pick-composer">
-        <Mic size={large ? 22 : 14} strokeWidth={2} className="gc-pick-mic" />
-        <span className="gc-pick-ph">Anxiety, a memory…</span>
-        <span className="gc-pick-voice">
-          <AudioLines size={large ? 22 : 14} strokeWidth={2.25} />
-        </span>
       </div>
     </div>
   );
 }
 
-export function GuidedChatChromePicker({
+export function FreeSessionChromePicker({
   value,
   onChange,
   disabled = false,
-}: GuidedChatChromePickerProps) {
+}: FreeSessionChromePickerProps) {
   const [lightboxId, setLightboxId] = useState<number | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const titleId = useId();
-  const lightbox = GUIDED_CHAT_CHROMES.find((c) => c.id === lightboxId) ?? null;
+  const lightbox = FREE_SESSION_CHROMES.find((c) => c.id === lightboxId) ?? null;
 
   useEffect(() => {
     if (lightboxId == null) return;
@@ -100,25 +97,25 @@ export function GuidedChatChromePicker({
   }, [lightboxId]);
 
   return (
-    <div className="gc-pick">
+    <div className="fs-pick">
       <div
-        className="gc-pick-grid"
+        className="fs-pick-grid"
         role="radiogroup"
-        aria-label="Guided chat look"
+        aria-label="Free session look"
       >
-        {GUIDED_CHAT_CHROMES.map((chrome) => {
+        {FREE_SESSION_CHROMES.map((chrome) => {
           const selected = chrome.id === value;
           return (
             <article
               key={chrome.id}
-              className={`gc-pick-card${selected ? " is-selected" : ""}`}
+              className={`fs-pick-card${selected ? " is-selected" : ""}`}
             >
               <button
                 type="button"
                 role="radio"
                 aria-checked={selected}
                 disabled={disabled}
-                className="gc-pick-select"
+                className="fs-pick-select"
                 onClick={() => onChange(chrome.id)}
                 aria-label={`${chrome.title}. ${chrome.note}`}
               >
@@ -126,23 +123,23 @@ export function GuidedChatChromePicker({
                   className={`admin-voice-check${selected ? " is-on" : ""}`}
                   aria-hidden="true"
                 />
-                <span className="gc-pick-head">
-                  <span className="gc-pick-num">{chrome.id}</span>
-                  <span className="gc-pick-meta">
-                    <span className="gc-pick-title">{chrome.title}</span>
-                    <span className="gc-pick-note">{chrome.note}</span>
+                <span className="fs-pick-head">
+                  <span className="fs-pick-num">{chrome.id}</span>
+                  <span className="fs-pick-meta">
+                    <span className="fs-pick-title">{chrome.title}</span>
+                    <span className="fs-pick-note">{chrome.note}</span>
                   </span>
                 </span>
               </button>
               <button
                 type="button"
-                className="gc-pick-preview-hit"
+                className="fs-pick-preview-hit"
                 disabled={disabled}
                 onClick={() => setLightboxId(chrome.id)}
                 aria-label={`View ${chrome.title} larger`}
               >
                 <MiniPreview chrome={chrome} />
-                <span className="gc-pick-expand" aria-hidden="true">
+                <span className="fs-pick-expand" aria-hidden="true">
                   <Maximize2 size={14} strokeWidth={2.25} />
                 </span>
               </button>
@@ -153,19 +150,19 @@ export function GuidedChatChromePicker({
 
       {lightbox ? (
         <div
-          className="admin-modal-backdrop gc-pick-lightbox-backdrop"
+          className="admin-modal-backdrop fs-pick-lightbox-backdrop"
           role="presentation"
           onClick={() => setLightboxId(null)}
         >
           <div
-            className="admin-modal gc-pick-lightbox"
+            className="admin-modal fs-pick-lightbox"
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="gc-pick-lightbox-top">
-              <div className="gc-pick-lightbox-meta">
+            <div className="fs-pick-lightbox-top">
+              <div className="fs-pick-lightbox-meta">
                 <h2 id={titleId} className="admin-panel-title">
                   {lightbox.id}. {lightbox.title}
                 </h2>
@@ -174,14 +171,14 @@ export function GuidedChatChromePicker({
               <button
                 ref={closeRef}
                 type="button"
-                className="gc-pick-lightbox-close"
+                className="fs-pick-lightbox-close"
                 onClick={() => setLightboxId(null)}
                 aria-label="Close preview"
               >
                 <X size={18} strokeWidth={2} />
               </button>
             </div>
-            <div className="gc-pick-lightbox-stage">
+            <div className="fs-pick-lightbox-stage">
               <MiniPreview chrome={lightbox} large />
             </div>
             <div className="admin-modal-actions">

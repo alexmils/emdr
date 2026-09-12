@@ -20,6 +20,10 @@ import {
   DEFAULT_GUIDED_CHAT_CHROME_ID,
 } from "@/lib/guided-chat-chrome";
 import {
+  clampFreeSessionChromeId,
+  DEFAULT_FREE_SESSION_CHROME_ID,
+} from "@/lib/free-session-chrome";
+import {
   DEFAULT_PLATFORM_STRIPE,
   isStripeCredentialSetEmpty,
   normalizeStripeConfig,
@@ -117,6 +121,11 @@ export type PlatformSettings = {
    * Picked in Admin → Platform → General.
    */
   guidedChatChromeId: number;
+  /**
+   * Free session chrome look (1–10) — header, canvas, controls dock.
+   * Picked in Admin → Platform → General.
+   */
+  freeSessionChromeId: number;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -158,6 +167,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   faviconUrl: "",
   appLogoUrl: "",
   guidedChatChromeId: DEFAULT_GUIDED_CHAT_CHROME_ID,
+  freeSessionChromeId: DEFAULT_FREE_SESSION_CHROME_ID,
 };
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
@@ -297,6 +307,7 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     faviconUrl: normalizeBrandAssetUrl(r.faviconUrl),
     appLogoUrl: normalizeBrandAssetUrl(r.appLogoUrl),
     guidedChatChromeId: clampGuidedChatChromeId(r.guidedChatChromeId),
+    freeSessionChromeId: clampFreeSessionChromeId(r.freeSessionChromeId),
   };
 }
 

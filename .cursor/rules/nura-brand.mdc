@@ -40,8 +40,9 @@ Hero: **Support for therapy. Starting with EMDR.**
 
 - Pistachio palette: Paper/mint `#A4EDA5` · Sage `#84B067` (buttons, wordmark) · Ink `#2A3020` (body) · Pistachio `#C6D67E` **focus/hover only, never body or default field borders** · Olive `#948F4E` (muted) · Sidebar `#3D4129`
 - Forbidden: OpenAI `#10a37f`, Apple `#007AFF`, Inter, purple wellness, hospital blue
-- **Product type** (`/app`, `/admin`): Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
-- **Marketing type** (`.frontend-home`, public pages): **same pair** as product — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it)
+- **Product type** (`/app`): Fraunces (`--font-display`) + Source Sans 3 (`--font-sans`)
+- **Admin type** (`/admin`, `.admin-shell`): **Source Sans 3 only** — sober UI; remaps `--font-display` to `--font-sans` so titles/KPIs are not ornamental Fraunces
+- **Marketing type** (`.frontend-home`, public pages): Fraunces + Source Sans 3 + Roboto Mono kickers — see **Frontend typography** below (wave lockup stays the rounded signature; UI type must not echo it)
 - Tokens live in `app/globals.css`. Marketing uses `.frontend-home`; product UI uses product tokens (see `product-ui` rule)
 
 ## Frontend typography (aligned with product)

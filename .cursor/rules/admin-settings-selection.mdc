@@ -1,0 +1,44 @@
+---
+description: Admin/settings option grids must use AI-Voice-style radio indicators on cards
+globs: app/admin/**/*,app/components/admin/**/*,app/app/settings/**/*
+alwaysApply: false
+---
+
+# Admin settings — selectable option cards
+
+When building **selectable option grids** in admin or settings (themes, voices, chrome looks, free-session looks, avatars, layouts, etc.), use the **AI Voice picker** pattern — not border-only selection.
+
+## Reference
+
+- Component: `app/components/admin/AdminVoicePicker.tsx`
+- CSS: `.admin-voice-card` / `.admin-voice-check` / `.admin-voice-check.is-on` in `app/globals.css`
+- Also applied on: `GuidedChatChromePicker`, `FreeSessionChromePicker` (reuse `.admin-voice-check`)
+
+## Required pattern
+
+1. **Radiogroup** — wrap the grid in `role="radiogroup"` with an `aria-label`.
+2. **Per option** — each card is selectable via `role="radio"` + `aria-checked` (button or select control).
+3. **Radio indicator** — circular control **top-right** of the card:
+   - Unselected: empty circle (`.admin-voice-check`)
+   - Selected: filled sage with mint inset (`.admin-voice-check.is-on`)
+4. **Selected card chrome** — light mint background + sage border (same as `.admin-voice-card.is-selected`), not border-only and not a checkbox.
+5. Prefer **reusing** `.admin-voice-check` / `.is-on` / selected card styles over inventing a new indicator.
+
+```tsx
+// ✅ GOOD — AI Voice style
+<article className={`…-card${selected ? " is-selected" : ""}`}>
+  <button type="button" role="radio" aria-checked={selected} …>
+    <span className={`admin-voice-check${selected ? " is-on" : ""}`} aria-hidden />
+    …
+  </button>
+</article>
+
+// ❌ BAD — border/ring only, no radio
+<button className={selected ? "is-selected" : ""} aria-pressed={selected} />
+```
+
+## Do not
+
+- Use checkboxes for single-select option grids
+- Rely on border/shadow alone to show the active choice
+- Invent a third selection language for the same admin surface

@@ -252,9 +252,19 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
         adminOnly: true,
         children: [
           {
-            href: "/admin/platform?tab=general",
-            label: "General",
-            tab: "general",
+            href: "/admin/platform?tab=brand",
+            label: "Brand",
+            tab: "brand",
+          },
+          {
+            href: "/admin/platform?tab=guided-chat",
+            label: "Guided chat",
+            tab: "guided-chat",
+          },
+          {
+            href: "/admin/platform?tab=free-session",
+            label: "Free session",
+            tab: "free-session",
           },
           {
             href: "/admin/platform?tab=access",
@@ -307,7 +317,7 @@ export const ADMIN_DEFAULT_TAB_BY_PATH: Record<string, string> = {
   "/admin/analytics": "overview",
   "/admin/email": "delivery",
   "/admin/ai": "ai",
-  "/admin/platform": "general",
+  "/admin/platform": "brand",
   "/admin/seo": "overview",
 };
 

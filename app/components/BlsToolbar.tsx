@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef, useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   Activity,
   ChevronDown,
@@ -18,12 +18,18 @@ import {
 import type {
   AnimationMode,
   BlsSettings,
-  RepeatMode,
   SoundMode,
   SpeedPresetIndex,
   VibrationMode,
 } from "@/lib/types";
 import type { BlsToolbarField } from "@/lib/bls-toolbar-nav";
+import {
+  adjustRepeatMode,
+  BLS_REPEATS_DEFAULT,
+  BLS_REPEATS_MAX,
+  BLS_REPEATS_MIN,
+  clampBlsRepeatsCount,
+} from "@/lib/bls-repeats";
 import { useGamepadConnected } from "@/lib/useGamepadConnected";
 
 interface BlsToolbarProps {
@@ -142,15 +148,52 @@ export const BlsToolbar = forwardRef<HTMLDivElement, BlsToolbarProps>(
     ref
   ) {
     const gamepadConnected = useGamepadConnected();
+    const [repeatsDraft, setRepeatsDraft] = useState(
+      typeof bls.repeats === "number" ? bls.repeats : BLS_REPEATS_DEFAULT
+    );
+
+    useEffect(() => {
+      if (typeof bls.repeats === "number") {
+        setRepeatsDraft(bls.repeats);
+      }
+    }, [bls.repeats]);
 
     const selectSpeed = (index: SpeedPresetIndex) => {
       onFocusField(SPEED_FIELDS[index]);
       onChange({ activeSpeedPreset: index });
     };
 
-    const selectRepeats = (value: RepeatMode) => {
+    const commitRepeatsCount = (raw: number) => {
+      const next = clampBlsRepeatsCount(raw);
+      setRepeatsDraft(next);
       onFocusField("repeats");
-      onChange({ repeats: value });
+      onChange({ repeats: next });
+    };
+
+    const selectInfinity = () => {
+      onFocusField("repeats");
+      onChange({ repeats: "infinity" });
+    };
+
+    const onRepeatsKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        e.stopPropagation();
+        const direction = e.key === "ArrowUp" ? 1 : -1;
+        const base =
+          bls.repeats === "infinity" ? repeatsDraft : bls.repeats;
+        const next = adjustRepeatMode(base, direction);
+        if (typeof next === "number") {
+          setRepeatsDraft(next);
+          onChange({ repeats: next });
+        }
+        onFocusField("repeats");
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        // Keep caret movement local; do not bubble to dock field nav.
+        e.stopPropagation();
+      }
     };
 
     const selectSound = (value: SoundMode) => {
@@ -184,6 +227,8 @@ export const BlsToolbar = forwardRef<HTMLDivElement, BlsToolbarProps>(
         </div>
       );
     }
+
+    const repeatsFinite = bls.repeats !== "infinity";
 
     return (
       <div
@@ -224,21 +269,50 @@ export const BlsToolbar = forwardRef<HTMLDivElement, BlsToolbarProps>(
             </BlsGroup>
 
             <BlsGroup label="Repeats" focused={focusedField === "repeats"}>
-              <SegBtn
-                selected={bls.repeats === "24"}
-                focused={focusedField === "repeats" && bls.repeats === "24"}
-                ariaLabel="24 repeats"
-                onClick={() => selectRepeats("24")}
-              >
-                24
-              </SegBtn>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={BLS_REPEATS_MIN}
+                max={BLS_REPEATS_MAX}
+                step={1}
+                value={repeatsDraft}
+                aria-label="Repeat count"
+                title="Repeat count"
+                className={`bls-seg-btn bls-repeats-input ${
+                  repeatsFinite ? "bls-seg-btn-active" : ""
+                } ${
+                  focusedField === "repeats" && repeatsFinite
+                    ? "bls-seg-btn-focused"
+                    : ""
+                }`}
+                onFocus={() => {
+                  onFocusField("repeats");
+                  if (bls.repeats === "infinity") {
+                    onChange({ repeats: clampBlsRepeatsCount(repeatsDraft) });
+                  }
+                }}
+                onKeyDown={onRepeatsKeyDown}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") return;
+                  const n = Number(raw);
+                  if (!Number.isFinite(n)) return;
+                  commitRepeatsCount(n);
+                }}
+                onBlur={(e) => {
+                  const n = Number(e.target.value);
+                  commitRepeatsCount(
+                    Number.isFinite(n) ? n : repeatsDraft
+                  );
+                }}
+              />
               <SegBtn
                 selected={bls.repeats === "infinity"}
                 focused={
                   focusedField === "repeats" && bls.repeats === "infinity"
                 }
                 ariaLabel="Infinite repeats"
-                onClick={() => selectRepeats("infinity")}
+                onClick={selectInfinity}
               >
                 <InfinityIcon size={16} strokeWidth={2} />
               </SegBtn>

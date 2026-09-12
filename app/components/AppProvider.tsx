@@ -24,7 +24,14 @@ import { DEFAULT_BLS, DEFAULT_SETTINGS } from "@/lib/types";
 import type { SessionMode } from "@/lib/protocol";
 import { fetchJson } from "@/lib/fetch-json";
 import { DEFAULT_GUIDED_CHAT_CHROME_ID } from "@/lib/guided-chat-chrome";
+import { DEFAULT_FREE_SESSION_CHROME_ID } from "@/lib/free-session-chrome";
 import { shouldBootstrapAgent } from "@/lib/session-mode";
+import {
+  clearBlsPrefs,
+  isDefaultBlsSettings,
+  loadBlsPrefs,
+  saveBlsPrefs,
+} from "@/lib/bls-prefs";
 import {
   parsePublicAdsConfig,
   resolveAdDecision,
@@ -148,6 +155,8 @@ interface AppState {
   voiceEnabled: boolean;
   /** Platform guided chat chrome theme id (1–20). */
   guidedChatChromeId: number;
+  /** Platform free session chrome theme id (1–10). */
+  freeSessionChromeId: number;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -162,12 +171,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [guidedChatChromeId, setGuidedChatChromeId] = useState(
     DEFAULT_GUIDED_CHAT_CHROME_ID
   );
+  const [freeSessionChromeId, setFreeSessionChromeId] = useState(
+    DEFAULT_FREE_SESSION_CHROME_ID
+  );
   const [threadMemorySets, setThreadMemorySets] = useState<ThreadMemorySet[]>(
     []
   );
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [bls, setBlsState] = useState<BlsSettings>(DEFAULT_BLS);
+  const blsUserIdRef = useRef<string | null>(null);
   const [sessionMode, setSessionMode] = useState<SessionMode>("idle");
   const [entitlement, setEntitlement] = useState<EntitlementPublic | null>(null);
   const [adsConfig, setAdsConfig] = useState<PublicAdsConfig>({
@@ -537,6 +550,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         memoryEnabled?: boolean;
         voiceEnabled?: boolean;
         guidedChatChromeId?: number;
+        freeSessionChromeId?: number;
       }>("/api/settings");
       setSettings(data.settings ?? DEFAULT_SETTINGS);
       setMemories(data.memories ?? []);
@@ -545,6 +559,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setVoiceEnabled(data.voiceEnabled !== false);
       if (data.guidedChatChromeId != null) {
         setGuidedChatChromeId(data.guidedChatChromeId);
+      }
+      if (data.freeSessionChromeId != null) {
+        setFreeSessionChromeId(data.freeSessionChromeId);
       }
     } catch (err) {
       console.error("refreshSettings failed:", err);
@@ -589,10 +606,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         | Partial<BlsSettings>
         | ((prev: BlsSettings) => Partial<BlsSettings>)
     ) => {
-      setBlsState((b) => ({
-        ...b,
-        ...(typeof patch === "function" ? patch(b) : patch),
-      }));
+      setBlsState((b) => {
+        const next: BlsSettings = {
+          ...b,
+          ...(typeof patch === "function" ? patch(b) : patch),
+        };
+        const userId = blsUserIdRef.current;
+        if (isDefaultBlsSettings(next)) {
+          clearBlsPrefs(userId);
+        } else {
+          saveBlsPrefs(userId, next);
+        }
+        return next;
+      });
     },
     []
   );
@@ -604,6 +630,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [refreshThreads, refreshSettings, refreshEntitlement]);
 
   useEffect(() => {
+    // Hydrate BLS Adjustments before auth resolves (anon key).
+    setBlsState(loadBlsPrefs(null));
     void (async () => {
       try {
         const res = await fetch("/api/auth/me");
@@ -614,8 +642,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             : null;
         setAdUserId(id);
         setAdFreq(loadAdFreqState(id));
+        blsUserIdRef.current = id;
+        setBlsState(loadBlsPrefs(id));
       } catch {
         setAdUserId(null);
+        blsUserIdRef.current = null;
       }
     })();
   }, []);
@@ -677,6 +708,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       adsReady,
       voiceEnabled,
       guidedChatChromeId,
+      freeSessionChromeId,
     }),
     [
       threads,
@@ -687,6 +719,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       memoryEnabled,
       voiceEnabled,
       guidedChatChromeId,
+      freeSessionChromeId,
       settings,
       bls,
       sessionMode,

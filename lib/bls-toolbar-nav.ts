@@ -1,4 +1,5 @@
 import { adjustSpeedPreset } from "./bls-speed";
+import { adjustRepeatMode } from "./bls-repeats";
 import type {
   AnimationMode,
   BlsSettings,
@@ -71,13 +72,7 @@ export function adjustBlsToolbarField(
 
   switch (field) {
     case "repeats":
-      return {
-        repeats: cycle<"24" | "infinity">(
-          ["24", "infinity"],
-          bls.repeats,
-          direction
-        ),
-      };
+      return { repeats: adjustRepeatMode(bls.repeats, direction) };
     case "sound":
       return { sound: cycle(SOUND_ORDER, bls.sound, direction) };
     case "animation":

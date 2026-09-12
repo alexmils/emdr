@@ -53,6 +53,7 @@ export async function GET() {
       memoryEnabled: enabled,
       voiceEnabled,
       guidedChatChromeId: platform.guidedChatChromeId,
+      freeSessionChromeId: platform.freeSessionChromeId,
     });
   });
 }

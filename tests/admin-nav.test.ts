@@ -72,6 +72,38 @@ describe("admin search index", () => {
     assert.ok(index.some((e) => e.kind === "tab" && e.href.includes("tab=")));
   });
 
+  it("includes Platform Brand, Guided chat, and Free session tabs", () => {
+    const index = buildAdminSearchIndex(true);
+    assert.ok(
+      index.some(
+        (e) =>
+          e.kind === "tab" &&
+          e.href === "/admin/platform?tab=brand" &&
+          e.title === "Brand"
+      )
+    );
+    assert.ok(
+      index.some(
+        (e) =>
+          e.kind === "tab" &&
+          e.href === "/admin/platform?tab=guided-chat" &&
+          e.title === "Guided chat"
+      )
+    );
+    assert.ok(
+      index.some(
+        (e) =>
+          e.kind === "tab" &&
+          e.href === "/admin/platform?tab=free-session" &&
+          e.title === "Free session"
+      )
+    );
+    assert.equal(
+      index.some((e) => e.href === "/admin/platform?tab=general"),
+      false
+    );
+  });
+
   it("hides admin-only system entries for support role", () => {
     const index = buildAdminSearchIndex(false);
     assert.equal(
