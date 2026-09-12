@@ -32,6 +32,7 @@ const API_PUBLIC_PREFIXES = [
   "/api/auth/passkey/login",
   "/api/webhooks/stripe",
   "/api/marketing/analytics-gate",
+  "/api/marketing/tags",
   "/api/help/chat",
   "/api/help/guest-contact",
   "/api/cron/help-guest-transcripts",

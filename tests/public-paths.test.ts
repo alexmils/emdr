@@ -84,6 +84,10 @@ describe("isAuthPublicPath / isUnauthenticatedPublicPath", () => {
     );
   });
 
+  it("allows the marketing tags endpoint", () => {
+    assert.equal(isUnauthenticatedPublicPath("/api/marketing/tags"), true);
+  });
+
   it("allows guest help chat and transcript cron", () => {
     assert.equal(isUnauthenticatedPublicPath("/api/help/chat"), true);
     assert.equal(isUnauthenticatedPublicPath("/api/help/guest-contact"), true);

@@ -10,25 +10,59 @@ import {
 } from "@/lib/marketing-consent";
 import type { PublicMarketingTags } from "@/lib/site-seo-types";
 
+function isPublicMarketingTags(value: unknown): value is PublicMarketingTags {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.ga4MeasurementId === "string" &&
+    typeof v.gtmId === "string" &&
+    typeof v.clarityId === "string" &&
+    typeof v.skipAnalytics === "boolean" &&
+    typeof v.checkIgnoreIps === "boolean"
+  );
+}
+
 /**
- * GA4, GTM, and Clarity load on marketing pages with consent defaults denied
- * so vendor install checkers can detect the tags without clicking Accept.
- * Cookie banner / localStorage then grant storage via Consent Mode / Clarity
- * consentv2. Ignored IPs skip via analytics-gate (not `headers()` in the page).
+ * GA4, GTM, and Clarity load on marketing pages with consent defaults denied.
+ * Tag IDs are fetched live from `/api/marketing/tags` so ISR HTML (often built
+ * without DB) never ships empty measurement IDs after deploy.
  */
 export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
   const pathname = usePathname() || "/";
   const allowed = isGtmAllowedPath(pathname);
+  const [liveTags, setLiveTags] = useState(tags);
+  const [tagsReady, setTagsReady] = useState(false);
   const [ipSkip, setIpSkip] = useState(tags.skipAnalytics);
-  const [ipChecked, setIpChecked] = useState(!tags.checkIgnoreIps);
+  const [ipChecked, setIpChecked] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/marketing/tags")
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        if (!cancelled && isPublicMarketingTags(data)) {
+          setLiveTags(data);
+        }
+      })
+      .catch(() => {
+        /* keep server-provided tags */
+      })
+      .finally(() => {
+        if (!cancelled) setTagsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     applyConsentToGtag(readConsent());
   }, []);
 
   useEffect(() => {
-    if (!tags.checkIgnoreIps) {
-      setIpSkip(tags.skipAnalytics);
+    if (!tagsReady) return;
+    if (!liveTags.checkIgnoreIps) {
+      setIpSkip(liveTags.skipAnalytics);
       setIpChecked(true);
       return;
     }
@@ -50,13 +84,14 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
     return () => {
       cancelled = true;
     };
-  }, [tags.checkIgnoreIps, tags.skipAnalytics]);
+  }, [tagsReady, liveTags.checkIgnoreIps, liveTags.skipAnalytics]);
 
-  if (!ipChecked || ipSkip || tags.skipAnalytics || !allowed) return null;
+  if (!tagsReady || !ipChecked || ipSkip || liveTags.skipAnalytics || !allowed) {
+    return null;
+  }
 
   return (
     <>
-      {/* Consent Mode default denied; cookie banner / localStorage call consent update. */}
       <Script id="nura-consent-default" strategy="afterInteractive">{`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -70,10 +105,10 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
         });
       `}</Script>
 
-      {tags.ga4MeasurementId ? (
+      {liveTags.ga4MeasurementId ? (
         <>
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${tags.ga4MeasurementId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${liveTags.ga4MeasurementId}`}
             strategy="afterInteractive"
           />
           <Script id="nura-ga4" strategy="afterInteractive">{`
@@ -81,7 +116,7 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
             function gtag(){dataLayer.push(arguments);}
             window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', '${tags.ga4MeasurementId}', {
+            gtag('config', '${liveTags.ga4MeasurementId}', {
               anonymize_ip: true,
               send_page_view: true
             });
@@ -89,17 +124,17 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
         </>
       ) : null}
 
-      {tags.gtmId ? (
+      {liveTags.gtmId ? (
         <Script id="nura-gtm" strategy="afterInteractive">{`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','${tags.gtmId}');
+          })(window,document,'script','dataLayer','${liveTags.gtmId}');
         `}</Script>
       ) : null}
 
-      {tags.clarityId ? (
+      {liveTags.clarityId ? (
         <Script
           id="nura-clarity"
           strategy="afterInteractive"
@@ -109,7 +144,7 @@ export function MarketingTags({ tags }: { tags: PublicMarketingTags }) {
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "${tags.clarityId}");
+          })(window, document, "clarity", "script", "${liveTags.clarityId}");
         `}</Script>
       ) : null}
     </>

@@ -200,6 +200,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
 - Clarity public tag: load on marketing pages + pass `consentv2` (cookies off until analytics accept); enable Consent Mode in the Clarity project; Privacy cookie copy updated (`MarketingTags`, `lib/marketing-consent.ts`)
 - GA4: after Accept analytics cookies, fire a `page_view` immediately (denied→granted) so Realtime / “No data received” can clear without a second navigation
+- Marketing tags: client loads live IDs from `GET /api/marketing/tags` so ISR/Docker builds without DB never ship empty GA4/GTM/Clarity after deploy
 - App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
 - App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
 - App Help flyout opens upward so Terms sits level with Help (not hanging into the foot / status bar)
