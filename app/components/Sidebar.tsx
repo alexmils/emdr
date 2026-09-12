@@ -396,7 +396,7 @@ export function Sidebar() {
                 aria-haspopup="menu"
                 onClick={() => setHelpOpen((o) => !o)}
               >
-                Help
+                <span>Help</span>
                 <ChevronRight
                   size={14}
                   strokeWidth={2}

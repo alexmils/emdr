@@ -193,6 +193,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - App Help flyout: sidebar `overflow` + stacking so Privacy / Cookie / Terms open over the workspace (not clipped to a white sliver)
 - App Help row: chevron stays on the same line as Help (`.dropdown-item` `display:block` was wrapping it)
+- App Help flyout opens upward so Terms sits level with Help (not hanging into the foot / status bar)
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
 - Guided chat phases: hide BLS toolbar / gear until a set is ready or running (chat sits lower without the dock)
 - Guided canvas: removed idle placeholder “The guide will invite you when it is time for a set”
