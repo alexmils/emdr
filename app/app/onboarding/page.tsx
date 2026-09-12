@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AuthError, AuthSuccess } from "@/app/components/AuthShell";
+import { AuthError, AuthSuccess, AuthLink } from "@/app/components/AuthShell";
 import { HelpChatLink } from "@/app/components/HelpChatWidget";
 import { OnboardingShell } from "@/app/components/onboarding/OnboardingShell";
 import {
@@ -31,7 +31,7 @@ type BillingStatus = {
   plans?: Record<BillingPlanId, BillingPlanMeta>;
 };
 
-type Step = "plan" | "tutorial";
+type Step = "age" | "plan" | "tutorial";
 
 const FREE_MINUTES = Math.floor(TRIAL_BLS_SECONDS / 60);
 
@@ -43,6 +43,7 @@ function OnboardingFlow() {
   const canceledPlan = params.get("plan");
 
   const [step, setStep] = useState<Step>("plan");
+  const [afterAgeStep, setAfterAgeStep] = useState<Exclude<Step, "age">>("plan");
   const [plan, setPlan] = useState<BillingPlanId>(
     canceledPlan === "weekly" || canceledPlan === "monthly" ? canceledPlan : "yearly"
   );
@@ -51,6 +52,7 @@ function OnboardingFlow() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const refreshStatus = useCallback(async () => {
     const qs = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
@@ -70,7 +72,6 @@ function OnboardingFlow() {
         let data = await refreshStatus();
         if (cancelled) return;
 
-        // Stripe webhook / session verify can lag briefly after redirect.
         if (checkout === "success" && !data.canUseApp) {
           for (let i = 0; i < 4 && !cancelled && !data.canUseApp; i++) {
             await new Promise((r) => setTimeout(r, 1200));
@@ -87,28 +88,47 @@ function OnboardingFlow() {
           }
         }
 
+        let nextStep: Exclude<Step, "age"> = "plan";
+        let redirectAway = false;
+
         if (checkout === "success" && !data.canUseApp) {
-          setStep("plan");
+          nextStep = "plan";
           setError(
             "Payment is still confirming. Wait a moment, then refresh — or pick a plan if checkout did not finish."
           );
         } else if (data.canUseApp) {
           if (data.onboardingCompletedAt && checkout !== "success") {
             router.replace(APP_BASE);
-            return;
-          }
-          setStep("tutorial");
-          if (checkout === "success") {
-            setSuccess("Payment method saved. Your trial is ready.");
+            redirectAway = true;
+          } else {
+            nextStep = "tutorial";
+            if (checkout === "success") {
+              setSuccess("Payment method saved. Your trial is ready.");
+            }
           }
         } else if (checkout === "canceled") {
-          setStep("plan");
+          nextStep = "plan";
           setError("Checkout canceled. Choose a plan when you’re ready.");
         } else if (!data.needsOnboarding && data.needsPayment) {
-          // Returning canceled / blocked users — billing, not a fresh trial pitch.
           router.replace(`${APP_BASE}/billing`);
-          return;
+          redirectAway = true;
         }
+
+        if (cancelled || redirectAway) return;
+
+        setAfterAgeStep(nextStep);
+
+        let ageOk = false;
+        try {
+          const cRes = await fetch("/api/consents");
+          const cData = (await cRes.json()) as { ageOk?: boolean };
+          if (cRes.ok) ageOk = Boolean(cData.ageOk);
+        } catch {
+          ageOk = false;
+        }
+        if (cancelled) return;
+
+        setStep(ageOk ? nextStep : "age");
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Load failed");
@@ -121,6 +141,29 @@ function OnboardingFlow() {
       cancelled = true;
     };
   }, [checkout, refreshStatus, router, sessionId]);
+
+  const confirmAge = async () => {
+    if (!ageConfirmed || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/consents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "age_18" }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? "Could not save confirmation");
+        return;
+      }
+      setStep(afterAgeStep);
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const startCheckout = async () => {
     setBusy(true);
@@ -169,9 +212,16 @@ function OnboardingFlow() {
   };
 
   const shellCopy = useMemo(() => {
+    if (step === "age") {
+      return {
+        kicker: undefined as string | undefined,
+        title: "Are you 18 or older?",
+        lead: undefined as string | undefined,
+      };
+    }
     if (step === "plan") {
       return {
-        kicker: "Getting started" as string | undefined,
+        kicker: undefined as string | undefined,
         title: "Pick a plan",
         lead: `${TRIAL_DAYS} days free · cancel anytime`,
       };
@@ -185,11 +235,7 @@ function OnboardingFlow() {
 
   if (loading) {
     return (
-      <OnboardingShell
-        kicker="Getting started"
-        title="Setting up…"
-        lead="Loading your account"
-      >
+      <OnboardingShell title="Setting up…" lead="Loading your account">
         <p className="ob-note" style={{ margin: 0 }}>
           Please wait…
         </p>
@@ -210,6 +256,32 @@ function OnboardingFlow() {
     >
       {error && <AuthError message={error} />}
       {step === "plan" && success ? <AuthSuccess message={success} /> : null}
+
+      {step === "age" && (
+        <div className="ob-age-step">
+          <label className="ob-age-check">
+            <input
+              type="checkbox"
+              checked={ageConfirmed}
+              onChange={(e) => setAgeConfirmed(e.target.checked)}
+            />
+            <span>I am 18 or older</span>
+          </label>
+          <p className="ob-note ob-age-legal">
+            By continuing you agree to our{" "}
+            <AuthLink href="/terms">Terms</AuthLink> and{" "}
+            <AuthLink href="/privacy">Privacy</AuthLink>.
+          </p>
+          <button
+            type="button"
+            className="frontend-btn-primary ob-cta"
+            disabled={busy || !ageConfirmed}
+            onClick={() => void confirmAge()}
+          >
+            {busy ? "Saving…" : "Continue"}
+          </button>
+        </div>
+      )}
 
       {step === "plan" && (
         <div>
@@ -244,9 +316,9 @@ function OnboardingFlow() {
             })}
           </div>
           <p className="ob-note">
-            Trial includes {TRIAL_GUIDED_SESSIONS} guided sessions and{" "}
-            {FREE_MINUTES} min of Free session time. We save your card now —
-            billing starts after day {TRIAL_DAYS}.
+            {TRIAL_GUIDED_SESSIONS} AI-guided sessions and {FREE_MINUTES} minutes of
+            Free session time in the trial. We save your card now. You won’t be
+            charged for {TRIAL_DAYS} days.
           </p>
           <button
             type="button"

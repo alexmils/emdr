@@ -73,9 +73,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Public **breadcrumbs** on inner marketing pages (blog, resources, EMDR, about, editorial, legal) plus BlogPosting / BreadcrumbList JSON-LD
 - Public sitemap **`lastModified`** dates only (no `changefreq` / `priority` — Google ignores them)
 - Homepage JSON-LD (`Organization` + `SoftwareApplication` + `FAQPage`) matching the visible FAQ accordion; no native-app OS list, no BLS jargon, no `MedicalWebPage` until a clinical reviewer exists
-- **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate + 18+ on create-account; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
+- **Safety & legal P0**: draft `/terms` + `/privacy` (attorney-pending banner); `consents` table + `/api/consents`; informed-consent gate; session “I need help now” crisis panel + not-therapy strip; exit/closure modal + resume banner; `/about/clinical-team` + `docs/launch-blockers.md`; operator `Receptly LLC` in `lib/legal-entity.ts`
 
 ### Changed
+- **18+ age confirm**: moved off create-account into first onboarding step after signup (`POST /api/consents` `age_18`); create-account keeps Terms/Privacy only; age copy “Are you 18 or older?”; **all** onboarding titles use Source Sans (no Fraunces); larger wave lockup; plan step drops “Getting started” kicker; trial note leads with **AI-guided** sessions + Free session time, card saved, no charge for N days (explicit AI override vs usual nura-brand “don’t lead with AI”)
 - **Brand lockup**: public name is **Nura** only (drop “NuraHelp” from UI/legal copy; domain `nurahelp.com` unchanged). Operator **Receptly LLC**, 30 N Gould St, Sheridan, WY 82801 — Terms/Privacy, footer copyright, JSON-LD `legalName`
 - **Help chat widget**: light scrim + keyboard lift (`visualViewport`), unified safe-area sizing, focus-visible on FAB/close, no double foot inset; close on marketing ≤768px resize
 - **Start a session**: mode picker only — removed Learn teaser; keyboard hint fades out after ~2.5s

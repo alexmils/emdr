@@ -8281,42 +8281,11 @@ select.field option:disabled {
 }
 
 .auth-method-legal {
-  margin: 0;
+  margin: 1.25rem 0 0;
   font-size: 0.75rem;
   line-height: 1.4;
   color: var(--text-secondary);
   text-align: center;
-}
-
-.auth-legal-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.65rem;
-  margin-top: 1.25rem;
-  width: 100%;
-}
-
-.auth-age-gate {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 0;
-  max-width: 100%;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--text-primary, #2a3020);
-  cursor: pointer;
-}
-
-.auth-age-gate input {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.auth-email-form .auth-legal-block {
-  margin-top: 1rem;
 }
 
 .auth-method-back {

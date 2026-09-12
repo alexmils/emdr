@@ -15,8 +15,8 @@ type OnboardingShellProps = {
 };
 
 /**
- * Marketing-aligned shell for /app/onboarding (Curevo / frontend-home type).
- * Keeps auth pages on AuthShell so login/create-account stay product chrome.
+ * Product setup shell for /app/onboarding — Source Sans titles (not Fraunces).
+ * Auth stays on AuthShell; marketing display type stays on the public site.
  */
 export function OnboardingShell({
   kicker,

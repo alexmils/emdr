@@ -38,7 +38,6 @@ function CreateAccountForm() {
   const [error, setError] = useState(oauthError ?? "");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const turnstileRef = useRef<TurnstileFieldHandle>(null);
 
   useEffect(() => {
@@ -69,11 +68,6 @@ function CreateAccountForm() {
 
     if (password !== confirm) {
       setError("Passwords do not match");
-      return;
-    }
-
-    if (!ageConfirmed) {
-      setError("Confirm that you are 18 or older to continue.");
       return;
     }
 
@@ -121,26 +115,12 @@ function CreateAccountForm() {
     </p>
   );
 
-  const ageGate = (
-    <label className="auth-age-gate">
-      <input
-        type="checkbox"
-        checked={ageConfirmed}
-        onChange={(e) => setAgeConfirmed(e.target.checked)}
-      />
-      <span>I am 18 or older</span>
-    </label>
-  );
-
-  const legalBlock = (
-    <div className="auth-legal-block">
-      {ageGate}
-      <p className="auth-method-legal">
-        By continuing you agree to our{" "}
-        <AuthLink href="/terms">Terms</AuthLink> and{" "}
-        <AuthLink href="/privacy">Privacy</AuthLink>.
-      </p>
-    </div>
+  const legal = (
+    <p className="auth-method-legal">
+      By continuing you agree to our{" "}
+      <AuthLink href="/terms">Terms</AuthLink> and{" "}
+      <AuthLink href="/privacy">Privacy</AuthLink>.
+    </p>
   );
 
   if (step === "methods") {
@@ -157,19 +137,17 @@ function CreateAccountForm() {
             next={next ?? undefined}
             from="create-account"
             variant="ink"
-            disabled={!ageConfirmed}
           />
           <button
             type="button"
             className="auth-method-btn auth-method-btn--muted"
             onClick={goEmail}
-            disabled={!ageConfirmed}
           >
             <Mail size={18} strokeWidth={2} aria-hidden />
             Continue with email
           </button>
         </div>
-        {legalBlock}
+        {legal}
       </AuthShell>
     );
   }
@@ -229,12 +207,12 @@ function CreateAccountForm() {
         />
         <button
           type="submit"
-          disabled={loading || !turnstileToken || !ageConfirmed}
+          disabled={loading || !turnstileToken}
           className="btn-primary mt-2 w-full disabled:opacity-60"
         >
           {loading ? "Creating…" : "Create account"}
         </button>
-        {legalBlock}
+        {legal}
         <button
           type="button"
           className="auth-method-back"

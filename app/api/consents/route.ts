@@ -3,6 +3,7 @@ import { withAuth } from "@/lib/api-auth";
 import { clientIp } from "@/lib/audit-log";
 import {
   allInformedKeysAccepted,
+  hasAgeConsent,
   hasRequiredConsents,
   listConsentsForUser,
   recordConsent,
@@ -17,12 +18,14 @@ import {
 
 export async function GET() {
   return withAuth(async (ctx) => {
-    const [requiredOk, consents] = await Promise.all([
+    const [requiredOk, ageOk, consents] = await Promise.all([
       hasRequiredConsents(ctx.user.id),
+      hasAgeConsent(ctx.user.id),
       listConsentsForUser(ctx.user.id),
     ]);
     return NextResponse.json({
       requiredOk,
+      ageOk,
       versions: LEGAL_DOC_VERSION,
       consents: consents.map((c) => ({
         id: c.id,

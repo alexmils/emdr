@@ -86,6 +86,10 @@ export async function hasConsent(
   return rows.length > 0;
 }
 
+export async function hasAgeConsent(userId: string): Promise<boolean> {
+  return hasConsent(userId, "age_18", LEGAL_DOC_VERSION.age_18);
+}
+
 export async function hasRequiredConsents(userId: string): Promise<boolean> {
   const required = requiredConsentVersions();
   for (const [docType, version] of Object.entries(required) as [

@@ -28,33 +28,40 @@
 }
 
 .ob-shell-brand .brand-logo {
-  height: 1.55rem;
-  max-width: 12rem;
+  height: 3rem;
+  max-width: 18rem;
 }
 
 .ob-kicker {
   margin: 0 0 0.65rem;
   font-family: var(--font-alt);
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fe-muted);
 }
 
-.ob-title {
+/* Beat `.frontend-home h1` Fraunces — setup chrome is Source Sans only */
+.frontend-home.ob-shell h1.ob-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(2.25rem, 8vw, 3rem);
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: clamp(1.875rem, 6vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
   color: var(--fe-fg);
+  font-optical-sizing: none;
+  font-variation-settings: normal;
 }
 
-/* Tutorial: shorter title so steps stay the focus */
-.ob-shell:has(.ob-tutorial) .ob-title {
-  font-size: clamp(1.75rem, 6vw, 2.25rem);
+.frontend-home.ob-shell:has(.ob-age-step) h1.ob-title {
+  max-width: 16ch;
+  margin-inline: auto;
+}
+
+.frontend-home.ob-shell:has(.ob-tutorial) h1.ob-title {
+  font-size: clamp(1.625rem, 5vw, 2rem);
 }
 
 .ob-shell:has(.ob-tutorial) .ob-lead {
@@ -75,7 +82,7 @@
 .ob-panel {
   padding: 1.35rem 1.25rem 1.4rem;
   border: 1px solid var(--fe-line);
-  border-radius: 12px;
+  border-radius: 8px;
   background: color-mix(in srgb, #fff 72%, var(--fe-bg));
 }
 
@@ -110,6 +117,45 @@
 .ob-tutorial .ob-cta {
   margin-top: 0.25rem;
 }
+
+/* Age confirm — first post-signup step (large tap target, not a tiny footer gate) */
+.ob-age-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ob-age-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--fe-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, #fff 72%, var(--fe-bg));
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--fe-fg);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ob-age-check input {
+  width: 1.35rem;
+  height: 1.35rem;
+  margin: 0.1rem 0 0;
+  flex-shrink: 0;
+  accent-color: var(--fe-accent);
+  cursor: pointer;
+}
+
+.ob-age-legal {
+  margin-top: 0.85rem;
+}
+
 
 /* Signature: quiet moving-ball preview (Nura, not generic checklist) */
 .ob-ball-preview {
