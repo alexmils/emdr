@@ -8,6 +8,7 @@ const FRONTEND_PREFIXES = [
   "/about",
   "/emdr",
   "/resources",
+  "/design",
 ] as const;
 
 const AUTH_PUBLIC_PREFIXES = [
@@ -31,7 +32,10 @@ const API_PUBLIC_PREFIXES = [
   "/api/webhooks/stripe",
 ] as const;
 
-const PUBLIC_EXACT = new Set(["/favicon.ico"]);
+/** Exact paths that never require a session (no file extension). */
+const PUBLIC_EXACT = new Set(["/favicon.ico", "/og-image"]);
+
+const PUBLIC_PREFIXES = ["/brand-assets/"] as const;
 
 /** Frontend pages that never require login. */
 export function isFrontendPublicPath(pathname: string): boolean {
@@ -54,6 +58,7 @@ export function isAuthPublicPath(pathname: string): boolean {
  */
 export function isUnauthenticatedPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true;
+  if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) return true;
   if (isFrontendPublicPath(pathname)) return true;
   if (isAuthPublicPath(pathname)) return true;
   if (API_PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) return true;

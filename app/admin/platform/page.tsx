@@ -7,8 +7,14 @@ import {
   AdminSettingToggle,
   AdminSettingToggleStack,
 } from "@/app/components/admin/AdminSettingToggle";
+import { GuidedChatChromePicker } from "@/app/components/admin/GuidedChatChromePicker";
 import type { PlatformSettings } from "@/lib/platform-settings";
+import { DEFAULT_GUIDED_CHAT_CHROME_ID } from "@/lib/guided-chat-chrome";
 import { fetchJson } from "@/lib/fetch-json";
+import {
+  fileToAppLogoDataUrl,
+  fileToFaviconDataUrl,
+} from "@/lib/avatar-client";
 
 const TABS = ["general", "access", "features", "ads", "agent"] as const;
 type Tab = (typeof TABS)[number];
@@ -20,11 +26,104 @@ const TAB_ITEMS = [
   { id: "agent", label: "Agent" },
 ] as const;
 
+function BrandAssetField({
+  label,
+  hint,
+  value,
+  previewUrl,
+  previewClassName,
+  busy,
+  onChange,
+  onClear,
+  onBusy,
+  onError,
+  encodeFile,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  previewUrl: string;
+  previewClassName: string;
+  busy: boolean;
+  onChange: (next: string) => void;
+  onClear: () => void;
+  onBusy: (busy: boolean) => void;
+  onError: (message: string) => void;
+  encodeFile: (file: File) => Promise<string>;
+}) {
+  return (
+    <div className="admin-seo-og-field">
+      <p className="admin-field-label" style={{ marginBottom: 0 }}>
+        {label}
+      </p>
+      <p className="admin-panel-sub">{hint}</p>
+      <div className="admin-seo-og-row">
+        <div className={previewClassName}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="" />
+        </div>
+        <div className="admin-seo-og-actions">
+          <label className="admin-btn-edit admin-seo-upload-label">
+            {busy ? "Uploading…" : "Upload"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={busy}
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                e.target.value = "";
+                if (!file) return;
+                void (async () => {
+                  onBusy(true);
+                  onError("");
+                  try {
+                    onChange(await encodeFile(file));
+                  } catch (err) {
+                    onError(
+                      err instanceof Error ? err.message : "Image upload failed"
+                    );
+                  } finally {
+                    onBusy(false);
+                  }
+                })();
+              }}
+            />
+          </label>
+          <button
+            type="button"
+            className="admin-btn-edit"
+            disabled={busy || !value}
+            onClick={onClear}
+          >
+            Use default
+          </button>
+        </div>
+      </div>
+      <label className="admin-field-label">
+        Or paste URL
+        <input
+          className="field"
+          value={value.startsWith("data:image/") ? "" : value}
+          placeholder={
+            value.startsWith("data:image/")
+              ? "Uploaded image (saved on Save)"
+              : "https://… or /brand/…"
+          }
+          disabled={busy}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </label>
+    </div>
+  );
+}
+
 function AdminPlatformPageInner() {
   const [tab, setTab] = useAdminTab(TABS, "general");
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [assetBusy, setAssetBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -102,6 +201,60 @@ function AdminPlatformPageInner() {
               <p className="admin-panel-sub">
                 Spoken name shown in the app (Nura). Legal lockup is NuraHelp.
               </p>
+
+              <BrandAssetField
+                label="Favicon"
+                hint="Browser tab icon for the whole site. Square PNG works best."
+                value={settings.faviconUrl}
+                previewUrl={
+                  settings.faviconUrl.trim() || "/brand-assets/favicon"
+                }
+                previewClassName="admin-brand-favicon-preview"
+                busy={busy || assetBusy}
+                encodeFile={fileToFaviconDataUrl}
+                onChange={(next) =>
+                  setSettings({ ...settings, faviconUrl: next })
+                }
+                onClear={() => setSettings({ ...settings, faviconUrl: "" })}
+                onBusy={setAssetBusy}
+                onError={setMsg}
+              />
+
+              <BrandAssetField
+                label="App logo"
+                hint="Wordmark in the /app sidebar (and admin). Prefer a light/white logo on transparent PNG."
+                value={settings.appLogoUrl}
+                previewUrl={
+                  settings.appLogoUrl.trim() || "/brand-assets/app-logo"
+                }
+                previewClassName="admin-brand-logo-preview"
+                busy={busy || assetBusy}
+                encodeFile={fileToAppLogoDataUrl}
+                onChange={(next) =>
+                  setSettings({ ...settings, appLogoUrl: next })
+                }
+                onClear={() => setSettings({ ...settings, appLogoUrl: "" })}
+                onBusy={setAssetBusy}
+                onError={setMsg}
+              />
+
+              <div className="admin-field-block">
+                <p className="admin-field-label">Guided chat look</p>
+                <p className="admin-panel-sub">
+                  Click a preview to select how guided chat and Start voice look
+                  for everyone. Save platform settings to apply.
+                </p>
+                <GuidedChatChromePicker
+                  value={
+                    settings.guidedChatChromeId ?? DEFAULT_GUIDED_CHAT_CHROME_ID
+                  }
+                  onChange={(id) =>
+                    setSettings({ ...settings, guidedChatChromeId: id })
+                  }
+                  disabled={busy || assetBusy}
+                />
+              </div>
+
               <label className="admin-field-label">
                 Support email
                 <input
@@ -491,7 +644,11 @@ function AdminPlatformPageInner() {
             </>
           )}
 
-          <button type="submit" disabled={busy} className="btn-primary w-fit">
+          <button
+            type="submit"
+            disabled={busy || assetBusy}
+            className="btn-primary w-fit"
+          >
             {busy ? "Saving…" : "Save platform settings"}
           </button>
           {msg && <p className="admin-invite-msg">{msg}</p>}

@@ -18,6 +18,11 @@ type BrandLockupProps = {
    */
   tone?: BrandLogoTone | LegacyTone;
   className?: string;
+  /**
+   * app — use platform custom /app sidebar logo (`/brand-assets/app-logo`)
+   * when set in Admin → Platform; falls back to the white wave lockup.
+   */
+  asset?: "default" | "app";
 };
 
 const LOGO_SRC: Record<BrandLogoTone, string> = {
@@ -25,6 +30,8 @@ const LOGO_SRC: Record<BrandLogoTone, string> = {
   black: "/brand/nura-wave-logo-black.png",
   white: "/brand/nura-wave-logo-white.png",
 };
+
+const APP_LOGO_SRC = "/brand-assets/app-logo";
 
 const MARK_SRC: Record<BrandLogoTone, string> = {
   color: "/brand/mark.png",
@@ -64,17 +71,19 @@ export function BrandLockup({
   href = null,
   tone = "color",
   className = "",
+  asset = "default",
 }: BrandLockupProps) {
   const t = resolveTone(tone);
+  const src = asset === "app" ? APP_LOGO_SRC : LOGO_SRC[t];
   const inner = (
     <span className={`brand-lockup brand-lockup-${t} ${className}`.trim()}>
       <Image
-        src={LOGO_SRC[t]}
+        src={src}
         alt=""
         width={200}
         height={45}
         className={`brand-logo brand-logo-${t}`}
-        priority={t === "color" || t === "white"}
+        priority={t === "color" || t === "white" || asset === "app"}
         unoptimized
       />
     </span>

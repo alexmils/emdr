@@ -23,6 +23,7 @@ import type {
 import { DEFAULT_BLS, DEFAULT_SETTINGS } from "@/lib/types";
 import type { SessionMode } from "@/lib/protocol";
 import { fetchJson } from "@/lib/fetch-json";
+import { DEFAULT_GUIDED_CHAT_CHROME_ID } from "@/lib/guided-chat-chrome";
 import { shouldBootstrapAgent } from "@/lib/session-mode";
 import {
   parsePublicAdsConfig,
@@ -145,6 +146,8 @@ interface AppState {
   adsReady: boolean;
   /** Platform flag: voice features (TTS / Voice Mode) allowed. */
   voiceEnabled: boolean;
+  /** Platform guided chat chrome theme id (1–20). */
+  guidedChatChromeId: number;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -156,6 +159,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [memorySets, setMemorySets] = useState<MemorySet[]>([]);
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [guidedChatChromeId, setGuidedChatChromeId] = useState(
+    DEFAULT_GUIDED_CHAT_CHROME_ID
+  );
   const [threadMemorySets, setThreadMemorySets] = useState<ThreadMemorySet[]>(
     []
   );
@@ -530,12 +536,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         memorySets?: MemorySet[];
         memoryEnabled?: boolean;
         voiceEnabled?: boolean;
+        guidedChatChromeId?: number;
       }>("/api/settings");
       setSettings(data.settings ?? DEFAULT_SETTINGS);
       setMemories(data.memories ?? []);
       setMemorySets(data.memorySets ?? []);
       setMemoryEnabled(data.memoryEnabled !== false);
       setVoiceEnabled(data.voiceEnabled !== false);
+      if (data.guidedChatChromeId != null) {
+        setGuidedChatChromeId(data.guidedChatChromeId);
+      }
     } catch (err) {
       console.error("refreshSettings failed:", err);
     }
@@ -666,6 +676,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       adsConfig,
       adsReady,
       voiceEnabled,
+      guidedChatChromeId,
     }),
     [
       threads,
@@ -675,6 +686,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       threadMemorySets,
       memoryEnabled,
       voiceEnabled,
+      guidedChatChromeId,
       settings,
       bls,
       sessionMode,

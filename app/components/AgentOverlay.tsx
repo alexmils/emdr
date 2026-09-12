@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowUp, AudioLines, Mic, Volume2, X } from "lucide-react";
 import type { Message, ProtocolPhase } from "@/lib/types";
 import type { SessionMode } from "@/lib/protocol";
@@ -16,8 +16,11 @@ import {
 import { Avatar } from "./Avatar";
 import type { VoicePhase } from "./useGuidedVoiceMode";
 import { VoiceWave } from "./VoiceWave";
-
-const GUIDE_AVATAR = "/brand/nura-circle-variants/A-white-on-sage-128.png";
+import {
+  DEFAULT_GUIDED_CHAT_CHROME_ID,
+  guidedChatChromeCssVars,
+  resolveGuidedChatChrome,
+} from "@/lib/guided-chat-chrome";
 
 interface AgentOverlayProps {
   messages: Message[];
@@ -37,6 +40,8 @@ interface AgentOverlayProps {
   voiceError?: string | null;
   onEnterVoice?: () => void;
   onExitVoice?: () => void;
+  /** Platform chrome theme id (1–20). */
+  chromeId?: number;
 }
 
 function voiceStatusLabel(phase: VoicePhase): string {
@@ -72,7 +77,11 @@ export function AgentOverlay({
   voiceError = null,
   onEnterVoice,
   onExitVoice,
+  chromeId = DEFAULT_GUIDED_CHAT_CHROME_ID,
 }: AgentOverlayProps) {
+  const chrome = resolveGuidedChatChrome(chromeId);
+  const chromeVars = guidedChatChromeCssVars(chrome.theme);
+  const guideAvatar = chrome.avatar;
   const [reply, setReply] = useState("");
   const [rollKey, setRollKey] = useState(0);
   const [dictating, setDictating] = useState(false);
@@ -341,7 +350,8 @@ export function AgentOverlay({
   if (!conversationStarted) {
     return (
       <div
-        className={`agent-overlay agent-overlay--prompt ${checkIn ? "agent-overlay--check-in" : ""} ${intake ? "agent-overlay--intake" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
+        className={`agent-overlay agent-overlay--prompt agent-overlay--chrome ${checkIn ? "agent-overlay--check-in" : ""} ${intake ? "agent-overlay--intake" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
+        style={chromeVars as CSSProperties}
       >
         <div className="agent-overlay-inner">
           {checkInBanner}
@@ -353,7 +363,7 @@ export function AgentOverlay({
                   <button
                     type="button"
                     onClick={() => onPlayLine(lastAgent.content)}
-                    className="btn-icon-sm"
+                    className="btn-icon-sm agent-overlay-speak"
                     aria-label="Play message"
                   >
                     <Volume2 size={18} strokeWidth={2} />
@@ -371,7 +381,8 @@ export function AgentOverlay({
 
   return (
     <div
-      className={`agent-overlay agent-overlay--thread ${checkIn ? "agent-overlay--check-in" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
+      className={`agent-overlay agent-overlay--thread agent-overlay--chrome ${checkIn ? "agent-overlay--check-in" : ""} ${voiceChrome ? "agent-overlay--voice" : ""} ${voiceExiting ? "agent-overlay--voice-exit" : ""}`}
+      style={chromeVars as CSSProperties}
     >
       <div className="agent-overlay-inner">
         {checkInBanner}
@@ -386,7 +397,7 @@ export function AgentOverlay({
               >
                 {!isUser && (
                   <Avatar
-                    src={GUIDE_AVATAR}
+                    src={guideAvatar}
                     alt="Nura"
                     fallback="N"
                     className="avatar-sm avatar-guide"

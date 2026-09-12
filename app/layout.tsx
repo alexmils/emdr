@@ -38,6 +38,10 @@ export const metadata: Metadata = {
     template: `%s — ${BRAND_SPOKEN}`,
   },
   description: BRAND_DESCRIPTION,
+  icons: {
+    icon: [{ url: "/brand-assets/favicon", type: "image/png" }],
+    apple: [{ url: "/brand-assets/favicon" }],
+  },
   openGraph: {
     title: BRAND_TITLE,
     description: BRAND_DESCRIPTION,

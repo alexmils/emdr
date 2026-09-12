@@ -32,6 +32,26 @@ describe("chromeBrandName", () => {
     assert.equal(s.siteName, BRAND_SPOKEN);
     assert.equal(s.fromName, BRAND_SPOKEN);
     assert.equal(s.email.brevoApiKey, "");
+    assert.equal(s.faviconUrl, "");
+    assert.equal(s.appLogoUrl, "");
+  });
+
+  it("keeps favicon and app logo brand assets", () => {
+    const s = normalizeSettingsForTest({
+      faviconUrl: "/brand/mark.png",
+      appLogoUrl: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    assert.equal(s.faviconUrl, "/brand/mark.png");
+    assert.ok(s.appLogoUrl.startsWith("data:image/png"));
+  });
+
+  it("drops invalid brand asset URLs", () => {
+    const s = normalizeSettingsForTest({
+      faviconUrl: "javascript:alert(1)",
+      appLogoUrl: "http://insecure.example/x.png",
+    });
+    assert.equal(s.faviconUrl, "");
+    assert.equal(s.appLogoUrl, "");
   });
 });
 

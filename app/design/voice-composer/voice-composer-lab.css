@@ -1,0 +1,263 @@
+/* Internal design lab — mimics guided chat chrome for avatar + Voice CTA picks */
+
+.vc-lab {
+  --ink: #2a3020;
+  --sage: #84b067;
+  --page: #f7faf6;
+  --elevated: #ffffff;
+  min-height: 100dvh;
+  padding: 1.5rem 1.25rem 3rem;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.vc-lab-intro {
+  max-width: 40rem;
+  margin: 0 auto 1.75rem;
+}
+
+.vc-lab-intro--page {
+  margin-bottom: 2.25rem;
+}
+
+.vc-lab-section {
+  max-width: 72rem;
+  margin: 0 auto 2.75rem;
+}
+
+.vc-lab-section .vc-lab-intro {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 40rem;
+}
+
+.vc-lab-kicker {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-alt), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #948f4e;
+}
+
+.vc-lab-h1 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.vc-lab-h2 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.vc-lab-lead {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.vc-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 1.25rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.vc-lab-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.85rem 0.85rem 1rem;
+  border-radius: 1.15rem;
+  background: var(--elevated);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  box-shadow: 0 8px 24px rgba(42, 48, 32, 0.05);
+}
+
+.vc-lab-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0 0.15rem;
+}
+
+.vc-lab-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sage) 22%, transparent);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.vc-lab-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.vc-lab-note {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #948f4e;
+}
+
+.vc-lab-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.vc-lab-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+.vc-lab-row--agent {
+  justify-content: flex-start;
+}
+
+.vc-lab-row--user {
+  justify-content: flex-end;
+}
+
+.vc-lab-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.vc-lab-avatar--user {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--sage) 18%, #edf9ed);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.vc-lab-bubble {
+  position: relative;
+  max-width: min(82%, 16.5rem);
+  padding: 0.75rem 0.9rem;
+  border-radius: 1.1rem;
+  text-align: left;
+}
+
+.vc-lab-bubble p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.vc-lab-bubble--agent {
+  border: 1px solid;
+  border-bottom-left-radius: 0.35rem;
+  padding-right: 1.65rem;
+}
+
+.vc-lab-bubble--user {
+  border: 1px solid;
+  border-bottom-right-radius: 0.35rem;
+}
+
+.vc-lab-speak {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  opacity: 0.75;
+}
+
+.vc-lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  padding: 0.15rem 0 0.25rem;
+}
+
+.vc-lab-chips span {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.vc-lab-composer {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 56px;
+  padding: 0.35rem 0.4rem 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+  box-shadow:
+    0 1px 2px rgba(42, 48, 32, 0.06),
+    0 8px 20px rgba(42, 48, 32, 0.06);
+}
+
+.vc-lab-mic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.vc-lab-placeholder {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.vc-lab-voice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 420px) {
+  .vc-lab {
+    padding: 1rem 0.75rem 2.5rem;
+  }
+
+  .vc-lab-bubble {
+    max-width: min(78%, 14rem);
+  }
+
+  .vc-lab-chips span:nth-child(n + 3) {
+    display: none;
+  }
+}

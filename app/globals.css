@@ -6,7 +6,7 @@
 }
 
 :root {
-  /* Nura �?? Pistachio palette (see docs/brand.md) */
+  /* Nura â€” Pistachio palette (see docs/brand.md) */
   --sidebar-bg: #3d4129;
   --sidebar-border: #4e5236;
   --sidebar-text: #eaf8ea;
@@ -49,7 +49,7 @@
   --radius-sheet: 12px;
   --ease-interactive: var(--ease);
 
-  /* Product UI type scale ? readable chrome across /app */
+  /* Product UI type scale — readable chrome across /app */
   --ui-display: 1.75rem;
   --ui-title: 1.5rem;
   --ui-headline: 1.25rem;
@@ -90,7 +90,19 @@ button {
   font-family: inherit;
 }
 
-/* ?? Typography ?? */
+/* —— Typography —— */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .text-large-title {
   font-size: var(--ui-title);
@@ -126,7 +138,7 @@ button {
   color: var(--sidebar-text);
 }
 
-/* ?? Brand lockup (wave wordmark) ?? */
+/* —— Brand lockup (wave wordmark) —— */
 
 .brand-lockup-link {
   display: inline-flex;
@@ -173,7 +185,7 @@ button {
   font-size: var(--ui-muted);
 }
 
-/* �??�?? Sidebar �??�?? */
+/* â€”â€” Sidebar â€”â€” */
 
 .app-sidebar {
   background: var(--sidebar-bg);
@@ -189,7 +201,7 @@ button {
     border-color 0.24s var(--ease);
 }
 
-/* Desktop: same open/close as mobile �?? collapse rail when drawer flag is off */
+/* Desktop: same open/close as mobile â€” collapse rail when drawer flag is off */
 @media (min-width: 768px) {
   .app-shell:not(.sidebar-drawer-open) .app-sidebar {
     width: 0;
@@ -334,7 +346,7 @@ button {
   background: var(--sidebar-hover);
 }
 
-/* In-flow between Upgrade and the account row ? no overlap */
+/* In-flow between Upgrade and the account row — no overlap */
 .sidebar-account-menu {
   position: relative;
   z-index: 1;
@@ -390,7 +402,7 @@ button {
   color: var(--text);
 }
 
-/* �??�?? Workspace �??�?? */
+/* â€”â€” Workspace â€”â€” */
 
 .app-shell.session-immersive .app-sidebar {
   width: 0;
@@ -418,7 +430,7 @@ button {
   display: none !important;
 }
 
-/* Help FAB sits outside .app-shell �?? hide while a set is running. */
+/* Help FAB sits outside .app-shell â€” hide while a set is running. */
 body:has(.app-shell.session-immersive) .help-fab {
   display: none !important;
 }
@@ -779,7 +791,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* �??�?? Sidebar primary nav �??�?? */
+/* â€”â€” Sidebar primary nav â€”â€” */
 
 .sidebar-primary-nav {
   display: flex;
@@ -810,7 +822,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--sidebar-active);
 }
 
-/* ?? Learn teaser (home) ?? */
+/* —— Learn teaser (home) —— */
 
 .learn-teaser {
   width: 100%;
@@ -973,7 +985,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* �??�?? Resources library �??�?? */
+/* â€”â€” Resources library â€”â€” */
 
 .resources-main {
   background: var(--bg-canvas);
@@ -1521,7 +1533,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
-/* Intake welcome ? quiet chips, one glowing composer */
+/* Intake welcome — quiet chips, one glowing composer */
 .agent-overlay--intake.agent-overlay--prompt {
   width: min(96%, 48rem);
 }
@@ -1823,7 +1835,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--bg-canvas);
 }
 
-/* �??�?? Buttons �??�?? */
+/* â€”â€” Buttons â€”â€” */
 
 .btn-primary {
   display: inline-flex;
@@ -1928,7 +1940,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--accent-hover);
 }
 
-/* �??�?? Agent overlay (prompt �?? then chat thread + pill composer) �??�?? */
+/* â€”â€” Agent overlay (prompt â†’ then chat thread + pill composer) â€”â€” */
 
 .agent-overlay {
   position: absolute;
@@ -2040,18 +2052,77 @@ body:has(.app-shell.session-immersive) .help-fab {
   text-align: left;
 }
 
-/* Agent: cool gray-mint ? not Paper, so sage avatar stays the brand signal */
+/* Agent: cool gray-mint — themed via --gc-* when .agent-overlay--chrome */
 .agent-chat-bubble--agent {
-  background: color-mix(in srgb, var(--bg-elevated) 82%, #c8d2c4 18%);
-  border: 1px solid color-mix(in srgb, var(--border) 70%, #c8d2c4);
+  background: var(--gc-agent-bg, color-mix(in srgb, var(--bg-elevated) 82%, #c8d2c4 18%));
+  border: 1px solid var(--gc-agent-border, color-mix(in srgb, var(--border) 70%, #c8d2c4));
   border-bottom-left-radius: 0.35rem;
 }
 
-/* User: stronger sage tint ? readable agent vs user at a glance */
+/* User: stronger sage tint — themed via --gc-* */
 .agent-chat-bubble--user {
-  background: color-mix(in srgb, var(--accent) 22%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: var(--gc-user-bg, color-mix(in srgb, var(--accent) 22%, var(--bg-elevated)));
+  border: 1px solid var(--gc-user-border, color-mix(in srgb, var(--accent) 40%, var(--border)));
   border-bottom-right-radius: 0.35rem;
+}
+
+.agent-overlay--chrome .agent-chat-text {
+  color: var(--gc-agent-text, var(--text));
+}
+
+.agent-overlay--chrome .agent-chat-bubble--user .agent-chat-text {
+  color: var(--gc-user-text, var(--text));
+}
+
+.agent-overlay--chrome .agent-chat-voice {
+  color: var(--gc-speak, var(--accent));
+}
+
+.agent-overlay--chrome .agent-quick-reply {
+  background: var(--gc-chip-bg, #fff);
+  border-color: var(--gc-chip-border, color-mix(in srgb, var(--accent) 45%, var(--border)));
+  color: var(--gc-chip-text, var(--text));
+}
+
+.agent-overlay--chrome .agent-composer {
+  background: var(--gc-composer-bg, #fff);
+  border-color: var(--gc-composer-border, color-mix(in srgb, var(--ink, #2a3020) 14%, var(--border)));
+}
+
+.agent-overlay--chrome .agent-composer-input {
+  color: var(--gc-text, var(--text));
+}
+
+.agent-overlay--chrome .agent-composer-input::placeholder {
+  color: var(--gc-placeholder, var(--text-muted));
+}
+
+.agent-overlay--chrome .agent-composer-mic {
+  color: var(--gc-mic, var(--ink, #2a3020));
+}
+
+.agent-overlay--chrome .agent-composer-voice-mode {
+  background: var(--gc-voice-bg, var(--ink, #2a3020));
+  color: var(--gc-voice-fg, var(--gold, #c6d67e));
+  border: var(--gc-voice-border, none);
+}
+
+.agent-overlay--chrome .agent-overlay-inner {
+  background: var(--gc-card-bg, transparent);
+  border-radius: 1.15rem;
+}
+
+.agent-overlay--chrome .agent-overlay-text {
+  color: var(--gc-agent-text, var(--text));
+}
+
+.agent-overlay--chrome .agent-overlay-speak {
+  color: var(--gc-speak, var(--accent));
+}
+
+.agent-overlay--chrome .avatar-sm:not(img) {
+  background: var(--gc-user-avatar-bg, var(--bg-muted));
+  color: var(--gc-user-avatar-fg, var(--text-secondary));
 }
 
 .agent-chat-text {
@@ -2147,6 +2218,16 @@ body:has(.app-shell.session-immersive) .help-fab {
   animation: agentComposerEnter 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+@keyframes agentComposerEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .agent-composer-wrap .agent-composer {
   margin-top: 0;
@@ -2231,6 +2312,11 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--ink, #2a3020);
 }
 
+.agent-overlay--chrome .agent-composer-mic:hover {
+  background: color-mix(in srgb, var(--gc-mic, var(--ink, #2a3020)) 12%, transparent);
+  color: var(--gc-mic, var(--ink, #2a3020));
+}
+
 .agent-composer-mic.is-listening {
   opacity: 1;
   background: color-mix(in srgb, var(--gold, #c6d67e) 35%, transparent);
@@ -2247,7 +2333,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   flex-shrink: 0;
   border: none;
   border-radius: 999px;
-  /* High contrast like ChatGPT blue CTA ? Nura ink + gold */
+  /* High contrast like ChatGPT blue CTA — Nura ink + gold */
   background: var(--ink, #2a3020);
   color: var(--gold, #c6d67e);
   cursor: pointer;
@@ -2262,6 +2348,16 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: var(--sidebar-bg, #3d4129);
   color: #fff;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold, #c6d67e) 55%, transparent);
+}
+
+/* Themed chrome must win over the default ink Voice hover */
+.agent-overlay--chrome .agent-composer-voice-mode:hover,
+.agent-overlay--chrome .agent-composer-voice-mode:focus-visible {
+  background: var(--gc-voice-bg, var(--ink, #2a3020));
+  color: var(--gc-voice-fg, var(--gold, #c6d67e));
+  border: var(--gc-voice-border, none);
+  filter: brightness(0.96);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold, #c6d67e) 45%, transparent);
 }
 
 .agent-composer-voice-mode:focus-visible {
@@ -2428,6 +2524,76 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .agent-voice-dock--enter .agent-voice-bar {
+  animation: agentVoiceBarIn 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+.agent-voice-dock--exit .agent-voice-bar {
+  animation: agentVoiceBarOut 0.42s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes agentVoiceBarIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes agentVoiceBarOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-voice-dock--enter,
+  .agent-voice-dock--exit,
+  .agent-voice-dock--enter .agent-voice-wave,
+  .agent-voice-wave--exit,
+  .agent-voice-dock--enter .agent-voice-bar,
+  .agent-voice-dock--exit .agent-voice-bar,
+  .agent-overlay--voice .agent-chat-messages,
+  .agent-overlay--voice .agent-overlay-body,
+  .agent-overlay--voice-exit .agent-chat-messages,
+  .agent-overlay--voice-exit .agent-overlay-body,
+  .agent-composer-wrap--enter {
+    animation: agentVoiceFadeOnly 0.35s ease both;
+  }
+
+  @keyframes agentVoiceFadeOnly {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .agent-voice-dock--exit,
+  .agent-voice-wave--exit,
+  .agent-voice-dock--exit .agent-voice-bar {
+    animation-name: agentVoiceFadeOutOnly;
+  }
+
+  @keyframes agentVoiceFadeOutOnly {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+.agent-voice-bar {
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -2592,9 +2758,19 @@ body:has(.app-shell.session-immersive) .help-fab {
   opacity: 0.72;
 }
 
+.agent-overlay--intake.agent-overlay--chrome .agent-composer-mic {
+  color: var(--gc-mic, var(--ink, #2a3020));
+}
+
 .agent-overlay--intake .agent-composer-voice-mode {
   background: var(--ink, #2a3020);
   color: var(--gold, #c6d67e);
+}
+
+.agent-overlay--intake.agent-overlay--chrome .agent-composer-voice-mode {
+  background: var(--gc-voice-bg, var(--ink, #2a3020));
+  color: var(--gc-voice-fg, var(--gold, #c6d67e));
+  border: var(--gc-voice-border, none);
 }
 
 .agent-overlay--intake .agent-voice-bar {
@@ -2642,7 +2818,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent);
 }
 
-/* �??�?? BLS bar expand (collapsed state) �??�?? */
+/* â€”â€” BLS bar expand (collapsed state) â€”â€” */
 
 .bls-expand-btn {
   display: inline-flex;
@@ -2692,7 +2868,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     border-bottom: none;
   }
 
-  /* Two-row Control Center layout �?? tap targets �?�36px, labeled groups */
+  /* Two-row Control Center layout â€” tap targets â‰¥36px, labeled groups */
   .bls-panel {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2741,7 +2917,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* �??�?? Form fields �??�?? */
+/* â€”â€” Form fields â€”â€” */
 
 .field {
   width: 100%;
@@ -2765,7 +2941,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: var(--radius-lg);
 }
 
-/* �??�?? Cards / settings �??�?? */
+/* â€”â€” Cards / settings â€”â€” */
 
 .apple-card,
 .settings-group {
@@ -2788,7 +2964,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* �??�?? BLS Adjustments sheet �??�?? */
+/* â€”â€” BLS Adjustments sheet â€”â€” */
 
 .gear-overlay {
   position: fixed;
@@ -3375,7 +3551,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: var(--shadow-sm);
 }
 
-/* �??�?? Toggle �??�?? */
+/* â€”â€” Toggle â€”â€” */
 
 .apple-toggle {
   position: relative;
@@ -3435,13 +3611,13 @@ body:has(.app-shell.session-immersive) .help-fab {
   box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
-/* ?? Settings page ?? */
+/* —— Settings page —— */
 
 .settings-shell {
   display: flex;
   min-height: 100dvh;
   background: var(--bg-muted);
-  /* Comfortable reading scale ? Settings was too small on desktop */
+  /* Comfortable reading scale — Settings was too small on desktop */
   --settings-title: 1.75rem;
   --settings-section: 1.125rem;
   --settings-body: 1.0625rem;
@@ -3582,7 +3758,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  /* Comfortable offset from top ? not jammed in the corner */
+  /* Comfortable offset from top — not jammed in the corner */
   padding: clamp(2rem, 5.5vh, 3.25rem) clamp(1.25rem, 4vw, 2.5rem) 3rem;
 }
 
@@ -3670,7 +3846,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--text);
 }
 
-/* ?? /app/billing ? centered card + upgrade flip ?? */
+/* —— /app/billing — centered card + upgrade flip —— */
 
 .billing-page {
   position: relative;
@@ -3724,7 +3900,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .billing-card {
   width: 100%;
-  /* Flat rotateY only ? preserve-3d can leave a thick edge / ghost silhouette */
+  /* Flat rotateY only — preserve-3d can leave a thick edge / ghost silhouette */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -3835,7 +4011,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     background: var(--bg-elevated);
   }
 
-  /* Stack Back above title �?? avoid cramped single-row chrome */
+  /* Stack Back above title â€” avoid cramped single-row chrome */
   .settings-sidebar-top {
     display: flex;
     flex-direction: column;
@@ -3896,7 +4072,7 @@ body:has(.app-shell.session-immersive) .help-fab {
     max-width: none;
   }
 
-  /* Tab already names the section ? drop duplicate heading on phone */
+  /* Tab already names the section — drop duplicate heading on phone */
   .settings-panel-title {
     position: absolute;
     width: 1px;
@@ -3923,7 +4099,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* �??�?? Toasts �??�?? */
+/* â€”â€” Toasts â€”â€” */
 
 .toast-viewport {
   position: fixed;
@@ -3988,7 +4164,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* �??�?? Admin dashboard �??�?? */
+/* â€”â€” Admin dashboard â€”â€” */
 
 .admin-page {
   width: 100%;
@@ -4013,7 +4189,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-kicker {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -4022,8 +4198,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-title {
   margin: 0.15rem 0 0;
-  font-size: 1.375rem;
-  font-weight: 600;
+  font-family: var(--font-display), serif;
+  font-size: var(--ui-title);
+  font-weight: 400;
 }
 
 .admin-main {
@@ -4059,20 +4236,21 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-stat-label {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-muted);
 }
 
 .admin-stat-value {
   margin: 0.35rem 0 0;
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-family: var(--font-display), serif;
+  font-size: var(--ui-display);
+  font-weight: 400;
   line-height: 1.1;
 }
 
 .admin-stat-hint {
   margin: 0.35rem 0 0;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-secondary);
 }
 
@@ -4403,7 +4581,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   color: var(--text-muted);
 }
 
-/* ?? Admin finances (screenshot ledger layout) ?? */
+/* —— Admin finances (screenshot ledger layout) —— */
 
 .admin-fin-header {
   padding: 1.25rem 1.5rem 0.35rem;
@@ -4490,7 +4668,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-fin-label {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-caption);
   color: var(--text-secondary);
 }
 
@@ -4517,7 +4695,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-fin-hint {
   margin: 0.4rem 0 0;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-muted);
 }
 
@@ -4977,7 +5155,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* ?? Admin analytics (screenshot ledger layout) ?? */
+/* —— Admin analytics (screenshot ledger layout) —— */
 
 .admin-an-header {
   padding: 1.25rem 1.5rem 0.35rem;
@@ -5235,7 +5413,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   }
 }
 
-/* ?? Admin users directory ?? */
+/* —— Admin users directory —— */
 
 .admin-users-header {
   padding: 1.25rem 1.5rem 0.5rem;
@@ -5272,7 +5450,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-users-search input {
   border: none;
   background: transparent;
-  font-size: 0.8125rem;
+  font-size: var(--ui-body);
   color: var(--text);
   width: 100%;
   outline: none;
@@ -5285,9 +5463,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border: none;
   background: #2a3020;
   color: #f7fdf7;
-  font-size: 0.8125rem;
+  font-size: var(--ui-muted);
   font-weight: 600;
-  padding: 0.45rem 0.8rem;
+  padding: 0.55rem 0.95rem;
   border-radius: 10px;
 }
 
@@ -5384,19 +5562,19 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-users-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: var(--ui-body);
 }
 
 .admin-users-table th,
 .admin-users-table td {
   text-align: left;
-  padding: 0.8rem 0.65rem;
+  padding: 0.85rem 0.75rem;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
 .admin-users-table th {
-  font-size: 0.72rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
   color: var(--text-muted);
 }
@@ -5716,13 +5894,14 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-panel-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--ui-headline);
   font-weight: 600;
 }
 
 .admin-panel-sub {
   margin: 0.25rem 0 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-muted);
+  line-height: 1.45;
   color: var(--text-secondary);
 }
 
@@ -5733,20 +5912,20 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: var(--ui-body);
 }
 
 .admin-table th,
 .admin-table td {
   text-align: left;
-  padding: 0.55rem 0.65rem;
+  padding: 0.7rem 0.75rem;
   border-bottom: 1px solid var(--border);
 }
 
 .admin-table th {
   font-weight: 600;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
 }
 
 .admin-table-empty {
@@ -5758,8 +5937,8 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-badge {
   display: inline-block;
   border-radius: 999px;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.6875rem;
+  padding: 0.2rem 0.55rem;
+  font-size: var(--ui-caption);
   font-weight: 600;
 }
 
@@ -5792,9 +5971,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   font-weight: 500;
-  padding: 0.55rem 0.85rem;
+  padding: 0.5rem 0.75rem;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   cursor: pointer;
@@ -5846,9 +6025,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
-  padding: 0.25rem 0.55rem;
+  padding: 0.4rem 0.7rem;
   margin-right: 0.35rem;
   cursor: pointer;
 }
@@ -5863,9 +6042,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--destructive);
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
-  padding: 0.25rem 0.55rem;
+  padding: 0.4rem 0.7rem;
   cursor: pointer;
 }
 
@@ -5881,6 +6060,41 @@ body:has(.app-shell.session-immersive) .help-fab {
   min-height: 100dvh;
   overflow: hidden;
   background: var(--bg-page);
+  /*
+   * Dense admin scale — a step under /app product chrome.
+   * Overrides --ui-* only inside this shell so Settings/session stay large.
+   */
+  --ui-display: 1.5rem;
+  --ui-title: 1.25rem;
+  --ui-headline: 1.0625rem;
+  --ui-body: 0.9375rem;
+  --ui-muted: 0.875rem;
+  --ui-caption: 0.8125rem;
+  --ui-control: 0.9375rem;
+  --ui-control-h: 2.5rem;
+  font-size: var(--ui-body);
+  line-height: 1.4;
+}
+
+.admin-shell .field,
+.admin-shell textarea.field,
+.admin-shell select.field {
+  font-size: var(--ui-control);
+  min-height: var(--ui-control-h);
+  padding: 0.5rem 0.8rem;
+  line-height: 1.35;
+}
+
+.admin-shell textarea.field {
+  min-height: 4.5rem;
+}
+
+.admin-shell .btn-primary,
+.admin-shell .btn-secondary,
+.admin-shell .btn-ghost {
+  font-size: var(--ui-control);
+  min-height: var(--ui-control-h);
+  padding: 0.45rem 1rem;
 }
 
 .admin-sidebar {
@@ -5908,14 +6122,14 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-sidebar-kicker {
   margin: 0.35rem 0 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
 }
 
 .admin-sidebar-title {
   margin: 0.2rem 0 0;
-  font-size: 1.125rem;
+  font-size: var(--ui-headline);
   font-weight: 650;
 }
 
@@ -5938,7 +6152,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-nav-section-label {
   margin: 0 0 0.25rem;
   padding: 0 0.85rem;
-  font-size: 0.6875rem;
+  font-size: var(--ui-caption);
   font-weight: 650;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -5957,9 +6171,9 @@ body:has(.app-shell.session-immersive) .help-fab {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.55rem 0.85rem;
+  padding: 0.6rem 0.85rem;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: var(--ui-body);
   font-weight: 550;
   line-height: 1.2;
   color: rgba(255, 255, 255, 0.78);
@@ -6035,9 +6249,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-nav-subitem {
   position: relative;
   display: block;
-  padding: 0.45rem 0.75rem 0.45rem 0.9rem;
+  padding: 0.5rem 0.75rem 0.5rem 0.9rem;
   border-radius: 10px;
-  font-size: 0.9375rem;
+  font-size: var(--ui-muted);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
@@ -6212,8 +6426,8 @@ body:has(.app-shell.session-immersive) .help-fab {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-  padding: 0.55rem 1.25rem;
-  font-size: 0.8125rem;
+  padding: 0.65rem 1.25rem;
+  font-size: var(--ui-muted);
   line-height: 1.35;
   flex-shrink: 0;
 }
@@ -6254,7 +6468,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  min-height: 2.25rem;
+  min-height: 2.35rem;
   padding: 0 0.65rem 0 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm, 6px);
@@ -6279,7 +6493,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   background: transparent;
   color: var(--text-primary, var(--text));
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   line-height: 1.3;
   outline: none;
 }
@@ -6313,9 +6527,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-search-kbd {
   flex-shrink: 0;
   font-family: var(--font-alt, ui-monospace, monospace);
-  font-size: 0.6875rem;
+  font-size: var(--ui-caption);
   line-height: 1;
-  padding: 0.2rem 0.35rem;
+  padding: 0.25rem 0.4rem;
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-muted);
@@ -6339,7 +6553,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-search-empty {
   margin: 0;
   padding: 0.85rem 0.9rem;
-  font-size: 0.8125rem;
+  font-size: var(--ui-muted);
   color: var(--text-secondary);
 }
 
@@ -6371,13 +6585,13 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .admin-search-result-title {
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   font-weight: 600;
   color: var(--text-primary, var(--text));
 }
 
 .admin-search-result-group {
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -6386,7 +6600,7 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-search-result-kind {
   flex-shrink: 0;
-  font-size: 0.6875rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -6528,7 +6742,7 @@ body:has(.app-shell.session-immersive) .help-fab {
   line-height: 1.35;
 }
 
-/* Legacy Stripe aliases ? shared setting toggle */
+/* Legacy Stripe aliases → shared setting toggle */
 .admin-stripe-mode {
   display: flex;
   flex-direction: column;
@@ -6616,21 +6830,25 @@ body:has(.app-shell.session-immersive) .help-fab {
 }
 
 .admin-page-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.35rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-elevated);
 }
 
 .admin-page-title {
   margin: 0;
-  font-size: 1.375rem;
-  font-weight: 600;
+  font-family: var(--font-display), serif;
+  font-size: var(--ui-title);
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .admin-page-subtitle {
-  margin: 0.35rem 0 0;
-  font-size: 0.875rem;
+  margin: 0.25rem 0 0;
+  font-size: var(--ui-muted);
+  line-height: 1.4;
   color: var(--text-secondary);
+  max-width: 42rem;
 }
 
 .admin-health-chips {
@@ -6642,9 +6860,9 @@ body:has(.app-shell.session-immersive) .help-fab {
 
 .admin-health-chip {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
-  padding: 0.3rem 0.65rem;
+  padding: 0.35rem 0.7rem;
   border-radius: var(--radius-sm, 6px);
   border: 1px solid var(--border);
 }
@@ -6787,8 +7005,8 @@ body:has(.app-shell.session-immersive) .help-fab {
 .admin-field-label {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.8125rem;
+  gap: 0.4rem;
+  font-size: var(--ui-muted);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -7366,7 +7584,7 @@ select.field option:disabled {
   margin-top: 1.1rem;
 }
 
-/* �??�?? Frontend site (public /) �??�?? */
+/* â€”â€” Frontend site (public /) â€”â€” */
 
 .frontend-home-landing {
   position: relative;
@@ -7380,7 +7598,7 @@ select.field option:disabled {
   --fe-accent: #84b067;
   --fe-accent-fg: #f7fdf7;
   --fe-gold: #c6d67e;
-  /* Same voice as /app ? contrasts rounded wave wordmark (see nura-brand.mdc) */
+  /* Same voice as /app — contrasts rounded wave wordmark (see nura-brand.mdc) */
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
   --font-alt: var(--font-fe-alt), ui-monospace, monospace;
@@ -7409,7 +7627,7 @@ select.field option:disabled {
   font-variation-settings: "SOFT" 45, "WONK" 0.4;
 }
 
-/* Section titles need room to breathe ? beat the h2 element rule above */
+/* Section titles need room to breathe — beat the h2 element rule above */
 .frontend-home h2.fe-section-title {
   font-weight: 500;
   line-height: 1.28;
@@ -7484,7 +7702,7 @@ select.field option:disabled {
 }
 
 .frontend-btn-primary:hover {
-  /* hover pulse + pistachio ? frontend-buttons.css */
+  /* hover pulse + pistachio — frontend-buttons.css */
 }
 
 .frontend-btn-ghost {
@@ -7502,7 +7720,7 @@ select.field option:disabled {
 }
 
 .frontend-btn-ghost:hover {
-  /* hover pulse + pistachio ? frontend-buttons.css */
+  /* hover pulse + pistachio — frontend-buttons.css */
 }
 
 .frontend-home a:focus-visible,
@@ -7631,7 +7849,7 @@ select.field option:disabled {
   }
 }
 
-/* ?? Auth shell: split form + session mockup ?? */
+/* —— Auth shell: split form + session mockup —— */
 .auth-shell {
   --auth-form-max: 26rem;
   display: flex;
@@ -7891,7 +8109,7 @@ select.field option:disabled {
   text-align: left;
 }
 
-/* Right pane: ball mockup ? desktop only */
+/* Right pane: ball mockup — desktop only */
 .auth-shell-pane--visual {
   display: none;
 }
@@ -7908,7 +8126,7 @@ select.field option:disabled {
   background: #f6f4e8;
 }
 
-/* Soft pistachio / pale-gold wash ? no lines or rings */
+/* Soft pistachio / pale-gold wash — no lines or rings */
 .auth-visual-atmosphere {
   position: absolute;
   inset: 0;
@@ -8122,7 +8340,7 @@ select.field option:disabled {
   }
 }
 
-/* �??�?? Onboarding / upgrade �??�?? */
+/* â€”â€” Onboarding / upgrade â€”â€” */
 .onboarding-bullets,
 .onboarding-steps {
   margin: 0 0 0.75rem;
@@ -8546,7 +8764,7 @@ select.field option:disabled {
   opacity: 0.72;
 }
 
-/* ?? Help chat widget (compact bottom-right panel) ?? */
+/* —— Help chat widget (compact bottom-right panel) —— */
 .help-fab {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right));
@@ -8881,7 +9099,7 @@ a.help-drawer-signin.btn-primary {
   }
 }
 
-/* ?? Admin SEO ?? */
+/* —— Admin SEO —— */
 .admin-seo-section {
   display: flex;
   flex-direction: column;
@@ -8900,20 +9118,20 @@ a.help-drawer-signin.btn-primary {
 .admin-seo-note {
   margin-top: 0.5rem;
   max-width: 36rem;
-  font-size: 0.75rem;
+  font-size: var(--ui-muted);
   line-height: 1.45;
   color: var(--text-secondary);
 }
 
 .admin-seo-range {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .admin-seo-range-btn {
   cursor: pointer;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8125rem;
+  padding: 0.45rem 0.85rem;
+  font-size: var(--ui-muted);
   color: var(--text-secondary);
   border: 1px solid var(--border);
   background: transparent;
@@ -8951,18 +9169,18 @@ a.help-drawer-signin.btn-primary {
 }
 
 .admin-seo-serp-url {
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--earth, #84b067);
 }
 
 .admin-seo-serp-title {
-  font-size: 1.125rem;
+  font-size: var(--ui-headline);
   line-height: 1.3;
   color: #8ab4f8;
 }
 
 .admin-seo-serp-desc {
-  font-size: 0.875rem;
+  font-size: var(--ui-muted);
   line-height: 1.45;
   color: var(--text-secondary);
 }
@@ -8999,19 +9217,19 @@ a.help-drawer-signin.btn-primary {
 }
 
 .admin-seo-share-host {
-  font-size: 0.625rem;
+  font-size: var(--ui-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
 }
 
 .admin-seo-share-title {
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   color: var(--text);
 }
 
 .admin-seo-share-desc {
-  font-size: 0.75rem;
+  font-size: var(--ui-muted);
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -9032,13 +9250,13 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-stat-value {
   margin-top: 0.35rem;
-  font-size: 0.9375rem;
+  font-size: var(--ui-body);
   word-break: break-all;
   color: var(--text);
 }
 
 .admin-seo-kicker {
-  font-size: 0.6875rem;
+  font-size: var(--ui-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
@@ -9058,7 +9276,7 @@ a.help-drawer-signin.btn-primary {
 .admin-seo-kpi {
   margin-top: 0.25rem;
   font-family: var(--font-display), serif;
-  font-size: 1.75rem;
+  font-size: var(--ui-display);
   color: var(--text);
 }
 
@@ -9096,7 +9314,7 @@ a.help-drawer-signin.btn-primary {
 .admin-seo-list-label {
   flex: 1;
   min-width: 0;
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9105,7 +9323,7 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-list-meta {
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-secondary);
   text-align: right;
 }
@@ -9127,8 +9345,8 @@ a.help-drawer-signin.btn-primary {
 .admin-seo-badge {
   display: inline-block;
   margin-right: 0.4rem;
-  padding: 0.05rem 0.35rem;
-  font-size: 0.625rem;
+  padding: 0.1rem 0.4rem;
+  font-size: var(--ui-caption);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--earth, #84b067);
@@ -9157,7 +9375,7 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-conn-head h3 {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
   font-weight: 500;
   color: var(--text);
 }
@@ -9172,8 +9390,8 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-connect-btn {
   cursor: pointer;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  font-size: var(--ui-caption);
   font-weight: 500;
   color: var(--earth, #84b067);
   background: transparent;
@@ -9195,26 +9413,26 @@ a.help-drawer-signin.btn-primary {
 }
 
 .admin-seo-status-ok {
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--earth, #84b067);
   flex-shrink: 0;
 }
 
 .admin-seo-status-alt {
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: #7dd3fc;
   flex-shrink: 0;
 }
 
 .admin-seo-status-off {
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .admin-seo-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-caption);
   word-break: break-all;
   color: var(--text);
 }
@@ -9232,8 +9450,8 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-page-chip {
   cursor: pointer;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.8125rem;
+  padding: 0.4rem 0.75rem;
+  font-size: var(--ui-muted);
   color: var(--text-secondary);
   border: 1px solid var(--border);
   background: transparent;
@@ -9249,7 +9467,7 @@ a.help-drawer-signin.btn-primary {
   color: var(--earth, #84b067);
   text-decoration: none;
   word-break: break-all;
-  font-size: 0.875rem;
+  font-size: var(--ui-body);
 }
 
 .admin-seo-link:hover {
@@ -9262,6 +9480,96 @@ a.help-drawer-signin.btn-primary {
 
 .admin-seo-empty {
   padding: 1.5rem 1rem;
+}
+
+.admin-seo-default-og {
+  margin-bottom: 1.25rem;
+}
+
+.admin-seo-og-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.admin-seo-og-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-seo-og-preview {
+  width: 9.5rem;
+  height: 5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-seo-og-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-seo-og-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.admin-seo-upload-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 0;
+}
+
+.admin-seo-upload-label:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-brand-favicon-preview {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.admin-brand-favicon-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.admin-brand-logo-preview {
+  width: 10rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--sidebar-bg, #3d4129);
+  padding: 0.35rem 0.55rem;
+  box-sizing: border-box;
+}
+
+.admin-brand-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
+  display: block;
 }
 
 .admin-seo-cookie-actions {

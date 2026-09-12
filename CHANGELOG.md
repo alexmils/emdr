@@ -146,6 +146,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Admin Voice tab: ElevenLabs settings card on top, thin divider, then lazy-loaded voice cards (name, play sample, round select); toast on select; `POST /api/admin/ai/voice-preview`; admin ToastProvider
 - Admin Voice picker review fixes: reload after Configure (`reloadToken`), preview generation token, select lock + quiet save (toast only), voice ID validation + encodeURIComponent, fixed sample text + per-admin preview cooldown, Refresh on empty-key state
 - Admin chrome: drop the pink “Live Stripe is active” top banner; only show the demo/sandbox banner when Demo mode is on (live status stays on Billing → Stripe)
+- Cursor rule `.cursor/rules/turnstile-forms.mdc` (`alwaysApply`) — guest-facing forms must use `TurnstileField` + server `verifyTurnstileToken`
 
 ### Fixed
 - Guided BLS: Space/click only start a set in desensitization / installation / body_scan while idle; check-in offers **Repeat set** if the last set was missed; free sessions still start anytime
@@ -318,11 +319,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Guided Voice Mode: pistachio **ribbon wave** between transcript and status bar — mic-reactive while listening, soft ambient sway while thinking/speaking (`VoiceWave`, `useMicLevel`, `lib/mic-level.ts`)
 - Guided Voice Mode visual: dual S-curve ribbons (logo vernacular, not EQ bars) + ease-in-out enter (chat lifts, dock fades up from below)
 - Voice wave fix: stronger idle amplitude, taller SVG, unique gradient ids — no more flat “broken” line
+- Voice Mode visual: circular pistachio orb (soft core + wobble rings) instead of horizontal ribbons
+- Voice orb: wave ribbons clipped *inside* the circle (not rings around it)
+- Voice orb fix: smooth cubic Bézier ribbons (no jagged L paths), softer sage strokes; verified via screenshot
+- Voice orb rewrite: Canvas mint disk + continuous sine inside clip (SVG paths looked broken); verified screenshot
 - Voice Mode wave: circle removed — free pistachio sine ribbons only (Canvas)
 - Voice Mode motion: stronger wave travel; enter/exit fades (dock, wave, bar, chat lift/drop, composer re-enter) — no hard cut on End voice
 - Voice Mode wave: left/right edge dissolve (mask gradient transparent → visible) so ribbons fade out at the sides
 - Voice Mode wave: 3 ribbons; listening vs speaking/thinking differ by drift speed, harmonics, mic punch, and opacity
 - Guided chat avatar: **A · white on sage** (was G mint); agent bubbles cooler gray-mint, user bubbles stronger sage tint
+- Design lab: `/design/voice-composer` — 10 avatar + Start voice chrome boxes for picking (noindex, robots disallow)
+- Design lab Set B: `/design/voice-composer` adds #11–20 full chrome recolors (bubbles, text, chips, composer, Voice)
+- Admin Platform → General: clickable Guided chat look picker (1–20); saves `guidedChatChromeId` and applies in `AgentOverlay`
+- Guided chat chrome review fixes: track `nura-circle-variants` avatars; Voice/mic hover keeps theme; `--gc-card-bg` on overlay; intake respects chrome vars
+- **Admin type scale**: `/admin` chrome aligned with product `--ui-*` tokens (body ~17px, muted 16px, caption 15px) — titles, tabs, tables, SEO Analytics, Connections, search, users, fields/buttons (`globals.css` `.admin-shell`)
+- **Admin SEO share images**: site-wide default Open Graph image + per-page override with upload (jpeg/png/webp) or URL; stored in `app_settings.seo`; public `/og-image` serves data URLs for crawlers
+- **Admin type scale dialed back**: denser tokens on `.admin-shell` only (body ~15px, muted 14px, caption 13px, controls 40px) — still above the old ~12px chrome; `/app` unchanged
+- **Platform brand assets**: Admin → Platform → General can upload favicon + /app sidebar logo (stored in `app_settings`; served at `/brand-assets/favicon` and `/brand-assets/app-logo`); Sidebar + AdminShell use `BrandLockup asset="app"`
+- **Admin SEO client bundle**: stop pulling `pg` into `/admin/seo` — OG helpers in `lib/seo-og-image.ts`; DTOs in `lib/site-seo-types.ts` + `lib/site-analytics-types.ts` (Turbopack followed `import type` from server modules)
 
 ---
 

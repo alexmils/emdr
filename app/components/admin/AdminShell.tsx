@@ -368,7 +368,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-head">
-          <BrandLockup href="/admin" tone="white" />
+          <BrandLockup href="/admin" tone="white" asset="app" />
           <p className="admin-sidebar-kicker">Admin</p>
         </div>
         <Suspense

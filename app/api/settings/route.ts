@@ -43,14 +43,16 @@ function trimStr(v: unknown, max: number): string {
 
 export async function GET() {
   return withAuth(async () => {
-    const enabled = await memoryEnabled();
-    const voiceEnabled = await voiceEnabledFlag();
+    const platform = await getPlatformSettings();
+    const enabled = platform.flags.memory !== false;
+    const voiceEnabled = platform.flags.voice !== false;
     return NextResponse.json({
       settings: await getSettings(),
       memories: enabled ? await listMemories() : [],
       memorySets: enabled ? await listMemorySets() : [],
       memoryEnabled: enabled,
       voiceEnabled,
+      guidedChatChromeId: platform.guidedChatChromeId,
     });
   });
 }

@@ -165,7 +165,7 @@ export function Sidebar() {
   return (
     <aside className="app-sidebar flex h-full shrink-0 flex-col">
       <div className="app-sidebar-top">
-        <BrandLockup href={null} tone="white" />
+        <BrandLockup href={null} tone="white" asset="app" />
         <button
           type="button"
           className="app-sidebar-close"

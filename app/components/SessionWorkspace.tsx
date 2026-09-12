@@ -63,6 +63,7 @@ export function SessionWorkspace() {
     maybeShowAd,
     noteAdSetCompleted,
     voiceEnabled,
+    guidedChatChromeId,
   } = useApp();
   const { user: currentUser } = useCurrentUser();
 
@@ -633,6 +634,7 @@ export function SessionWorkspace() {
             voiceError={voice.error}
             onEnterVoice={voice.enter}
             onExitVoice={exitVoice}
+            chromeId={guidedChatChromeId}
           />
         )}
 

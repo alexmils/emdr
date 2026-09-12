@@ -16,6 +16,10 @@ import {
 } from "@/lib/ads";
 import { BRAND_SPOKEN, chromeBrandName } from "@/lib/brand";
 import {
+  clampGuidedChatChromeId,
+  DEFAULT_GUIDED_CHAT_CHROME_ID,
+} from "@/lib/guided-chat-chrome";
+import {
   DEFAULT_PLATFORM_STRIPE,
   isStripeCredentialSetEmpty,
   normalizeStripeConfig,
@@ -34,6 +38,7 @@ import {
   normalizeSeoConfig,
   type PlatformSeoConfig,
 } from "@/lib/seo-config";
+import { normalizeBrandAssetUrl } from "@/lib/brand-assets";
 
 export type { HelpSettings };
 export { DEFAULT_HELP_SETTINGS, normalizeHelpSettings };
@@ -97,6 +102,21 @@ export type PlatformSettings = {
   email: PlatformEmailConfig;
   /** Public-site SEO + marketing tags — Admin → SEO. */
   seo: PlatformSeoConfig;
+  /**
+   * Browser tab icon (jpeg/png/webp data URL, https, or path).
+   * Empty → built-in `/icon.png`.
+   */
+  faviconUrl: string;
+  /**
+   * Wordmark for the /app (and admin) dark sidebar.
+   * Empty → built-in white wave lockup.
+   */
+  appLogoUrl: string;
+  /**
+   * Guided chat chrome look (1–20) — avatar, bubbles, composer, Start voice.
+   * Picked in Admin → Platform → General.
+   */
+  guidedChatChromeId: number;
 };
 
 export const DEFAULT_PLATFORM_AI: PlatformAiConfig = {
@@ -135,6 +155,9 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   },
   email: { ...DEFAULT_PLATFORM_EMAIL },
   seo: { ...DEFAULT_PLATFORM_SEO, pages: {} },
+  faviconUrl: "",
+  appLogoUrl: "",
+  guidedChatChromeId: DEFAULT_GUIDED_CHAT_CHROME_ID,
 };
 
 /** Old user AppSettings mistakenly stored in app_settings (has autoVoice, no siteName). */
@@ -271,6 +294,9 @@ function normalizeSettings(raw: unknown): PlatformSettings {
     stripe: normalizeStripeConfig((r as Partial<PlatformSettings>).stripe),
     email: normalizeEmailConfig((r as Partial<PlatformSettings>).email),
     seo: normalizeSeoConfig((r as Partial<PlatformSettings>).seo),
+    faviconUrl: normalizeBrandAssetUrl(r.faviconUrl),
+    appLogoUrl: normalizeBrandAssetUrl(r.appLogoUrl),
+    guidedChatChromeId: clampGuidedChatChromeId(r.guidedChatChromeId),
   };
 }
 
