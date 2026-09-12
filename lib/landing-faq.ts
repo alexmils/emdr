@@ -14,7 +14,7 @@ export const LANDING_FAQ_ITEMS: readonly LandingFaqItem[] = [
   },
   {
     q: "What is the difference between agent-guided and Free?",
-    a: "Agent-guided sessions use a session agent through protocol phases and check-ins. Free is the moving ball only — you control speed and timing yourself, with no agent and no chat.",
+    a: "Agent-guided sessions use a session agent through protocol phases and check-ins. Free is visual sets you run yourself — animation, speed, sound, and timing, with no agent and no chat.",
   },
   {
     q: "Do I need a therapist to use it?",

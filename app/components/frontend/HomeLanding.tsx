@@ -65,7 +65,7 @@ const ABOUT_IMAGES = [
   { src: IMG.quietHands, alt: "Quiet hands at rest" },
 ];
 
-const ABOUT_COPY = `At ${BRAND_SPOKEN}, we believe therapy support is more than a blank screen — it’s a commitment to calmer sessions and clearer steps. Agent-guided EMDR when you want a session agent with you, Free sessions for the moving ball alone, and readable resources — we keep the workspace quiet so you can stay with what matters.`;
+const ABOUT_COPY = `At ${BRAND_SPOKEN}, we believe therapy support is more than a blank screen — it’s a commitment to calmer sessions and clearer steps. Agent-guided EMDR when you want a session agent with you, Free sessions when you run the sets yourself, and readable resources — we keep the workspace quiet so you can stay with what matters.`;
 
 /** Decorative photos — native img so next/image does not emit 10+ srcset variants each. */
 function DecorativeImg({
@@ -102,7 +102,7 @@ const FEATURES = [
   {
     icon: Waves,
     title: "Agent-guided or Free",
-    body: "A session agent walks you through EMDR phases and check-ins — or Free, where you run the moving ball with no agent and no chat.",
+    body: "A session agent walks you through EMDR phases and check-ins — or Free, where you run visual sets yourself with no agent and no chat.",
   },
   {
     icon: Shield,
@@ -132,11 +132,11 @@ const SHOWCASES = [
   },
   {
     kicker: "Free session",
-    title: "The moving ball, on your terms",
-    body: "When you already know what you need, Free is the visual set without an agent — adjust speed and sound, then go fullscreen when you are ready.",
+    title: "Sets without an agent",
+    body: "When you already know what you need, Free is visual sets on your own — pick animation, speed, sound, and repeats, then go fullscreen while a set runs.",
     points: [
-      "Moving ball for visual sets — no agent, no chat",
-      "Controls for speed, sound, and repeats",
+      "Visual sets you start and stop yourself",
+      "Animation, speed, sound, and repeats in session controls",
       "Immersive fullscreen while a set is running",
     ],
     image: IMG.calmRest,
@@ -173,11 +173,11 @@ const STEPS = [
   {
     n: "02",
     title: "Choose agent-guided or Free",
-    summary: "One path with a session agent. One with just the ball.",
-    body: "Agent-guided sessions use a session agent through protocol phases, grounding, and check-ins. Free is the moving ball only — no agent, no chat — when you already know your target.",
+    summary: "One path with a session agent. One with sets you run yourself.",
+    body: "Agent-guided sessions use a session agent through protocol phases, grounding, and check-ins. Free is visual sets without an agent — you control animation, speed, sound, and timing.",
     bullets: [
       "Agent-guided: phases, check-ins, and grounding",
-      "Free: moving ball only, no agent",
+      "Free: sets you run yourself, no agent",
       "Pick again whenever you start a new session",
     ],
     image: IMG.supportTalk,
@@ -187,9 +187,9 @@ const STEPS = [
     n: "03",
     title: "Run your sets",
     summary: "Ground, then start visual sets.",
-    body: "In agent-guided, follow grounding and intake, then run sets with the moving ball when you are ready. In Free, start the ball anytime. Adjust the controls bar, then go immersive while a set runs.",
+    body: "In agent-guided, follow grounding and intake, then run sets when you are ready. In Free, start a set anytime. Adjust session controls, then go immersive while a set runs.",
     bullets: [
-      "Speed, sound, and repeats in session controls",
+      "Speed, animation, sound, and repeats in session controls",
       "Check in after each set when you use the agent",
       "Fullscreen while a set is running",
     ],
@@ -216,7 +216,7 @@ const OFFERS = [
     href: appPath("/create-account"),
     tag: "Now",
     title: "Agent-guided sessions",
-    body: "Visual sets with a moving ball, optional voice, and a session agent on protocol — built for practice between sessions.",
+    body: "Visual sets, optional voice, and a session agent on protocol — built for practice between sessions.",
     image: IMG.supportTalk,
   },
   {
@@ -238,7 +238,7 @@ const OFFERS = [
 const TESTIMONIALS = [
   {
     quote:
-      "The interface feels calm enough to actually stay with a difficult memory. Free sessions let me practice with just the ball.",
+      "The interface feels calm enough to actually stay with a difficult memory. Free sessions let me practice without an agent.",
     name: "Maya L.",
     role: "Trial member",
     image: IMG.avatarMaya,
@@ -266,7 +266,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "I open Free when I need a quiet visual set — no agent, no pressure, just the moving ball.",
+      "I open Free when I need a quiet set — no agent, no pressure, just the controls I need.",
     name: "Elena P.",
     role: "Weekly plan",
     image: IMG.avatarMaya,
@@ -479,7 +479,7 @@ const PRICING_CARDS: {
       "Flexible billing if you want to stay light — same full app, billed each week.",
     features: [
       "Unlimited agent-guided sessions",
-      "Full Free sessions (moving ball)",
+      "Full Free sessions (sets you run yourself)",
       "No ads on paid plans",
       "Cancel anytime in the portal",
       "Same session workspace as other plans",
@@ -807,7 +807,7 @@ export function HomeLanding({
             <h2 className="fe-section-title">Support crafted around your pace</h2>
             <p className="fe-section-body">
               Every surface is built for calm focus — a session agent when you want
-              structure, Free when you just need the moving ball, and resources you
+              structure, Free when you run the sets yourself, and resources you
               can finish in one sitting.
             </p>
           </div>

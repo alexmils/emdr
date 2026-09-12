@@ -75,7 +75,7 @@ Forbidden: OpenAI green, Apple blue, purple wellness, hospital blue, neon compet
 
 ### Copy (user-facing)
 - English, sentence case, short, clinic-quiet.
-- **Never say BLS** → Free / Free mode / Free session time / Set running / Session controls / moving ball.
+- **Never say BLS** → Free / Free mode / Free session time / Set running / Session controls / visual sets (not “moving ball” as the default Free pitch).
 - No fake metrics, clinical overclaims, or “find a therapist”.
 - New/edited user-facing strings → run **/redpen** first.
 

@@ -101,7 +101,7 @@ export async function ensureHelpSchema(): Promise<void> {
     const seeds: { title: string; body: string; tags: string[] }[] = [
       {
         title: "What Nura is",
-        body: "Nura (NuraHelp) is a self-help wellness tool with guided sessions and a moving ball for visual sets. It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
+        body: "Nura (NuraHelp) is a self-help wellness tool with agent-guided sessions and Free visual sets. It is not a licensed therapist, not emergency care, and not a medical device. Users should seek professional help for clinical needs.",
         tags: ["product", "safety"],
       },
       {
@@ -111,7 +111,7 @@ export async function ensureHelpSchema(): Promise<void> {
       },
       {
         title: "Session modes",
-        body: "Agent-guided sessions use a session agent through wellness phases with check-ins. Free sessions are the moving ball only — you control start, stop, and adjustments, with no agent. Start with New chat, then choose agent-guided or Free.",
+        body: "Agent-guided sessions use a session agent through wellness phases with check-ins. Free sessions are visual sets you run yourself — animation, speed, sound, and timing, with no agent. Start with New chat, then choose agent-guided or Free.",
         tags: ["sessions"],
       },
       {

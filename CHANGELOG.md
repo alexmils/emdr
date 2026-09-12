@@ -366,6 +366,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Docker build: public pages/`robots.txt`/`llms.txt` use literal `revalidate = 3600` (Next rejects imported identifiers for segment config); export `isSeoPageId` from `lib/seo-config.ts` for `/og-image`
 - Marketing + mode picker: bare “Guided or Free” → **agent-guided** (session agent) vs **Free** (moving ball only, no agent); FAQ, How it works, SessionStartScreen, brand rule
 - Home blog byline avatar: replace cropped `BrandMark` wave with sage circle wordmark (`A-white-on-sage-128`, `BRAND_CIRCLE_AVATAR`)
+- Free / set copy: drop default “moving ball” marketing pitch — prefer **visual sets** / **sets you run yourself**; Free showcase title **Sets without an agent**; brand rule bans ball-as-product headlines
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

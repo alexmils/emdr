@@ -9,7 +9,7 @@ alwaysApply: false
 When editing **app chrome** (`/app`, `/admin`, shared components except `frontend/`):
 
 1. **Do not** follow Apple HIG, frosted glass, or iOS blue (`#007AFF`). The `apple-design-ui` rule is retired.
-2. Follow `.cursor/rules/nura-brand.mdc` for name, color, type, and voice. Do not reintroduce Inter, `#10a37f`, or the **BLS** acronym in user-facing copy (use Free / Set running / moving ball).
+2. Follow `.cursor/rules/nura-brand.mdc` for name, color, type, and voice. Do not reintroduce Inter, `#10a37f`, or the **BLS** acronym in user-facing copy (use Free / Set running / visual sets / session controls — not “moving ball” as the default Free pitch).
 
 3. **Layout**: dark sidebar (`#3D4129`), mint canvas (`#EDF9ED` / `#A4EDA5` tint); flat surfaces, 1px borders, 6–8px radius.
    - Accent: `#84B067` primary; pistachio `#C6D67E` focus only

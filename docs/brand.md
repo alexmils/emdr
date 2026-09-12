@@ -93,9 +93,11 @@ Files: `public/brand/nura-wave-logo.png` (+ `-black` / `-white` / color squares)
 
 English, sentence case, short sentences. No hype (“revolutionary”, “neural networks”, “blockchain”). Clinic-quiet, not a startup pitch.
 
-**Never say BLS to users.** Prefer **Free** / **Free mode** / **Set running** / **moving ball**. Internal code names (`bls`, `TRIAL_BLS_SECONDS`) are fine. See `.cursor/rules/nura-brand.mdc`.
+**Never say BLS to users.** Prefer **Free** / **Free mode** / **Set running** / **visual sets** / **session controls**. Internal code names (`bls`, `TRIAL_BLS_SECONDS`) are fine. See `.cursor/rules/nura-brand.mdc`.
 
-**Session modes on marketing:** do not say bare “Guided or Free.” Prefer **agent-guided** (session agent through phases) vs **Free** (moving ball only, no agent). Do not lead headlines with “AI.”
+**Do not default Free to “moving ball.”** Sets include animation choices (Dot, Flash, …), sound, and optional gamepad rumble. Prefer **visual sets** / **sets you run yourself**. Name the ball only when teaching visual rhythm on an educational page — never as the Free headline.
+
+**Session modes on marketing:** do not say bare “Guided or Free.” Prefer **agent-guided** (session agent through phases) vs **Free** (sets without an agent). Do not lead headlines with “AI.”
 
 ## SEO
 
@@ -106,7 +108,7 @@ The brand name does not need to contain “EMDR”. Pages do.
 | `/` | Brand + EMDR primary CTA |
 | `/about` | Who Nura is, what the app offers, disclaimers |
 | `/editorial` | How public guides are written (self-help, not a named clinician) |
-| `/emdr` | What EMDR is, visual sets / moving ball, how a session works |
+| `/emdr` | What EMDR is, visual sets, how a session works |
 | `/resources` | Public hub for EMDR guides |
 | `/blog` | Article index |
 | `/blog/[slug]` | Individual guides (visual sets, practice, safety) |

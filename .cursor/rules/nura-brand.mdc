@@ -76,10 +76,22 @@ English, sentence case, short. No hype (“revolutionary”, “blockchain”, �
 |---|---|
 | BLS / free BLS / BLS minutes | **Free** / **Free mode** / **Free session time** |
 | BLS running | **Set running** |
-| BLS bar / BLS controls | **Controls bar** / **Session controls** / **moving ball** |
+| BLS bar / BLS controls | **Controls bar** / **Session controls** |
 | BLS preview | **Free session time** (or “live preview” for the gear sheet) |
 
 Code/CSS identifiers may stay (`bls`, `TRIAL_BLS_SECONDS`, `.bls-dock`) — that is not user-facing. Extend `rewriteRetiredBrandCopy` if remapping stored help text.
+
+### Visual sets — do not default to “moving ball”
+
+Free / agent-guided sets are **not** “just a ball.” The product already has multiple stimulus options (e.g. Dot and Flash animations, stereo sound, gamepad rumble), and more will ship. Marketing and first-run copy must not collapse the product to one animation.
+
+| Instead of (default) | Write |
+|---|---|
+| the moving ball / just the ball | **visual set** / **sets** / **session sets** |
+| Free is the moving ball only | **Free is sets you run yourself** (no agent, no chat) |
+| BLS controls → moving ball | **Session controls** (speed, animation, sound, repeats) |
+
+OK to name the ball **once** on educational pages (`/emdr`, a guide about visual rhythm) as *one* way the set can look — not as the product definition, and not in Free headlines (“The moving ball, on your terms” is banned).
 
 ### Session modes (marketing + first-run copy)
 
@@ -88,8 +100,8 @@ Never use bare **“Choose Guided or Free”** on the homepage or other marketin
 | Instead of | Write |
 |---|---|
 | Guided / Guided mode (alone) | **Agent-guided** / **agent-guided session** / **session agent** |
-| Free mode (alone on marketing) | **Free session** / **Free (moving ball only)** |
-| Choose Guided or Free | **Choose agent-guided or Free** — then one line: agent walks phases; Free is ball only, no agent |
+| Free mode (alone on marketing) | **Free session** / **Free (sets you run yourself)** |
+| Choose Guided or Free | **Choose agent-guided or Free** — then one line: agent walks phases; Free is sets without an agent |
 
 Product chrome can keep short labels (**Agent-guided session** · **Free session**) if the subtitle or card description explains the difference. Do **not** lead headlines with “AI”; prefer **session agent** / **agent-guided**. Internal code may stay `guided` / `free`.
 

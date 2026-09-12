@@ -69,19 +69,19 @@ describe("rewriteRetiredBrandCopy", () => {
     );
     assert.equal(
       rewriteRetiredBrandCopy("Free mode is BLS-only controls"),
-      "Free mode is the moving ball only"
+      "Free mode is sets you run yourself"
     );
     assert.equal(
       rewriteRetiredBrandCopy(
         "overview of bilateral stimulation and how guided sessions are structured"
       ),
-      "overview of the moving ball and how Guided sessions are structured"
+      "overview of visual sets and how Guided sessions are structured"
     );
     assert.equal(
       rewriteRetiredBrandCopy(
         "use **bilateral stimulation** — rhythmically tracking something left and right — while"
       ),
-      "follow **a moving target left and right** — like the ball in Free or Guided mode — while"
+      "follow **a moving target left and right** during a visual set — while"
     );
   });
 });

@@ -59,23 +59,23 @@ export function rewriteRetiredBrandCopy(text: string): string {
     .replaceAll("What NuraHelp is", "What Nura is")
     .replaceAll(
       "guided sessions and bilateral stimulation (BLS)",
-      "guided sessions and a moving ball for visual sets"
+      "guided sessions and visual sets"
     )
     .replaceAll(
       "overview of bilateral stimulation and how guided sessions",
-      "overview of the moving ball and how Guided sessions"
+      "overview of visual sets and how Guided sessions"
     )
     .replaceAll(
       "many people use **bilateral stimulation** — rhythmically tracking something left and right",
-      "many people follow **a moving target left and right** — like the ball in Free or Guided mode"
+      "many people follow **a moving target left and right** during a visual set"
     )
     .replaceAll(
       "**bilateral stimulation** — rhythmically tracking something left and right",
-      "**a moving target left and right** — like the ball in Free or Guided mode"
+      "**a moving target left and right** during a visual set"
     )
     .replaceAll(
       "bilateral stimulation — rhythmically tracking something left and right",
-      "a moving target left and right — like the ball in Free or Guided mode"
+      "a moving target left and right during a visual set"
     )
     .replaceAll("bilateral stimulation", "left-and-right eye tracking")
     .replaceAll(
@@ -89,10 +89,18 @@ export function rewriteRetiredBrandCopy(text: string): string {
     .replaceAll("10 minutes of free BLS", "10 minutes of Free mode")
     .replaceAll("free BLS minutes", "Free mode minutes")
     .replaceAll("free BLS", "Free mode")
-    .replaceAll("Free mode is BLS-only controls", "Free mode is the moving ball only")
-    .replaceAll("free BLS-only", "Free mode (ball only)")
-    .replaceAll("BLS-only", "the moving ball only")
-    .replaceAll("BLS controls", "Session controls");
+    .replaceAll(
+      "Free mode is BLS-only controls",
+      "Free mode is sets you run yourself"
+    )
+    .replaceAll("free BLS-only", "Free mode (sets you run yourself)")
+    .replaceAll("BLS-only", "sets you run yourself")
+    .replaceAll("BLS controls", "Session controls")
+    .replaceAll(
+      "Free mode is the moving ball only",
+      "Free mode is sets you run yourself"
+    )
+    .replaceAll("the moving ball only", "sets you run yourself");
 }
 
 export function brandMetadataBase(): URL {

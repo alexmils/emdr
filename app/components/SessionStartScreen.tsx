@@ -23,7 +23,7 @@ const CHOICES: {
     id: "free",
     title: "Free session",
     description:
-      "Just the moving ball — no agent, no chat. You start, stop, and adjust it yourself.",
+      "Visual sets you control — animation, speed, sound, and timing. No agent, no chat.",
     keyHint: "2",
   },
 ];
@@ -102,8 +102,8 @@ export function SessionStartScreen() {
       <div className="session-start-inner">
         <h2 className="session-start-title">Start a session</h2>
         <p className="session-start-subtitle">
-          Agent-guided (with a session agent) or Free (moving ball only). This
-          choice stays for this session.
+          Agent-guided (with a session agent) or Free (sets you run yourself).
+          This choice stays for this session.
         </p>
         {entitlement?.isTrialLimited && (
           <p className="session-start-trial">

@@ -28,8 +28,8 @@ export default function AboutPage() {
           {BRAND_SPOKEN} is a calm workspace for agent-guided EMDR sessions and
           therapy resources — structured support in the app, on your schedule.
           Sessions follow a clear protocol with a session agent and optional
-          voice, or you can use Free for visual sets on your own (moving ball
-          only, no agent).
+          voice, or you can use Free for visual sets on your own — no agent, no
+          chat.
         </p>
         <p>
           We built Nura for people who want practice between sessions, or a quiet
