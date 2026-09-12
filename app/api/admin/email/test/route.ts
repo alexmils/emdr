@@ -12,6 +12,7 @@ const VALID: EmailTemplateId[] = [
   "welcome_invite",
   "password_changed",
   "welcome",
+  "account_deleted",
 ];
 
 export async function POST(request: Request) {
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
       resetUrl: await getAppUrl("/app/reset-password?token=test"),
       createPasswordUrl: await getAppUrl("/app/create-password?token=test"),
       loginUrl: await getAppUrl("/app/login"),
+      homeUrl: await getAppUrl("/"),
+      supportEmail: "support@example.com",
       expiresIn: "72 hours",
     };
 
@@ -53,6 +56,12 @@ export async function POST(request: Request) {
       await sendTemplateEmail(to.trim(), id, {
         name: sample.name,
         loginUrl: sample.loginUrl,
+      });
+    } else if (id === "account_deleted") {
+      await sendTemplateEmail(to.trim(), id, {
+        name: sample.name,
+        supportEmail: sample.supportEmail,
+        homeUrl: sample.homeUrl,
       });
     } else {
       await sendTemplateEmail(to.trim(), "welcome", {

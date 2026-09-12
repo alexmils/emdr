@@ -25,6 +25,7 @@ const TEMPLATE_IDS: EmailTemplateId[] = [
   "welcome_invite",
   "password_changed",
   "welcome",
+  "account_deleted",
 ];
 
 type EmailFormState = EmailAdminView;

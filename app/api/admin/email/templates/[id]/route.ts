@@ -14,6 +14,7 @@ const VALID: EmailTemplateId[] = [
   "welcome_invite",
   "password_changed",
   "welcome",
+  "account_deleted",
 ];
 
 export async function GET(

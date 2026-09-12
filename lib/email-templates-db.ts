@@ -17,6 +17,7 @@ const ALL_TEMPLATE_IDS: EmailTemplateId[] = [
   "welcome_invite",
   "password_changed",
   "welcome",
+  "account_deleted",
 ];
 
 export async function ensureEmailTemplatesSchema() {
@@ -39,6 +40,8 @@ function sampleData(id: EmailTemplateId) {
     createPasswordUrl: "https://example.com/app/create-password",
     loginUrl: "https://example.com/app/login",
     expiresIn: "72 hours",
+    supportEmail: "support@example.com",
+    homeUrl: "https://example.com/",
   };
   switch (id) {
     case "password_reset":
@@ -57,6 +60,12 @@ function sampleData(id: EmailTemplateId) {
       return { name: base.name, loginUrl: base.loginUrl };
     case "welcome":
       return { name: base.name, loginUrl: base.loginUrl };
+    case "account_deleted":
+      return {
+        name: base.name,
+        supportEmail: base.supportEmail,
+        homeUrl: base.homeUrl,
+      };
   }
 }
 

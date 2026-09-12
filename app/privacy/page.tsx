@@ -91,6 +91,16 @@ export default async function PrivacyPage() {
           </li>
         </ul>
 
+        <h2 id="cookies">Cookies</h2>
+        <p>
+          On public marketing pages we use necessary cookies to remember your
+          cookie choice. Analytics and marketing cookies (for example Google
+          Analytics 4, Google Tag Manager, Microsoft Clarity) run only after you
+          allow them in the cookie banner. You can change that choice anytime
+          via Cookie settings in the site footer. Session cookies for signing in
+          to the app are required for the product to work.
+        </p>
+
         <h2>4. Where data is stored</h2>
         <p>{DATA_HOSTING_REGION}</p>
 
@@ -141,22 +151,47 @@ export default async function PrivacyPage() {
           events may be retained longer as proof of compliance.
         </p>
 
-        <h2>9. Your rights</h2>
+        <h2 id="update-or-delete">9. Update or delete your account</h2>
+        <p>
+          You can update or delete your account yourself in the app:
+        </p>
+        <ul>
+          <li>
+            <strong>Update profile</strong> — Sign in →{" "}
+            <Link href="/app/settings?tab=profile">Settings → Profile</Link>.
+            Change your display name or photo, then Save profile.
+          </li>
+          <li>
+            <strong>Delete account</strong> — Sign in → Settings → Profile →
+            Danger zone → Delete account. Type your account email to confirm.
+            This permanently removes your account, sessions, intake notes, and
+            memory sets, and cancels an active Stripe subscription when billing
+            is configured.
+          </li>
+        </ul>
+        <p>
+          Prefer email help instead? Contact{" "}
+          <a href={`mailto:${supportEmail}`}>{supportEmail}</a> from the address
+          on your account. We may ask you to verify ownership before erasure.
+        </p>
+
+        <h2>10. Your rights</h2>
         <p>
           Subject to applicable law (including GDPR), you may request access,
           correction, erasure (Art. 17), restriction, objection, and
-          portability (Art. 20). Contact {supportEmail}. You may also lodge a
-          complaint with your local supervisory authority.
+          portability (Art. 20). Start with the in-app delete flow above, or
+          contact {supportEmail}. You may also lodge a complaint with your local
+          supervisory authority.
         </p>
 
-        <h2>10. International transfers</h2>
+        <h2>11. International transfers</h2>
         <p>
           Some subprocessors may process data outside the EEA/UK. Where required,
           we rely on appropriate safeguards such as Standard Contractual Clauses
           (SCCs) or equivalent mechanisms.
         </p>
 
-        <h2>11. Security and breaches</h2>
+        <h2>12. Security and breaches</h2>
         <p>
           We use access controls, encrypted transport (TLS), and database
           row-level security for user data tables where implemented. No method is
@@ -165,19 +200,19 @@ export default async function PrivacyPage() {
           affected users when required.
         </p>
 
-        <h2>12. Children</h2>
+        <h2>13. Children</h2>
         <p>
           The service is for adults 18+. We do not knowingly collect special
           category data from children.
         </p>
 
-        <h2>13. Related documents</h2>
+        <h2>14. Related documents</h2>
         <p>
           See also <Link href="/terms">Terms of service</Link>. Product safety
           positioning remains wellness / self-help — not a medical device.
         </p>
 
-        <h2>14. Changes</h2>
+        <h2>15. Changes</h2>
         <p>
           We may update this policy and bump {LEGAL_DOC_VERSION.privacy}. Material
           changes will be posted here; re-consent may be required for session use

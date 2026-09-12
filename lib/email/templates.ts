@@ -4,7 +4,8 @@ export type EmailTemplateId =
   | "password_reset"
   | "welcome_invite"
   | "password_changed"
-  | "welcome";
+  | "welcome"
+  | "account_deleted";
 
 export type EmailTemplateData = {
   password_reset: {
@@ -25,6 +26,11 @@ export type EmailTemplateData = {
     name: string;
     loginUrl: string;
   };
+  account_deleted: {
+    name: string;
+    supportEmail: string;
+    homeUrl: string;
+  };
 };
 
 const brandColor = BRAND_COLORS.earth;
@@ -34,7 +40,12 @@ const pageBg = "#EDF9ED";
 const cardBg = "#F7FDF7";
 const borderColor = "#B8D4A8";
 
-function layout(siteName: string, title: string, body: string): string {
+function layout(
+  siteName: string,
+  title: string,
+  body: string,
+  footer = "If you didn't request this email, you can safely ignore it."
+): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,7 +68,7 @@ function layout(siteName: string, title: string, body: string): string {
           <tr>
             <td style="padding:16px 28px 28px;border-top:1px solid ${borderColor};">
               <p style="margin:0;font-size:12px;line-height:1.5;color:${mutedColor};">
-                If you didn't request this email, you can safely ignore it.
+                ${footer}
               </p>
             </td>
           </tr>
@@ -132,6 +143,21 @@ export function renderEmailTemplate<T extends EmailTemplateId>(
         `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Hi ${d.name},</p>
          <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Your account is ready. Sign in to start EMDR Support sessions.</p>
          ${ctaButton(d.loginUrl, "Sign in")}`
+      );
+      return { subject, html, text };
+    }
+    case "account_deleted": {
+      const d = data as EmailTemplateData["account_deleted"];
+      const subject = "Your account was deleted";
+      const text = `Hi ${d.name},\n\nYour ${siteName} account and associated session data have been deleted. If you had an active subscription, it was canceled.\n\nIf you did not request this, contact ${d.supportEmail} right away.\n\n${d.homeUrl}`;
+      const html = layout(
+        siteName,
+        "Account deleted",
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Hi ${d.name},</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Your ${siteName} account and associated session data have been permanently deleted. If you had an active subscription, it was canceled.</p>
+         <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:${inkColor};">Questions? Email <a href="mailto:${d.supportEmail}" style="color:${brandColor};">${d.supportEmail}</a>.</p>
+         ${ctaButton(d.homeUrl, "Back to home")}`,
+        `If you did not delete this account, contact ${d.supportEmail} right away.`
       );
       return { subject, html, text };
     }
