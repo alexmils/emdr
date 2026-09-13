@@ -514,12 +514,18 @@ function AboutRevealText({ text }: { text: string }) {
 
 /** Nexsas home/blog stagger — fixed crop heights across 3 columns. */
 const HOME_BLOG_HEIGHTS = [420, 320, 520] as const;
+const HOME_BLOG_PAGE_SIZE = 5;
 
 function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
+  const [visibleCount, setVisibleCount] = useState(HOME_BLOG_PAGE_SIZE);
+
   if (posts.length === 0) return null;
 
+  const visible = posts.slice(0, visibleCount);
+  const hasMore = visibleCount < posts.length;
+
   const columns: LandingBlogPost[][] = [[], [], []];
-  posts.forEach((post, i) => {
+  visible.forEach((post, i) => {
     columns[i % 3]!.push(post);
   });
 
@@ -579,11 +585,21 @@ function BlogSection({ posts }: { posts: LandingBlogPost[] }) {
           ))}
         </div>
 
-        <div className="fe-blog-more">
-          <Link href="/blog" className="fe-blog-load-more">
-            Load more
-          </Link>
-        </div>
+        {hasMore ? (
+          <div className="fe-blog-more">
+            <button
+              type="button"
+              className="fe-blog-load-more"
+              onClick={() =>
+                setVisibleCount((n) =>
+                  Math.min(n + HOME_BLOG_PAGE_SIZE, posts.length)
+                )
+              }
+            >
+              Load more
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

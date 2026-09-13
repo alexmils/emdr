@@ -7,6 +7,7 @@ export const SEO_PAGE_IDS = [
   "editorial",
   "emdr",
   "learn",
+  "knowledge",
   "blog",
   "changelog",
   "privacy",

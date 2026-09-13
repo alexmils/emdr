@@ -89,6 +89,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] `/emdr` rewritten as an AI-guided EMDR long-form guide (session steps, visual/audio/tactile channels, what the AI does and does not do, comparison table, FAQ) with WebPage + FAQPage + BreadcrumbList JSON-LD that upgrades to `MedicalWebPage` + `reviewedBy` once a clinical advisor is configured
 - [internal] Public `/limits` page — “what Nura does not do” (no diagnosis, treatment, clinical judgment, or crisis care); registered in public paths, sitemap, robots, llms.txt, and Admin SEO
 - [internal] Wired the safety content cluster so it is no longer orphaned — Safety + Limits links in the site footer, `/learn` safety group links to `/safety`, informed-consent gate links to the safety guide, and cross-links between `/emdr`, `/safety`, and `/limits`
+- [internal] Public `/knowledge` — Nolla-style video Q stage (tap a question → different clip); pistachio marketing shell, FAQ JSON-LD, sitemap/robots/llms/footer; per-question mp4 when files land under `public/marketing/knowledge/`
 
 ### Changed
 - **Cursor rule `marketing-no-explain-copy`**: marketing surfaces must not use body text to explain — hierarchy, cards, labels, visuals + CTA; linked from `page-copy-design-review` and `nura-brand`
@@ -235,6 +236,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Blog index width matches header pill column (76rem)
 - [internal] All marketing `.frontend-main` pages match header width (76rem); drop 42rem legal/cluster caps
 - [internal] Sticky header: stop short-page bounce (no padding shrink off-home; scroll hysteresis)
+- Home blog: centered band + Load more reveals more posts (not a link to /blog)
+- [internal] Home blog width capped at 56rem; Load more paginates cluster posts on `/`
+- [internal] `/about/clinical-team` is a clinical **review process** page (EMDRIA/APA/NICE/WHO/PubMed citations); YMYL JSON-LD uses `MedicalWebPage` with audience + specialty — `reviewedBy` only when a real advisor is set; Cursor rule `ymyl-clinical-eeat`
+- [internal] P0 SEO: strip UTF-8 BOM from `app/blog/[slug]` (prod 404s), strip brand suffixes so titles cannot become `Nura — Nura`, meta descriptions value-only with `BRAND_LIMITS_LINE` in footer/`/limits`/`llms.txt`
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
@@ -467,6 +472,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Help notify hardening**: Platform API redacts/locks `adminPush` VAPID secrets; email claim rolls back if send fails; atomic per-IP email claim; VAPID generate under advisory lock; push click URLs same-origin `/admin` only
 - **Help chat panel**: slightly larger (~26×38rem); message list scrolls in-panel (Lenis `prevent` + `overscroll-behavior`) so the page behind does not steal the wheel
 - **Prod Web Push**: Coolify `nurahelp` env now has `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` (container recreated)
+- [internal] F8: retire clinical-team meta placeholder (“named advisor listed when configured”) — public description cites external authorities instead
+- [internal] P0: retire meta disclaimers (“self-help, not a licensed therapist”) and production title overrides that caused `Ai` / `| Nura — Nura`
+- [internal] `/knowledge` hero full-bleed edge-to-edge (`FrontendShell wide` + drop 76rem hero cap)
+- [internal] `/knowledge` Q stage matches Nolla: vertical glass chips over the video (left), wider cinematic frame, caption under the stage
+- [internal] `/knowledge` hero centered play button + looping mp4 (`public/marketing/knowledge/hero.mp4`)
+- [internal] `/knowledge` media back to centered ~56rem blog column (was over-wide full bleed)
+- [internal] `/knowledge` hero full-bleed again; Sessions stages stay ~56rem centered
+- [internal] `/knowledge` stages: real video player per question (no caption, no CSS motion overlays); clips wait on mp4 under `public/marketing/knowledge/`
+- [internal] `/knowledge` temporary stock mp4s (`stock-a`…`m`, 720p) randomly mapped one-per-question until real clips are recorded
+- [internal] `/knowledge` Q stage: chip click autoplays; on end advances to next question in a loop
+- [internal] `/knowledge` hero uses stock-a.mp4 (temp) instead of old hero.mp4
+- [internal] Drop unused `public/marketing/knowledge/hero.mp4` (hero points at stock-a)
 
 
 ### Removed

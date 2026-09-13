@@ -22,13 +22,41 @@ export const BRAND_SOCIAL = {
 
 export const BRAND_TAGLINE = "Support for therapy. Starting with EMDR.";
 
+/**
+ * Default meta description (value only). Do not put the therapy disclaimer here —
+ * that lives in `BRAND_LIMITS_LINE` (footer /limits / llms.txt).
+ */
 export const BRAND_DESCRIPTION =
-  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources. Self-help, not a licensed therapist.";
+  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources for practice between sessions.";
 
-/** Title stem for `/` — layout template adds ` — Nura`. */
-export const BRAND_TITLE_STEM = "Guided EMDR therapy online app";
+/**
+ * Canonical limits sentence — footer, /limits lead, llms.txt.
+ * Not for meta descriptions (snippet layer).
+ */
+export const BRAND_LIMITS_LINE =
+  "Nura is a self-help tool for practice between sessions. It is not therapy, diagnosis, or crisis care.";
+
+/** Title stem for `/` — layout template adds ` — Nura`. Keep under ~50 chars. */
+export const BRAND_TITLE_STEM = "AI-guided EMDR therapy online";
 
 export const BRAND_TITLE = `${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}`;
+
+/**
+ * Strip trailing brand markers so the layout `%s — Nura` template cannot
+ * produce `… | Nura — Nura` or `… at Nura — Nura`.
+ */
+export function stripBrandTitleSuffix(title: string): string {
+  let t = title.trim();
+  if (!t) return t;
+  const brand = BRAND_SPOKEN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  t = t.replace(new RegExp(`\\s*[|•·]\\s*${brand}\\s*$`, "i"), "").trim();
+  t = t.replace(new RegExp(`\\s*[—–-]\\s*${brand}\\s*$`, "i"), "").trim();
+  t = t
+    .replace(new RegExp(`\\s+(?:at|for|by)\\s+${brand}\\s*$`, "i"), "")
+    .trim();
+  t = t.replace(/\bAi\b/g, "AI");
+  return t;
+}
 
 /** Circular wordmark for marketing bylines (home blog cards, etc.). */
 export const BRAND_CIRCLE_AVATAR = "/brand/nura-circle-variants/A-white-on-sage-128.png";

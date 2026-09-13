@@ -1,6 +1,6 @@
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { JsonLd } from "@/app/components/frontend/JsonLd";
-import { BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import { getPublicAppUrl } from "@/lib/platform-settings";
 import { buildLimitsJsonLd } from "@/lib/seo-jsonld";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
@@ -28,15 +28,11 @@ export default async function LimitsPage() {
       <JsonLd data={buildLimitsJsonLd(origin)} />
       <article className="frontend-legal frontend-legal--long">
         <h1>What {BRAND_SPOKEN} does not do</h1>
+        <p className="frontend-legal-note">{BRAND_LIMITS_LINE}</p>
         <p>
           Most tools list what they can do. This page is the other half — an
           honest account of where {BRAND_SPOKEN} stops. If a claim is not on this
           page, we are not making it.
-        </p>
-        <p>
-          {BRAND_SPOKEN} is self-help software for bilateral stimulation. It is
-          not therapy, not a medical device, and not a clinician. That boundary
-          is not a disclaimer we hide at the bottom — it is the design.
         </p>
 
         <h2>It does not diagnose</h2>

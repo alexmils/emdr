@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import "./public-cluster.css";
 
 export function EditorialView() {
@@ -36,9 +36,11 @@ export function EditorialView() {
             <p>
               We will not invent a named clinical advisor to look like a
               directory of therapists. We do not currently publish a licensed
-              EMDR clinician as author or reviewer of these guides. If that
-              person exists later, they will be named here with credentials you
-              can check — not a stock bio.
+              EMDR clinician as author or reviewer of these guides. How clinical
+              review works — and which external authorities we cite — is on{" "}
+              <Link href="/about/clinical-team">Clinical review</Link>. If a
+              named advisor is listed later, credentials will be checkable —
+              not a stock bio.
             </p>
             <p>
               We also will not claim Nura treats PTSD, diagnoses anything, or
@@ -69,8 +71,8 @@ export function EditorialView() {
         </div>
 
         <p className="fe-cluster-note">
-          {BRAND_SPOKEN} is self-help software — not a licensed therapist, not
-          emergency care, and not a medical device.
+          {BRAND_LIMITS_LINE} See{" "}
+          <Link href="/limits">what this app does not do</Link>.
         </p>
       </div>
     </article>

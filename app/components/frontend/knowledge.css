@@ -1,0 +1,480 @@
+/* Knowledge — Nolla-style video Q stage, pistachio Nura tokens */
+
+.fe-knowledge {
+  --fe-kn-ink: #2a3020;
+  --fe-kn-sage: #84b067;
+  --fe-kn-olive: #948f4e;
+  --fe-kn-mint: #edf9ed;
+  --fe-kn-paper: #a4eda5;
+  --fe-kn-sidebar: #3d4129;
+  --fe-kn-radius: 1rem;
+  color: var(--fe-kn-ink);
+  background: var(--fe-kn-mint);
+  padding-bottom: 4.5rem;
+  overflow-x: clip;
+}
+
+/* Full-bleed hero — Sessions stages stay in the centered body column */
+.fe-knowledge-hero {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+  width: 100%;
+}
+
+.fe-knowledge-hero-media {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 0;
+  width: 100%;
+  min-height: clamp(22rem, 72vh, 40rem);
+  aspect-ratio: auto;
+  max-height: none;
+  background: var(--fe-kn-sidebar);
+}
+
+.fe-knowledge-hero-image,
+.fe-knowledge-hero-video {
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.fe-knowledge-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.fe-knowledge-hero-video.is-on {
+  opacity: 1;
+}
+
+.fe-knowledge-hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(42 48 32 / 0.15) 0%, rgb(42 48 32 / 0.55) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fe-knowledge-hero-play {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  background: rgb(61 65 41 / 0.28);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  box-shadow: 0 8px 32px rgb(42 48 32 / 0.2);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.25s ease;
+}
+
+.fe-knowledge-hero-play:hover {
+  background: rgb(61 65 41 / 0.45);
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.fe-knowledge-hero-play:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.fe-knowledge-hero-play.is-playing {
+  opacity: 0;
+}
+
+.fe-knowledge-hero-media:hover .fe-knowledge-hero-play.is-playing,
+.fe-knowledge-hero-play.is-playing:focus-visible {
+  opacity: 1;
+}
+
+.fe-knowledge-hero-play:focus-visible {
+  outline: 2px solid #c6d67e;
+  outline-offset: 3px;
+  opacity: 1;
+}
+
+.fe-knowledge-hero-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 1.5rem 1.25rem 2rem;
+  text-align: center;
+  color: #fff;
+  pointer-events: none;
+}
+
+.fe-knowledge-hero-title {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.fe-knowledge-hero-lead {
+  margin: 0.65rem auto 0;
+  max-width: 28rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.fe-knowledge-intro {
+  margin: 2.25rem auto 0;
+  max-width: 36rem;
+  padding: 0 1.25rem;
+  text-align: center;
+  font-size: 1.125rem;
+  line-height: 1.45;
+  color: var(--fe-kn-ink);
+}
+
+.fe-knowledge-body {
+  margin: 2.5rem auto 0;
+  max-width: 56rem;
+  width: 100%;
+  padding: 0 clamp(1rem, 3vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 3.25rem;
+}
+
+.fe-knowledge-series {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.fe-knowledge-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--fe-kn-sidebar);
+  width: 100%;
+  min-height: clamp(18rem, 42vh, 28rem);
+  aspect-ratio: 16 / 9;
+}
+
+.fe-knowledge-stage-media {
+  position: absolute;
+  inset: 0;
+}
+
+.fe-knowledge-stage-poster,
+.fe-knowledge-stage-video {
+  object-fit: cover;
+  /* Keep subject to the right so left stack stays readable (Nolla) */
+  object-position: 78% center;
+}
+
+.fe-knowledge-stage-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(42 48 32 / 0.72) 0%,
+      rgb(42 48 32 / 0.42) 34%,
+      rgb(42 48 32 / 0.12) 58%,
+      transparent 78%
+    ),
+    linear-gradient(180deg, rgb(42 48 32 / 0.32) 0%, transparent 30%, rgb(42 48 32 / 0.18) 100%);
+  pointer-events: none;
+}
+
+.fe-knowledge-stage-top {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.25rem, 2.8vw, 2rem);
+  color: #fff;
+}
+
+.fe-knowledge-speaker-title {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.fe-knowledge-speaker-role {
+  margin: 0.3rem 0 0;
+  max-width: 16rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: rgb(255 255 255 / 0.84);
+  white-space: pre-line;
+}
+
+.fe-knowledge-mute,
+.fe-knowledge-play {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(42 48 32 / 0.35);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.fe-knowledge-mute {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.fe-knowledge-mute:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.fe-knowledge-play {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 46%;
+  width: 4.75rem;
+  height: 4.75rem;
+  transform: translate(-50%, -50%);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.25s ease;
+}
+
+.fe-knowledge-play:hover:not(:disabled) {
+  background: rgb(42 48 32 / 0.5);
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.fe-knowledge-play:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.fe-knowledge-play.is-playing {
+  opacity: 0;
+}
+
+.fe-knowledge-stage:hover .fe-knowledge-play.is-playing,
+.fe-knowledge-play.is-playing:focus-visible {
+  opacity: 1;
+}
+
+.fe-knowledge-mute:focus-visible,
+.fe-knowledge-play:focus-visible,
+.fe-knowledge-chip:focus-visible {
+  outline: 2px solid #c6d67e;
+  outline-offset: 2px;
+}
+
+.fe-knowledge-stage-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fe-knowledge-stage-video.is-on {
+  opacity: 1;
+}
+
+/* Vertical question stack over the video — Nolla layout */
+.fe-knowledge-chips {
+  position: absolute;
+  z-index: 3;
+  left: clamp(0.9rem, 2vw, 1.35rem);
+  bottom: clamp(0.9rem, 2vw, 1.35rem);
+  top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  max-width: min(22rem, 52%);
+  max-height: 62%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
+  scrollbar-width: thin;
+}
+
+.fe-knowledge-chip {
+  margin: 0;
+  padding: 0.65rem 0.95rem;
+  border: 0;
+  border-radius: 0.9rem;
+  width: fit-content;
+  max-width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #eee;
+  background: rgb(42 48 32 / 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fe-knowledge-chip:hover {
+  background: rgb(42 48 32 / 0.6);
+}
+
+.fe-knowledge-chip.is-active {
+  color: #515151;
+  background: #eee;
+  box-shadow: none;
+}
+
+.fe-knowledge-more-title {
+  margin: 0.35rem 0 1.25rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--fe-kn-ink);
+}
+
+.fe-knowledge-more-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 720px) {
+  .fe-knowledge-more-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.fe-knowledge-more-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(42 48 32 / 0.1);
+  background: rgb(255 255 255 / 0.55);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fe-knowledge-more-link:hover {
+  border-color: var(--fe-kn-sage);
+  background: #fff;
+}
+
+.fe-knowledge-more-label {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.fe-knowledge-more-dek {
+  font-size: 0.9375rem;
+  color: var(--fe-kn-olive);
+}
+
+@media (max-width: 900px) {
+  .fe-knowledge-stage {
+    min-height: clamp(16rem, 48vh, 24rem);
+  }
+
+  .fe-knowledge-stage-poster,
+  .fe-knowledge-stage-video {
+    object-position: 65% center;
+  }
+
+  .fe-knowledge-chips {
+    max-width: min(18rem, 70%);
+    max-height: 58%;
+  }
+
+  .fe-knowledge-chip {
+    font-size: 0.8125rem;
+    padding: 0.55rem 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .fe-knowledge-hero {
+    padding: 0;
+  }
+
+  .fe-knowledge-hero-media {
+    min-height: min(72vh, 28rem);
+    border-radius: 0;
+  }
+
+  .fe-knowledge-body {
+    gap: 2.5rem;
+    padding: 0 0.75rem;
+  }
+
+  .fe-knowledge-stage {
+    border-radius: 0.65rem;
+    min-height: clamp(16rem, 48vh, 22rem);
+  }
+
+  .fe-knowledge-chips {
+    left: 0.75rem;
+    right: auto;
+    bottom: 0.75rem;
+    max-width: min(16rem, 78%);
+    max-height: 52%;
+  }
+
+  .fe-knowledge-chip {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fe-knowledge-hero-video,
+  .fe-knowledge-stage-video,
+  .fe-knowledge-play,
+  .fe-knowledge-hero-play {
+    transition: none;
+  }
+}

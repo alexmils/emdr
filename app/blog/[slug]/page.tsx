@@ -1,4 +1,4 @@
-﻿import { ClusterArticleView } from "@/app/components/frontend/ClusterArticleView";
+import { ClusterArticleView } from "@/app/components/frontend/ClusterArticleView";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { BRAND_LEGAL, BRAND_SPOKEN } from "@/lib/brand";
 import {
@@ -16,7 +16,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
-export const dynamicParams = false;
+/** Allow on-demand render if a slug was added after the last static build. */
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return listClusterArticles().map((article) => ({ slug: article.slug }));
@@ -30,13 +31,24 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = getClusterArticle(slug);
   if (!article) return { title: "Guide not found" };
+
+  let publicUrl: string | undefined;
+  try {
+    publicUrl = await getPublicAppUrl();
+  } catch {
+    publicUrl = undefined;
+  }
+  const origin = siteOrigin(publicUrl);
+  const canonical = `${origin}/blog/${article.slug}`;
+
   return {
     title: article.title,
     description: article.description,
-    alternates: localeAlternates(`/blog/${article.slug}`),
+    alternates: localeAlternates(canonical),
     openGraph: {
-      title: `${article.title} â€” ${BRAND_SPOKEN}`,
+      title: `${article.title} — ${BRAND_SPOKEN}`,
       description: article.description,
+      url: canonical,
       type: "article",
       locale: "en",
       publishedTime: article.publishedAt,

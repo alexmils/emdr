@@ -6,6 +6,7 @@ import {
   BRAND_SPOKEN,
   BRAND_TITLE_STEM,
   brandMetadataBase,
+  stripBrandTitleSuffix,
 } from "@/lib/brand";
 import {
   isValidClarityId,
@@ -61,6 +62,17 @@ export const RETIRED_SEO_TITLES = new Set([
   "Terms",
   "Nura — guided EMDR, therapy resources, and support",
   "guided EMDR, therapy resources, and support",
+  "Guided EMDR therapy online app",
+  "Clinical review for Nura",
+  "How clinical review works at Nura",
+  // Production Admin SEO overrides that double-branded with the layout template
+  "AI Guided EMDR Therapy Online — Bilateral Stimulation App",
+  "AI Guided EMDR Therapy Online — Bilateral Stimulation App | Nura",
+  "Ai Guided EMDR Therapy Online — Bilateral Stimulation App | Nura",
+  "Ai Guided EMDR Therapy Online — Bilateral Stimulation App",
+  "AI EMDR Therapy App — Guided Bilateral Stimulation",
+  "AI EMDR Therapy App — Guided Bilateral Stimulation | Nura",
+  "AI-guided EMDR therapy online — bilateral stimulation app",
 ]);
 
 export const RETIRED_SEO_DESCRIPTIONS = new Set([
@@ -72,14 +84,26 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
   "Privacy policy for NuraHelp",
   "Terms of service for Nura",
   "Terms of service for NuraHelp",
+  // F8 — internal placeholder that shipped in production meta
+  "How clinical review works for Nura’s self-help EMDR Support app — named advisor listed when configured.",
+  "How clinical review works for Nura's self-help EMDR Support app — named advisor listed when configured.",
+  // F3 — disclaimer burned into snippets (keep on /limits page body, not meta)
+  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources. Self-help, not a licensed therapist.",
+  "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule. Self-help — not a licensed therapist.",
+  "Articles on EMDR therapy, visual sets, and practice between sessions. Newest first — self-help, not a licensed therapist.",
+  "Nura is an online app for guided EMDR therapy between sessions. Self-help software — not a licensed therapist or emergency care.",
+  "Nura public guides are self-help explainers about visual sets and practice. Not signed by a licensed EMDR clinician.",
+  "Terms for using Nura, the online EMDR therapy app operated by Receptly LLC. Self-help software — not a substitute for professional clinical care.",
+  "How to use Nura’s AI-guided EMDR safely: when to stop a session, when to see a clinician, and crisis lines if you are not safe. Not emergency care.",
+  "How Nura checks intake and safety copy for its self-help EMDR Support app — citing EMDRIA, APA, NICE, WHO, and PubMed. Not a named clinician letterhead.",
 ]);
 
 /** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
-export const SEO_COPY_REVISION = "emdr-ai-guided-safety-1";
+export const SEO_COPY_REVISION = "p0-blog-title-meta-1";
 
 export function documentTitle(pageTitle: string): string {
   const suffix = ` — ${BRAND_SPOKEN}`;
-  const t = pageTitle.trim();
+  const t = stripBrandTitleSuffix(pageTitle);
   if (!t) return `${BRAND_TITLE_STEM}${suffix}`;
   if (t === BRAND_SPOKEN || t.endsWith(suffix)) return t;
   return `${t}${suffix}`;
@@ -110,15 +134,15 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "About",
     title: "About the EMDR therapy online app",
     description:
-      "Nura is an online app for guided EMDR therapy between sessions. Self-help software — not a licensed therapist or emergency care.",
+      "Nura is an online app for guided EMDR therapy between sessions — agent-guided practice and Free visual sets on your schedule.",
   },
   {
     id: "clinical-team",
     path: "/about/clinical-team",
-    label: "Clinical team",
-    title: "Clinical review for Nura",
+    label: "Clinical review",
+    title: "How clinical review works",
     description:
-      "How clinical review works for Nura’s self-help EMDR Support app — named advisor listed when configured.",
+      "How Nura checks intake and safety copy — citing EMDRIA, APA, NICE, WHO, and PubMed guidance.",
   },
   {
     id: "editorial",
@@ -126,15 +150,15 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "Editorial",
     title: "How we write these guides",
     description:
-      "Nura public guides are self-help explainers about visual sets and practice. Not signed by a licensed EMDR clinician.",
+      "How Nura writes public EMDR guides: product-team explainers about visual sets, practice, and safety.",
   },
   {
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
-    title: "AI-guided EMDR therapy online — bilateral stimulation app",
+    title: "AI-guided EMDR therapy — bilateral stimulation",
     description:
-      "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule. Self-help — not a licensed therapist.",
+      "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule.",
   },
   {
     id: "learn",
@@ -145,12 +169,20 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
       "Short EMDR guides by topic — understand, practice, and safety. Full archive on the blog.",
   },
   {
+    id: "knowledge",
+    path: "/knowledge",
+    label: "Knowledge",
+    title: "Knowledge — short clips about sessions and safety",
+    description:
+      "Tap a question, watch a different clip — agent-guided sessions, Free sets, trial, and safety in Nura.",
+  },
+  {
     id: "blog",
     path: "/blog",
     label: "Blog",
     title: "EMDR therapy blog — guides and visual sets",
     description:
-      "Articles on EMDR therapy, visual sets, and practice between sessions. Newest first — self-help, not a licensed therapist.",
+      "Every Nura guide in one place: what EMDR is, how bilateral stimulation works, grounding, and what to do between sessions. Newest first.",
   },
   {
     id: "changelog",
@@ -172,7 +204,7 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     path: "/terms",
     label: "Terms",
     title: "Terms of service",
-    description: `Terms for using Nura, the online EMDR therapy app operated by Receptly LLC. Self-help software — not a substitute for professional clinical care.`,
+    description: `Terms for using Nura, the online EMDR therapy app operated by Receptly LLC — accounts, billing, and acceptable use.`,
   },
   {
     id: "safety",
@@ -180,15 +212,15 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "Safety",
     title: "Using AI-guided EMDR safely — when to stop and get help",
     description:
-      "How to use Nura’s AI-guided EMDR safely: when to stop a session, when to see a clinician, and crisis lines if you are not safe. Not emergency care.",
+      "When to stop a Nura session, when to see a clinician, and crisis lines if you are not safe.",
   },
   {
     id: "limits",
     path: "/limits",
     label: "Limits",
-    title: "What Nura does not do — the limits of AI-guided EMDR",
+    title: "What this app does not do",
     description:
-      "An honest list of what Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care. What a self-help tool can and cannot do alone.",
+      "What Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care — and where to go instead.",
   },
 ];
 
@@ -212,14 +244,18 @@ export function resolveSiteSeoPages(
   const siteDefault = seo.defaultOgImageUrl.trim();
   return SITE_SEO_DEFAULTS.map((def) => {
     const o = seo.pages[def.id];
-    const title = effectiveSeoText(o?.title, def.title, RETIRED_SEO_TITLES);
+    const title = stripBrandTitleSuffix(
+      effectiveSeoText(o?.title, def.title, RETIRED_SEO_TITLES)
+    );
     const description = effectiveSeoText(
       o?.description,
       def.description,
       RETIRED_SEO_DESCRIPTIONS,
       def.id === "home" ? undefined : new Set([BRAND_DESCRIPTION])
     );
-    const ogTitle = effectiveSeoText(o?.ogTitle, title, RETIRED_SEO_TITLES);
+    const ogTitle = stripBrandTitleSuffix(
+      effectiveSeoText(o?.ogTitle, title, RETIRED_SEO_TITLES)
+    );
     const pageOg = o?.ogImageUrl?.trim() || "";
     const stored = pageOg || siteDefault;
     const ogImageUrl = absoluteOgImageUrl({

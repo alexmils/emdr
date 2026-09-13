@@ -17,6 +17,7 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/about/clinical-team"), true);
     assert.equal(isFrontendPublicPath("/emdr"), true);
     assert.equal(isFrontendPublicPath("/learn"), true);
+    assert.equal(isFrontendPublicPath("/knowledge"), true);
     assert.equal(isFrontendPublicPath("/resources"), false);
     assert.equal(isFrontendPublicPath("/blog"), true);
     assert.equal(isFrontendPublicPath("/changelog"), true);

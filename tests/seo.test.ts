@@ -22,9 +22,11 @@ import {
 } from "../lib/seo-admin-settings.ts";
 import {
   BRAND_DESCRIPTION,
+  BRAND_LIMITS_LINE,
   BRAND_SPOKEN,
   BRAND_TITLE,
   BRAND_TITLE_STEM,
+  stripBrandTitleSuffix,
 } from "../lib/brand.ts";
 import {
   buildMarketingSeoStatus,
@@ -262,8 +264,9 @@ describe("public page titles and descriptions", () => {
     assert.match(BRAND_TITLE, new RegExp(`^${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}$`));
     for (const page of [home, emdr]) {
       assert.match(page?.title || "", /EMDR therapy/);
-      assert.match(page?.title || "", /online/i);
-      assert.match(page?.title || "", /app/i);
+      assert.match(page?.title || "", /AI-guided/);
+      assert.doesNotMatch(page?.title || "", /\bAi\b/);
+      assert.doesNotMatch(page?.title || "", /\| Nura/);
     }
   });
 
@@ -271,16 +274,71 @@ describe("public page titles and descriptions", () => {
     const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
     const meta = metadataFromResolved("emdr", pages);
     assert.equal(typeof meta.title, "string");
-    assert.equal(
-      meta.title,
-      "AI-guided EMDR therapy online — bilateral stimulation app"
-    );
+    assert.equal(meta.title, "AI-guided EMDR therapy — bilateral stimulation");
   });
 
   it("uses an absolute document title on home so Nura is not dropped", () => {
     const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
     const meta = metadataFromResolved("home", pages);
     assert.deepEqual(meta.title, { absolute: BRAND_TITLE });
+  });
+
+  it("strips brand suffixes so the layout template cannot double Nura", () => {
+    assert.equal(
+      stripBrandTitleSuffix("AI Guided EMDR Therapy Online | Nura"),
+      "AI Guided EMDR Therapy Online",
+    );
+    assert.equal(
+      stripBrandTitleSuffix("AI-guided EMDR therapy online — Nura"),
+      "AI-guided EMDR therapy online",
+    );
+    assert.equal(
+      stripBrandTitleSuffix("How clinical review works at Nura"),
+      "How clinical review works",
+    );
+    assert.equal(stripBrandTitleSuffix("Ai guided EMDR"), "AI guided EMDR");
+
+    const pages = resolveSiteSeoPages(
+      {
+        ...DEFAULT_PLATFORM_SEO,
+        pages: {
+          home: {
+            title: "Ai Guided EMDR Therapy Online — Bilateral Stimulation App | Nura",
+            description: BRAND_DESCRIPTION,
+          },
+          emdr: {
+            title: "AI EMDR Therapy App — Guided Bilateral Stimulation | Nura",
+            description: "value only",
+          },
+        },
+      },
+      "https://nurahelp.com",
+    );
+    // Retired production titles fall back to clean defaults
+    assert.equal(pages.find((p) => p.id === "home")?.title, BRAND_TITLE_STEM);
+    assert.equal(
+      pages.find((p) => p.id === "emdr")?.title,
+      "AI-guided EMDR therapy — bilateral stimulation",
+    );
+    const homeMeta = metadataFromResolved("home", pages);
+    assert.deepEqual(homeMeta.title, { absolute: BRAND_TITLE });
+    assert.doesNotMatch(String((homeMeta.title as { absolute: string }).absolute), /Nura — Nura/);
+  });
+
+  it("keeps meta descriptions value-first without the licensed-therapist disclaimer", () => {
+    const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
+    for (const page of pages) {
+      assert.doesNotMatch(
+        page.description,
+        /not a licensed therapist/i,
+        page.id,
+      );
+      assert.doesNotMatch(page.description, /when configured/i, page.id);
+    }
+    const blog = pages.find((p) => p.id === "blog");
+    assert.match(blog?.description || "", /bilateral stimulation/i);
+    assert.match(blog?.description || "", /between sessions/i);
+    assert.match(BRAND_LIMITS_LINE, /not therapy, diagnosis, or crisis care/);
   });
 
   it("ignores retired Admin SEO defaults so unique copy can ship", () => {
@@ -317,7 +375,7 @@ describe("public page titles and descriptions", () => {
     assert.equal(byId.about?.title, "About the EMDR therapy online app");
     assert.equal(
       byId.emdr?.title,
-      "AI-guided EMDR therapy online — bilateral stimulation app"
+      "AI-guided EMDR therapy — bilateral stimulation"
     );
     assert.equal(byId.learn?.title, "EMDR therapy — where to start");
     assert.equal(byId.blog?.title, "EMDR therapy blog — guides and visual sets");

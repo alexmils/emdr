@@ -1,5 +1,10 @@
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
+  CLINICAL_AUTHORITIES,
+  MEDICAL_PAGE_AUDIENCE,
+  MEDICAL_PAGE_SPECIALTY,
+} from "@/lib/clinical-authorities";
+import {
   CLUSTER_TOPICS,
   clusterArticlesByTopic,
   listClusterArticles,
@@ -56,7 +61,7 @@ export function organizationJsonLd(origin: string) {
     url: `${base}/`,
     email: "hello@nurahelp.com",
     description:
-      "Self-help software for guided EMDR practice and visual sets. Not a licensed therapist.",
+      "Guided EMDR practice and visual sets in a calm online app.",
   };
 }
 
@@ -166,6 +171,29 @@ export function buildLearnJsonLd(origin: string) {
   };
 }
 
+export function buildKnowledgeJsonLd(origin: string, faq: FaqItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      {
+        "@type": "WebPage",
+        "@id": `${origin.replace(/\/$/, "")}/knowledge`,
+        url: `${origin.replace(/\/$/, "")}/knowledge`,
+        name: "Knowledge",
+        description:
+          "Short clips about agent-guided sessions, Free sets, and safety in Nura.",
+        isPartOf: { "@id": `${origin.replace(/\/$/, "")}/#website` },
+      },
+      faqPageJsonLd(faq),
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "Knowledge", path: "/knowledge" },
+      ]),
+    ],
+  };
+}
+
 export function buildBlogIndexJsonLd(origin: string) {
   return {
     "@context": "https://schema.org",
@@ -201,9 +229,9 @@ export function faqPageJsonLd(items: FaqItem[]) {
 }
 
 /**
- * YMYL page node. Stays a plain `WebPage` until a named clinical reviewer is
- * set in `CLINICAL_ADVISOR`; then it upgrades to `MedicalWebPage` with
- * `reviewedBy` + `lastReviewed` (no invented credentials before that).
+ * YMYL page node. Always `MedicalWebPage` with audience + specialty + citations.
+ * Adds `reviewedBy` / `lastReviewed` only when a real advisor is in
+ * `CLINICAL_ADVISOR` — never invent credentials.
  */
 export function reviewablePageJsonLd({
   origin,
@@ -218,17 +246,23 @@ export function reviewablePageJsonLd({
 }) {
   const base = origin.replace(/\/$/, "");
   const url = `${base}${path}`;
-  const reviewed = hasClinicalAdvisorConfigured();
   const node: Record<string, unknown> = {
-    "@type": reviewed ? "MedicalWebPage" : "WebPage",
+    "@type": "MedicalWebPage",
     "@id": `${url}#page`,
     url,
     name,
     description,
     inLanguage: SITE_CONTENT_LANGUAGE,
     isPartOf: { "@type": "WebSite", name: BRAND_SPOKEN, url: `${base}/` },
+    audience: { ...MEDICAL_PAGE_AUDIENCE },
+    specialty: MEDICAL_PAGE_SPECIALTY,
+    citation: CLINICAL_AUTHORITIES.map((a) => ({
+      "@type": "CreativeWork",
+      name: a.name,
+      url: a.url,
+    })),
   };
-  if (reviewed) {
+  if (hasClinicalAdvisorConfigured()) {
     if (CLINICAL_ADVISOR.lastReviewedAt) {
       node.lastReviewed = CLINICAL_ADVISOR.lastReviewedAt;
     }
@@ -241,6 +275,33 @@ export function reviewablePageJsonLd({
     };
   }
   return node;
+}
+
+/** H1 + lead mirrored into JSON-LD for `/about/clinical-team`. */
+export const CLINICAL_REVIEW_JSON_LD = {
+  name: "How clinical review works",
+  description:
+    "How Nura checks intake screening, safety copy, and protocol barriers — citing EMDRIA, APA, NICE, WHO, and PubMed. Named clinician listed only after a real review.",
+} as const;
+
+export function buildClinicalReviewJsonLd(origin: string) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      reviewablePageJsonLd({
+        origin,
+        path: "/about/clinical-team",
+        name: CLINICAL_REVIEW_JSON_LD.name,
+        description: CLINICAL_REVIEW_JSON_LD.description,
+      }),
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "About", path: "/about" },
+        { name: "Clinical review", path: "/about/clinical-team" },
+      ]),
+    ],
+  };
 }
 
 /** H1 + lead on `/emdr` — JSON-LD name/description mirror the page, not the meta. */

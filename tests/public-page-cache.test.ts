@@ -19,6 +19,7 @@ const PUBLIC_PAGE_FILES = [
   "app/editorial/page.tsx",
   "app/emdr/page.tsx",
   "app/learn/page.tsx",
+  "app/knowledge/page.tsx",
   "app/blog/page.tsx",
   "app/changelog/page.tsx",
   "app/privacy/page.tsx",

@@ -241,7 +241,7 @@ const graph = {
 };
 ```
 
-**Prioritet:** `Organization` + `SoftwareApplication` + `FAQPage` na home i `/emdr`. `MedicalWebPage` + `reviewedBy` tek kad imate kliničkog recenzenta.
+**Prioritet:** `Organization` + `SoftwareApplication` + `FAQPage` na home. YMYL stranice (`/emdr`, `/safety`, `/limits`, `/about/clinical-team`) koriste `MedicalWebPage` sa `audience` + `specialty` + citatima (EMDRIA, APA, NICE, WHO, PubMed). `reviewedBy` + `lastReviewed` **samo** kad postoji stvarni klinički recenzent u `CLINICAL_ADVISOR` — nikad izmišljeni kredencijali.
 
 ---
 
@@ -253,16 +253,16 @@ Ovo je YMYL (zdravstvena) niša. Svaki rangirajući konkurent citira autoritete:
 - **psychology.com** → imenovani recenzent (Seph Fontane Pennock) sa quote-om u tekstu
 - **emdria.org** → samo kredencionalno tijelo
 
-**Nura trenutno ima:** 0 imenovanih autora, 0 kliničkog recenzenta, 0 citiranih izvora.
+**Nura trenutno ima:** citati EMDRIA / APA / NICE / WHO / PubMed na `/about/clinical-team` + `MedicalWebPage` (audience + specialty) na YMYL rutama; **0** imenovanih kliničkih recenzenata (`reviewedBy` namjerno prazan dok `CLINICAL_ADVISOR` nije setovan).
 
-**Minimum za ulazak u igru:**
-1. Imenovani klinički savjetnik / recenzent (EMDR-certified), sa stranicom profila i kredencijalima
-2. `reviewedBy` + `lastReviewed` na svakoj YMYL stranici
-3. Citati na VA/DoD, APA, WHO, NICE, PubMed — sa linkovima
-4. Stranica `/about/clinical-team`
-5. `/authors/[slug]` ruta
+**Minimum za jači E-E-A-T:**
+1. Imenovani klinički savjetnik / recenzent (EMDR-certified), sa kredencijalima koje se mogu provjeriti — **nikad izmišljeni**
+2. Tek tada `reviewedBy` + `lastReviewed` na YMYL stranicama
+3. Citati (već: EMDRIA, APA, WHO, NICE, PubMed) — proširiti po članku gdje treba
+4. Stranica `/about/clinical-team` (proces + citati; imenovani advisor kad postoji)
+5. Opciono `/authors/[slug]` kad postoje stvarni autori
 
-Bez ovoga, Tier 3–5 stranice neće rangirati bez obzira na tehničku perfekciju.
+Bez imenovanog recenzenta, **ne** padati na placeholder meta ili lažni `reviewedBy` — to je YMYL spam rizik.
 
 ---
 
@@ -301,7 +301,7 @@ Bez ovoga, Tier 3–5 stranice neće rangirati bez obzira na tehničku perfekcij
 9. `/blog/[slug]` + `/compare/*` (5 stranica) ← najveći ROI
 
 **Mjesec 3 — autoritet**
-10. Klinički recenzent + `/about/clinical-team` + `reviewedBy` schema
+10. Klinički recenzent (kad postoji) + `reviewedBy` — do tada `/about/clinical-team` kao proces + citati, `MedicalWebPage` bez lažnog recenzenta
 11. Tier 3–5 sadržaj (16 stranica)
 
 ---

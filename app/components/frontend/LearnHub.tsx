@@ -18,7 +18,8 @@ export function LearnHub() {
           <p className="fe-cluster-kicker">Learn</p>
           <h1 className="fe-cluster-title">Start with one guide</h1>
           <p className="fe-cluster-dek">
-            Short EMDR reading for between sessions.
+            Short EMDR reading for between sessions.{" "}
+            <Link href="/knowledge">Or watch Knowledge clips</Link>.
           </p>
         </header>
 

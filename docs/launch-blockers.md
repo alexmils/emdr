@@ -32,6 +32,7 @@ Edit `CLINICAL_ADVISOR` in `lib/legal-entity.ts`:
 - [ ] Reviews safety copy on site / consent gate
 - [ ] Sets `lastReviewedAt` (ISO date)
 - [ ] Public page `/about/clinical-team` lists them (auto when `name` is set)
+- Until then the page is a **review process** page: cites EMDRIA / APA / NICE / WHO / PubMed; JSON-LD is `MedicalWebPage` with audience + specialty — **no** fake `reviewedBy`
 
 ## Insurance
 

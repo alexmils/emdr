@@ -9,6 +9,7 @@ const FRONTEND_PREFIXES = [
   "/editorial",
   "/emdr",
   "/learn",
+  "/knowledge",
   "/blog",
   "/changelog",
   "/safety",

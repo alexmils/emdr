@@ -69,4 +69,13 @@ describe("content cluster", () => {
     assert.ok(featured.every((p) => p.slug && p.title && p.summary));
     assert.ok(featured.every((p) => typeof p.readMinutes === "number"));
   });
+
+  it("exposes every slug for blog/[slug] static params (no empty hub)", () => {
+    const params = listClusterArticles().map((a) => ({ slug: a.slug }));
+    assert.equal(params.length, CLUSTER_ARTICLES.length);
+    assert.equal(params.length, 18);
+    assert.ok(params.some((p) => p.slug === "what-is-emdr"));
+    assert.ok(params.some((p) => p.slug === "what-is-bilateral-stimulation"));
+    assert.ok(params.some((p) => p.slug === "visual-sets-and-the-moving-ball"));
+  });
 });

@@ -248,7 +248,7 @@ Ovo je istovremeno i pravna zaštita i SEO (§Tier 5 strategije):
 | `/safety/emdr-and-dissociation` | Kontraindikacije | ✅ ⚠️ |
 | `/limits` | Šta Nura **ne** radi | ✅ najjača zaštita |
 | `/clinical-rationale` | Zašto je ovako dizajnirano (sa citatima) | ✅ |
-| `/about/clinical-team` | Imenovani savjetnik | ✅ E-E-A-T |
+| `/about/clinical-team` | Proces recenzije + citati (EMDRIA/APA/NICE/WHO/PubMed); imenovani savjetnik kad postoji | ✅ E-E-A-T (bez lažnog `reviewedBy`) |
 
 **`/limits` je tvoja najbolja odbrana.** Stranica koja eksplicitno navodi šta alat ne može — to je i etički ispravno i pravno štiti i Google ga nagrađuje (helpful content).
 

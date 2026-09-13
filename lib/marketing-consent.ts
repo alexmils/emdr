@@ -22,6 +22,7 @@ const PUBLIC_PREFIXES = [
   "/editorial",
   "/emdr",
   "/learn",
+  "/knowledge",
   "/blog",
   "/changelog",
   "/privacy",

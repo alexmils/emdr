@@ -13,13 +13,14 @@ import { BrandSocialLinks } from "@/app/components/BrandSocialLinks";
 import { CookieSettingsButton } from "@/app/components/frontend/CookieBanner";
 import { LetterRevealHeading } from "@/app/components/frontend/LetterRevealHeading";
 import { appPath, LOGIN_PATH } from "@/lib/app-base";
-import { BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import { TRIAL_DAYS } from "@/lib/billing-constants";
 import "./frontend-footer.css";
 
 const FOOTER_LINKS = [
   { href: "/blog", label: "Blog" },
   { href: "/learn", label: "Learn" },
+  { href: "/knowledge", label: "Knowledge" },
   { href: "/about", label: "About" },
   { href: "/changelog", label: "What's new" },
 ] as const;
@@ -184,6 +185,10 @@ export function FrontendFooter() {
               ))}
             </nav>
             <div className="fe-site-footer-meta">
+              <p className="fe-site-footer-limits">
+                {BRAND_LIMITS_LINE}{" "}
+                <Link href="/limits">Read the limits</Link>.
+              </p>
               <p className="fe-site-footer-copy">
                 © {new Date().getFullYear()} {BRAND_SPOKEN} | All rights reserved
               </p>

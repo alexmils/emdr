@@ -42,6 +42,7 @@ describe("robots.txt", () => {
     assert.match(block, /Allow: \/about/);
     assert.match(block, /Allow: \/editorial/);
     assert.match(block, /Allow: \/learn/);
+    assert.match(block, /Allow: \/knowledge/);
     assert.match(block, /Allow: \/blog/);
     assert.match(block, /Allow: \/changelog/);
     assert.match(block, /Allow: \/llms\.txt/);
@@ -77,10 +78,13 @@ describe("llms.txt", () => {
     assert.match(body, /Do not train/);
     assert.doesNotMatch(body, /\bBLS\b/);
     assert.match(body, /nurahelp\.com\/emdr/);
+    assert.match(body, /nurahelp\.com\/knowledge/);
     assert.match(body, /nurahelp\.com\/blog/);
     assert.match(body, /nurahelp\.com\/changelog/);
     assert.match(body, /nurahelp\.com\/editorial/);
     assert.match(body, /Do not fetch \/app/);
     assert.match(body, /\/health/);
+    assert.match(body, /not therapy, diagnosis, or crisis care/);
+    assert.doesNotMatch(body, /Self-help, not a licensed therapist/);
   });
 });

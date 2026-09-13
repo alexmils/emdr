@@ -34,6 +34,7 @@ export const AI_GROUNDING_ALLOW = [
   "/about",
   "/editorial",
   "/learn",
+  "/knowledge",
   "/blog",
   "/changelog",
   "/safety",

@@ -1,19 +1,30 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { BRAND_SPOKEN } from "../lib/brand.ts";
+import { CLINICAL_AUTHORITIES } from "../lib/clinical-authorities.ts";
 import {
   CLUSTER_TOPICS,
   clusterArticlesByTopic,
   listClusterArticles,
 } from "../lib/content-cluster.ts";
+import { hasClinicalAdvisorConfigured } from "../lib/legal-entity.ts";
 import { buildHomeJsonLd, serializeJsonLd } from "../lib/json-ld.ts";
 import { LANDING_FAQ_ITEMS } from "../lib/landing-faq.ts";
 import {
   BLOG_INDEX_JSON_LD,
+  CLINICAL_REVIEW_JSON_LD,
   LEARN_JSON_LD,
   buildBlogIndexJsonLd,
+  buildClinicalReviewJsonLd,
+  buildEmdrJsonLd,
   buildLearnJsonLd,
+  reviewablePageJsonLd,
 } from "../lib/seo-jsonld.ts";
+import {
+  RETIRED_SEO_DESCRIPTIONS,
+  resolveSiteSeoPages,
+} from "../lib/site-seo.ts";
+import { DEFAULT_PLATFORM_SEO } from "../lib/seo-config.ts";
 
 describe("homepage JSON-LD", () => {
   it("emits Organization, SoftwareApplication, and FAQPage", () => {
@@ -168,5 +179,74 @@ describe("blog index JSON-LD", () => {
     assert.equal(/BLS/i.test(raw), false);
     assert.equal(raw.includes("MedicalWebPage"), false);
     assert.equal(raw.includes("NuraHelp AI"), false);
+  });
+});
+
+describe("YMYL MedicalWebPage (no invented reviewer)", () => {
+  const origin = "https://nurahelp.com";
+
+  it("emits MedicalWebPage with audience, specialty, and citations", () => {
+    assert.equal(hasClinicalAdvisorConfigured(), false);
+    const node = reviewablePageJsonLd({
+      origin,
+      path: "/emdr",
+      name: "Test",
+      description: "Test page",
+    });
+    assert.equal(node["@type"], "MedicalWebPage");
+    const audience = node.audience as {
+      "@type": string;
+      audienceType: string;
+    };
+    assert.equal(audience["@type"], "MedicalAudience");
+    assert.equal(audience.audienceType, "Patient");
+    assert.equal(node.specialty, "https://schema.org/Psychiatric");
+    assert.equal(Array.isArray(node.citation), true);
+    assert.equal(
+      (node.citation as unknown[]).length,
+      CLINICAL_AUTHORITIES.length,
+    );
+    assert.equal("reviewedBy" in node, false);
+    assert.equal("lastReviewed" in node, false);
+  });
+
+  it("clinical-team graph has no reviewedBy while advisor is unset", () => {
+    const data = buildClinicalReviewJsonLd(origin);
+    const raw = serializeJsonLd(data);
+    assert.ok(raw.includes("MedicalWebPage"));
+    assert.equal(raw.includes("reviewedBy"), false);
+    assert.ok(raw.includes("EMDR International Association"));
+    const page = data["@graph"].find(
+      (n) => n["@type"] === "MedicalWebPage",
+    ) as { name?: string; description?: string };
+    assert.equal(page?.name, CLINICAL_REVIEW_JSON_LD.name);
+    assert.equal(page?.description, CLINICAL_REVIEW_JSON_LD.description);
+  });
+
+  it("/emdr JSON-LD is MedicalWebPage without a fake reviewer", () => {
+    const data = buildEmdrJsonLd(origin, [{ q: "Q?", a: "A." }]);
+    const raw = serializeJsonLd(data);
+    assert.ok(raw.includes("MedicalWebPage"));
+    assert.equal(raw.includes("reviewedBy"), false);
+    assert.equal(/BLS/i.test(raw), false);
+  });
+});
+
+describe("clinical-team meta (F8 placeholder retired)", () => {
+  it("does not ship the 'named advisor listed when configured' description", () => {
+    const pages = resolveSiteSeoPages(
+      DEFAULT_PLATFORM_SEO,
+      "https://nurahelp.com",
+    );
+    const page = pages.find((p) => p.id === "clinical-team");
+    assert.ok(page);
+    assert.equal(page.description.includes("when configured"), false);
+    assert.equal(page.description.includes("named advisor listed"), false);
+    assert.ok(page.description.includes("EMDRIA"));
+    assert.ok(
+      RETIRED_SEO_DESCRIPTIONS.has(
+        "How clinical review works for Nura’s self-help EMDR Support app — named advisor listed when configured.",
+      ),
+    );
   });
 });

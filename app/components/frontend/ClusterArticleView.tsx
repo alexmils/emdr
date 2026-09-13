@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading";
-import { BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import {
   CLUSTER_TOPIC_LABEL,
   relatedClusterArticles,
@@ -46,8 +46,8 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
         </p>
 
         <p className="fe-cluster-note">
-          {BRAND_SPOKEN} is self-help software — not a licensed therapist,
-          not emergency care, and not a medical device.
+          {BRAND_LIMITS_LINE} See{" "}
+          <Link href="/limits">what this app does not do</Link>.
         </p>
       </div>
 

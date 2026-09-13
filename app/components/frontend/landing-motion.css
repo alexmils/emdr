@@ -1620,7 +1620,9 @@
 }
 
 .fe-blog-inner {
-  max-width: none;
+  /* Centered band — narrower than the full header column */
+  max-width: min(56rem, 100%);
+  margin-inline: auto;
 }
 
 .fe-blog-head {
@@ -1747,6 +1749,8 @@
   font-weight: 500;
   letter-spacing: -0.01em;
   text-decoration: none;
+  cursor: pointer;
+  appearance: none;
   transition:
     background 0.2s ease,
     border-color 0.2s ease,

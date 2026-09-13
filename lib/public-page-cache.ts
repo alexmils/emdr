@@ -16,6 +16,7 @@ export const PUBLIC_ISR_PATHS = [
   "/editorial",
   "/emdr",
   "/learn",
+  "/knowledge",
   "/blog",
   "/changelog",
   "/privacy",
