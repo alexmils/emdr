@@ -49,8 +49,12 @@ export function AdminVoicePicker({
     if (opts?.gen != null && opts.gen !== previewGenRef.current) return;
     const audio = audioRef.current;
     if (audio) {
+      // Clearing src without removing handlers fires onerror → false "Could not play" toast.
+      audio.onended = null;
+      audio.onerror = null;
       audio.pause();
-      audio.src = "";
+      audio.removeAttribute("src");
+      audio.load();
       audioRef.current = null;
     }
     if (objectUrlRef.current) {
@@ -146,7 +150,23 @@ export function AdminVoicePicker({
       };
       setPlayingId(voice.id);
       setLoadingPlayId(null);
-      await audio.play();
+      try {
+        await audio.play();
+      } catch (playErr) {
+        if (gen !== previewGenRef.current) return;
+        // Interrupted by stop / new preview — audio often already started.
+        if (
+          playErr instanceof DOMException &&
+          playErr.name === "AbortError"
+        ) {
+          return;
+        }
+        stopPreview({ gen });
+        toast(
+          playErr instanceof Error ? playErr.message : "Could not play this sample",
+          "error"
+        );
+      }
     } catch (err) {
       if (gen !== previewGenRef.current) return;
       setLoadingPlayId(null);

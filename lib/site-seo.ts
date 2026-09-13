@@ -75,6 +75,15 @@ export const RETIRED_SEO_TITLES = new Set([
   "AI-guided EMDR therapy online — bilateral stimulation app",
   "AI-guided EMDR therapy — bilateral stimulation",
   "Using AI-guided EMDR safely — when to stop and get help",
+  // Round 2 — duplicate home/emdr stem + jab titles
+  "AI-guided EMDR therapy online",
+  "What this app does not do",
+  "EMDR therapy — where to start",
+  "Knowledge — short clips about sessions and safety",
+  "EMDR therapy blog — guides and visual sets",
+  "Plans for AI-guided EMDR",
+  "FAQ — sessions, Free sets, and the trial",
+  "Support — how to get help",
 ]);
 
 export const RETIRED_SEO_DESCRIPTIONS = new Set([
@@ -98,10 +107,18 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
   "Terms for using Nura, the online EMDR therapy app operated by Receptly LLC. Self-help software — not a substitute for professional clinical care.",
   "How to use Nura’s AI-guided EMDR safely: when to stop a session, when to see a clinician, and crisis lines if you are not safe. Not emergency care.",
   "How Nura checks intake and safety copy for its self-help EMDR Support app — citing EMDRIA, APA, NICE, WHO, and PubMed. Not a named clinician letterhead.",
+  // Round 2 — short / disclaimer meta
+  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources for practice between sessions.",
+  "Guided EMDR sessions with AI support: visual sets, optional voice, and practice on your schedule.",
+  "Weekly, monthly, and yearly plans for AI-guided EMDR — start with a 7-day trial.",
+  "Answers about Nura sessions, Free sets, the trial, privacy, and when to get help.",
+  "Reach Nura by in-app Need help chat or email — plus safety and crisis links.",
+  "What Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care — and where to go instead.",
+  "Curated EMDR reading paths: understand, practice, and safety. Short guides in order — not the full archive.",
 ]);
 
 /** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
-export const SEO_COPY_REVISION = "p0-pricing-faq-support-1";
+export const SEO_COPY_REVISION = "p0-seo-round2-titles-1";
 
 export function documentTitle(pageTitle: string): string {
   const suffix = ` — ${BRAND_SPOKEN}`;
@@ -158,31 +175,31 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
-    title: "AI-guided EMDR therapy online",
+    title: "AI EMDR App — Guided Bilateral Stimulation Online",
     description:
-      "Guided EMDR sessions with AI support: visual sets, optional voice, and practice on your schedule.",
+      "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule. See how a session runs, phase by phase.",
   },
   {
     id: "learn",
     path: "/learn",
     label: "Learn",
-    title: "EMDR therapy — where to start",
+    title: "Learn EMDR — Guides by Topic, Safety & Practice",
     description:
-      "Curated EMDR reading paths: understand, practice, and safety. Short guides in order — not the full archive.",
+      "Start here: short EMDR guides on how it works, visual sets you run yourself, and staying safe between sessions. Each one reads in a single sitting.",
   },
   {
     id: "knowledge",
     path: "/knowledge",
     label: "Knowledge",
-    title: "Knowledge — short clips about sessions and safety",
+    title: "EMDR Video Clips — Sessions & Safety",
     description:
-      "Tap a question, watch a different clip — agent-guided sessions, Free sets, trial, and safety in Nura.",
+      "Short clips answering the questions people ask before a session: how Guided works, what Free mode does, the trial, and when to stop.",
   },
   {
     id: "blog",
     path: "/blog",
     label: "Blog",
-    title: "EMDR therapy blog — guides and visual sets",
+    title: "EMDR Articles — Guides, Visual Sets & Safety",
     description:
       "Every Nura guide in one place: what EMDR is, how bilateral stimulation works, grounding, and what to do between sessions. Newest first.",
   },
@@ -190,25 +207,25 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "pricing",
     path: "/pricing",
     label: "Pricing",
-    title: "Plans for AI-guided EMDR",
+    title: "Pricing — EMDR App Plans & Free Trial",
     description:
-      "Weekly, monthly, and yearly plans for AI-guided EMDR — start with a 7-day trial.",
+      "Nura pricing: $4.99/week, $14.99/month, or $99/year after a 7-day trial. Every plan unlocks agent-guided and Free sessions. Cancel anytime.",
   },
   {
     id: "faq",
     path: "/faq",
     label: "FAQ",
-    title: "FAQ — sessions, Free sets, and the trial",
+    title: "EMDR App FAQ — Common Questions",
     description:
-      "Answers about Nura sessions, Free sets, the trial, privacy, and when to get help.",
+      "Answers to the questions people ask before starting: is guided EMDR safe, how long a session takes, what happens if you feel worse, and how billing works.",
   },
   {
     id: "support",
     path: "/support",
     label: "Support",
-    title: "Support — how to get help",
+    title: "Support — Contact the Nura Team",
     description:
-      "Reach Nura by in-app Need help chat or email — plus safety and crisis links.",
+      "Get help with your Nura account, billing, sessions, or data. How to reach us and what to include so we can fix it fast.",
   },
   {
     id: "changelog",
@@ -244,9 +261,9 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "limits",
     path: "/limits",
     label: "Limits",
-    title: "What this app does not do",
+    title: "What Nura Does Not Do — Limits of Guided EMDR",
     description:
-      "What Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care — and where to go instead.",
+      "An honest list of what Nura does not do: no diagnosis, no treatment, no clinical judgment, no crisis care. What a self-help tool can and cannot do alone.",
   },
 ];
 

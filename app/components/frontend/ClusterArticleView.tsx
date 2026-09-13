@@ -3,6 +3,7 @@ import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading
 import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import {
   CLUSTER_TOPIC_LABEL,
+  clusterArticleFaqs,
   learnTopicHref,
   relatedClusterArticles,
   type ClusterArticle,
@@ -14,6 +15,7 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
   const related = relatedClusterArticles(article);
   const date = formatBlogDate(article.publishedAt);
   const learnHref = learnTopicHref(article.topic);
+  const faqs = clusterArticleFaqs(article);
 
   return (
     <article className="fe-cluster">
@@ -45,6 +47,18 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
             </section>
           ))}
         </div>
+
+        {faqs.length ? (
+          <section className="fe-cluster-faq" aria-label="Common questions">
+            <h2>Common questions</h2>
+            {faqs.map((item) => (
+              <div key={item.q}>
+                <h3>{item.q}</h3>
+                <p>{item.a}</p>
+              </div>
+            ))}
+          </section>
+        ) : null}
 
         <p className="fe-cluster-emdr">
           In the app:{" "}

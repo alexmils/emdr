@@ -1,6 +1,6 @@
 import { ClusterArticleView } from "@/app/components/frontend/ClusterArticleView";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
-import { BRAND_LEGAL, BRAND_SPOKEN } from "@/lib/brand";
+import { BRAND_SPOKEN } from "@/lib/brand";
 import {
   getClusterArticle,
   listClusterArticles,
@@ -8,7 +8,7 @@ import {
 import { getPublicAppUrl } from "@/lib/platform-settings";
 import { dynamicOgImageUrl } from "@/lib/seo-og-image";
 import {
-  breadcrumbJsonLd,
+  buildClusterArticleJsonLd,
   localeAlternates,
   stringifyJsonLd,
 } from "@/lib/seo-jsonld";
@@ -16,8 +16,7 @@ import { siteOrigin } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
-/** Allow on-demand render if a slug was added after the last static build. */
+export const revalidate = 3600;
 export const dynamicParams = true;
 
 export function generateStaticParams() {
@@ -66,43 +65,6 @@ export async function generateMetadata({
   };
 }
 
-function articleJsonLd(slug: string, origin: string) {
-  const article = getClusterArticle(slug);
-  if (!article) return null;
-  const url = `${origin}/blog/${article.slug}`;
-  const editorial = `${origin}/editorial`;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "BlogPosting",
-        headline: article.title,
-        description: article.description,
-        datePublished: article.publishedAt,
-        dateModified: article.publishedAt,
-        inLanguage: "en",
-        url,
-        mainEntityOfPage: url,
-        author: {
-          "@type": "Organization",
-          name: BRAND_LEGAL,
-          url: editorial,
-        },
-        publisher: {
-          "@type": "Organization",
-          name: BRAND_LEGAL,
-          url: `${origin}/`,
-        },
-      },
-      breadcrumbJsonLd(origin, [
-        { name: "Home", path: "/" },
-        { name: "Blog", path: "/blog" },
-        { name: article.title, path: `/blog/${article.slug}` },
-      ]),
-    ],
-  };
-}
-
 export default async function BlogArticlePage({
   params,
 }: {
@@ -118,18 +80,17 @@ export default async function BlogArticlePage({
   } catch {
     publicUrl = undefined;
   }
-  const jsonLd = articleJsonLd(slug, siteOrigin(publicUrl));
+  const origin = siteOrigin(publicUrl);
+  const jsonLd = buildClusterArticleJsonLd(origin, article);
 
   return (
     <FrontendShell>
-      {jsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: stringifyJsonLd(jsonLd),
-          }}
-        />
-      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: stringifyJsonLd(jsonLd),
+        }}
+      />
       <ClusterArticleView article={article} />
     </FrontendShell>
   );

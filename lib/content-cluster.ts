@@ -52,9 +52,9 @@ const COVER = {
 export const CLUSTER_ARTICLES: ClusterArticle[] = [
   {
     slug: "what-is-emdr",
-    title: "What EMDR is — in plain language",
+    title: "What Is EMDR? Eye Movement Desensitization and Reprocessing",
     description:
-      "EMDR is a structured way to work with a memory while your attention moves left and right. How that looks in a session, and what Nura actually does.",
+      "EMDR is an 8-phase therapy for trauma and PTSD that uses bilateral stimulation while you recall a memory. What it is, how it works, and who it is for.",
     kicker: "EMDR",
     dek: "A protocol with phases, a target, and a set. Not a chatbot that talks you through feelings and stops there.",
     publishedAt: "2026-09-02T10:00:00.000Z",
@@ -93,9 +93,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "what-is-bilateral-stimulation",
-    title: "What bilateral stimulation is (and why a moving ball)",
+    title: "What Is Bilateral Stimulation? Eyes, Taps, or Tones",
     description:
-      "Bilateral stimulation is the left–right rhythm in EMDR — eyes, taps, or tones. Nura uses a moving ball for visual sets. Not the same as a chat that only talks.",
+      "Bilateral stimulation is alternating left-right input - eye movements, tapping, or audio - used in EMDR to help process distressing memories.",
     kicker: "Visual sets",
     dek: "The clinical phrase is bilateral stimulation. In Nura you see it as a ball that travels, then you stop and notice.",
     publishedAt: "2026-09-03T10:00:00.000Z",
@@ -134,9 +134,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "visual-sets-and-the-moving-ball",
-    title: "Visual sets: the moving ball, not another chat",
+    title: "EMDR Visual Sets — What the Moving Ball Does",
     description:
-      "A visual set in Nura is a moving ball you follow, then a pause. That is the part many AI therapy apps structurally cannot do.",
+      "A visual set is a timed run of a moving point your eyes follow. What the ball does during an EMDR set, how speed and repeats change it, and how to run one.",
     kicker: "In the app",
     dek: "Follow the ball. Stop. Notice. Repeat — or don’t.",
     publishedAt: "2026-09-04T10:00:00.000Z",
@@ -175,9 +175,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-vs-cbt",
-    title: "EMDR vs CBT — different jobs, not a contest",
+    title: "EMDR vs CBT — Differences and Which Fits You",
     description:
-      "CBT works with thoughts and experiments. EMDR works with a target memory and left–right sets. Nura is built for the second, as self-help — not as a replacement for either.",
+      "EMDR and CBT are both recommended trauma therapies. How they differ in mechanism, session structure, evidence, and what each is best at.",
     kicker: "Compare",
     dek: "One asks what you believe and tests it. The other asks you to follow a stimulus while a memory is up.",
     publishedAt: "2026-09-05T10:00:00.000Z",
@@ -212,9 +212,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-between-sessions",
-    title: "EMDR between sessions — practice, not a second therapist",
+    title: "EMDR Between Sessions — What to Do and Avoid",
     description:
-      "Use Nura between appointments for visual sets and a quiet protocol. It does not replace the clinician you already have.",
+      "What to do between EMDR sessions: grounding, gentle practice, journaling, and when to stop. How to keep processing without overwhelming yourself.",
     kicker: "Practice",
     dek: "The hour with a person is the hour with a person. This is the Tuesday night in between.",
     publishedAt: "2026-09-06T10:00:00.000Z",
@@ -253,9 +253,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "can-you-do-emdr-alone",
-    title: "Can you do EMDR alone?",
+    title: "Can You Do EMDR Alone? What Self-Guided EMDR Can Do",
     description:
-      "You can run visual sets on your own. Full clinical EMDR is a relationship with a trained person. Nura is the self-help version — with hard limits.",
+      "You can run bilateral stimulation on your own, but EMDR is more than the eye movements. What is safe to do alone, and when you need a trained therapist.",
     kicker: "Solo",
     dek: "Alone as in: you start the ball. Not alone as in: the protocol has no edges.",
     publishedAt: "2026-09-07T10:00:00.000Z",
@@ -294,9 +294,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "how-long-does-emdr-take",
-    title: "How long does EMDR take?",
+    title: "How Long Does EMDR Take? Sessions and Timeline",
     description:
-      "A single set is minutes. A course of EMDR in clinic is often many sessions. In Nura you choose the length of a visual set — and you can stop early.",
+      "EMDR is usually 6-12 sessions for a single trauma, but it varies. How long a session lasts, how many you may need, and what changes the timeline.",
     kicker: "Time",
     dek: "Sets are short. Healing is not a countdown in the title bar.",
     publishedAt: "2026-09-08T10:00:00.000Z",
@@ -331,9 +331,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-for-anxiety",
-    title: "EMDR for anxiety — what an app can and cannot claim",
+    title: "EMDR for Anxiety — How It Works and What to Expect",
     description:
-      "People use EMDR for anxious memories and body charge. Nura offers visual sets and a guided protocol as self-help — not a treatment for an anxiety disorder.",
+      "EMDR was built for trauma but is increasingly used for anxiety and panic. What the evidence shows, how a session differs, and realistic expectations.",
     kicker: "Anxiety",
     dek: "Charge in the body is real. A ball is not a diagnosis.",
     publishedAt: "2026-09-09T10:00:00.000Z",
@@ -368,9 +368,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-for-ptsd",
-    title: "EMDR and PTSD — clinic evidence, app limits",
+    title: "EMDR for PTSD — Evidence, Sessions, What to Expect",
     description:
-      "EMDR is used in clinics for PTSD. Nura is self-help software with visual sets. It does not diagnose or treat PTSD.",
+      "EMDR is recommended for PTSD by the WHO, APA, and NICE. What the evidence shows, how many sessions it takes, and what happens in treatment.",
     kicker: "PTSD",
     dek: "Guidelines talk about clinicians. This page will not pretend to be one.",
     publishedAt: "2026-09-10T10:00:00.000Z",
@@ -405,9 +405,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-online-what-to-expect",
-    title: "EMDR online: what to expect in an app",
+    title: "Online EMDR Therapy — What to Expect in a Session",
     description:
-      "Online EMDR in Nura is a browser session: grounding, a moving ball for visual sets, optional voice. No waiting room, no licensed therapist in the tab.",
+      "Online EMDR uses a moving dot on screen instead of a therapist's hand. What a remote session looks like, what you need, and how it compares to in person.",
     kicker: "Online",
     dek: "Headphones optional. A quiet room is not.",
     publishedAt: "2026-09-11T10:00:00.000Z",
@@ -442,9 +442,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "guided-vs-free-mode",
-    title: "Guided vs Free: two ways to run a set",
+    title: "Guided vs Free Mode — Nura Session Types Explained",
     description:
-      "Guided mode in Nura follows intake, grounding, sets, and check-ins. Free mode is the moving ball only. Same visual set, different wrapper.",
+      "Nura has two session types: agent-guided, which walks you through phases and check-ins, and Free, where you run visual sets yourself. How to choose.",
     kicker: "Modes",
     dek: "One walks you. One gets out of the way.",
     publishedAt: "2026-09-12T10:00:00.000Z",
@@ -479,9 +479,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "grounding-before-a-set",
-    title: "Grounding before a set",
+    title: "Grounding Before an EMDR Set — Techniques That Work",
     description:
-      "Ground before you start the moving ball: feet, breath, a safe place. Nura Guided will not skip this. In Free mode you have to give it to yourself.",
+      "Grounding settles your nervous system before bilateral stimulation. Simple techniques to use before a set, and how to tell when you are ready to begin.",
     kicker: "Safety",
     dek: "Arrive in the room before you ask the room to hold a memory.",
     publishedAt: "2026-09-12T11:00:00.000Z",
@@ -516,9 +516,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "when-to-pause-or-stop",
-    title: "When to pause or stop a set",
+    title: "When to Pause or Stop an EMDR Session — Warning Signs",
     description:
-      "Stop the moving ball if you are leaving the room, panic is climbing, or you have a plan to harm. Nura is self-help — stopping is always allowed.",
+      "Knowing when to stop is a skill. Signs a set is too much, how to pause safely mid-session, and when to stop practicing and talk to a clinician.",
     kicker: "Safety",
     dek: "The grown-up skill is ending the set while you still can.",
     publishedAt: "2026-09-12T12:00:00.000Z",
@@ -553,9 +553,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-session-structure",
-    title: "How a session is structured",
+    title: "EMDR Session Structure — The 8 Phases Explained",
     description:
-      "In Nura, Guided sessions move through intake, grounding, visual sets, and check-ins. Free mode is the ball. Both stay self-help.",
+      "EMDR follows eight phases, from history-taking and preparation through reprocessing to re-evaluation. What happens in each phase of a session.",
     kicker: "Protocol",
     dek: "Order is a kindness. It is not bureaucracy.",
     publishedAt: "2026-09-12T13:00:00.000Z",
@@ -590,9 +590,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "self-help-emdr-vs-a-therapist",
-    title: "Self-help EMDR vs a therapist",
+    title: "Self-Help EMDR vs a Therapist — Honest Comparison",
     description:
-      "A therapist can assess, pace, and stay if you drop. Nura is an app with visual sets. Use both, or the human, or neither — not as the same thing.",
+      "Self-guided bilateral stimulation vs working with a trained EMDR therapist: cost, safety, what each does well, and how to combine them sensibly.",
     kicker: "Limits",
     dek: "The app does not know when you are lying on the kitchen floor.",
     publishedAt: "2026-09-12T14:00:00.000Z",
@@ -627,9 +627,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "eye-movements-and-online-emdr",
-    title: "Eye movements vs a moving ball on a screen",
+    title: "Does Online EMDR Work? Eye Movements on a Screen",
     description:
-      "Classic EMDR uses eye movements. Online, a moving ball is a visual stand-in so your attention still travels. Nura is built around that ball.",
+      "Research on screen-based and remotely delivered EMDR: whether eye movements work over video, what the evidence shows, and what it does not yet cover.",
     kicker: "Stimulus",
     dek: "Your eyes still do the work. The finger is not in the room.",
     publishedAt: "2026-09-12T15:00:00.000Z",
@@ -668,9 +668,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "emdr-check-ins-after-sets",
-    title: "Check-ins after a set",
+    title: "Check-Ins After an EMDR Set — SUD, VOC, Body Scan",
     description:
-      "After the moving ball stops, Nura Guided asks what is here now. That pause is part of the protocol — not a survey for growth team.",
+      "After each set you check in: what you notice, your SUD and VOC ratings, and what your body feels. Why the check-in is not optional and how to do it.",
     kicker: "After",
     dek: "The set is the sprint. The check-in is whether you still have legs.",
     publishedAt: "2026-09-12T16:00:00.000Z",
@@ -705,9 +705,9 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "what-happens-in-an-emdr-set",
-    title: "What happens in an EMDR set",
+    title: "What Happens in an EMDR Set — Step by Step",
     description:
-      "A set: hold a target, follow the moving ball, stop, notice. That loop is the unit of work in Nura — not a long AI monologue.",
+      "A set is one timed run of bilateral stimulation, usually 20-60 seconds, followed by a pause and a check-in. What happens during a set and after it.",
     kicker: "The set",
     dek: "Target. Follow. Stop. Notice. That is the whole machine.",
     publishedAt: "2026-09-12T17:00:00.000Z",
@@ -747,6 +747,67 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
 ];
 
 const BY_SLUG = new Map(CLUSTER_ARTICLES.map((a) => [a.slug, a]));
+
+export type ClusterFaq = { q: string; a: string };
+
+const VAGUE_SECTION =
+  /^(the short version|in short|bottom line|next steps?|also|remember|a note|one more)$/i;
+
+function clipAnswer(text: string, max = 400): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1).trimEnd()}…`;
+}
+
+function ensureQuestion(heading: string): string {
+  const h = heading.trim();
+  if (h.endsWith("?")) return h;
+  if (/^(what|how|when|why|who|can|does|do|is|are|should)\b/i.test(h)) {
+    return `${h}?`;
+  }
+  return `What about ${h.charAt(0).toLowerCase()}${h.slice(1)}?`;
+}
+
+/** Primary FAQ from the SEO title (query-shaped) + meta description. */
+function primaryFaqFromTitle(article: ClusterArticle): ClusterFaq {
+  const qMatch = article.title.match(/^([^?]+\?)/);
+  if (qMatch) {
+    return { q: qMatch[1].trim(), a: article.description };
+  }
+  const stem = article.title.split("—")[0].trim();
+  if (/^EMDR for /i.test(stem)) {
+    return { q: `What is ${stem}?`, a: article.description };
+  }
+  if (/^EMDR vs /i.test(stem)) {
+    return {
+      q: `How do ${stem.replace(/^EMDR vs /i, "EMDR and ")} differ?`,
+      a: article.description,
+    };
+  }
+  return {
+    q: stem.endsWith("?") ? stem : `${stem}?`,
+    a: article.description,
+  };
+}
+
+/**
+ * Visible + schema FAQ for each guide (Google requires matching on-page copy).
+ * Builds from the title query + up to two non-vague sections.
+ */
+export function clusterArticleFaqs(article: ClusterArticle): ClusterFaq[] {
+  const out: ClusterFaq[] = [primaryFaqFromTitle(article)];
+  for (const section of article.sections) {
+    if (out.length >= 4) break;
+    if (VAGUE_SECTION.test(section.heading.trim())) continue;
+    const body = section.paragraphs.filter(Boolean).join(" ").trim();
+    if (body.length < 40) continue;
+    out.push({
+      q: ensureQuestion(section.heading),
+      a: clipAnswer(body),
+    });
+  }
+  return out;
+}
 
 export function listClusterArticles(): ClusterArticle[] {
   return [...CLUSTER_ARTICLES].sort(

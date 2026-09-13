@@ -41,6 +41,7 @@ export function aiGroundingAllowPaths(): string[] {
     "/llms.txt",
     "/sitemap.xml",
     "/feed.xml",
+    "/rss.xml",
     "/blog/rss.xml",
   ];
 }

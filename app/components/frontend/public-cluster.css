@@ -160,6 +160,44 @@
   line-height: 1.45;
 }
 
+.fe-cluster-faq {
+  margin: 2.5rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
+}
+
+.fe-cluster-faq > h2 {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.fe-cluster-faq > div {
+  margin: 0 0 1.15rem;
+}
+
+.fe-cluster-faq > div:last-child {
+  margin-bottom: 0;
+}
+
+.fe-cluster-faq h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fe-fg);
+}
+
+.fe-cluster-faq p {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--fe-fg);
+}
+
 .fe-cluster-note {
   margin: 0 0 2rem;
   font-size: 0.9375rem;

@@ -11,8 +11,10 @@ import {
 } from "@/lib/clinical-authorities";
 import {
   CLUSTER_TOPICS,
+  clusterArticleFaqs,
   clusterArticlesByTopic,
   listClusterArticles,
+  type ClusterArticle,
 } from "@/lib/content-cluster";
 import {
   CLINICAL_ADVISOR,
@@ -234,6 +236,64 @@ export function faqPageJsonLd(items: FaqItem[]) {
   };
 }
 
+/** Blog guide leaf: BlogPosting + MedicalWebPage + FAQPage (no fake reviewedBy). */
+export function buildClusterArticleJsonLd(
+  origin: string,
+  article: ClusterArticle
+) {
+  const base = origin.replace(/\/$/, "");
+  const path = `/blog/${article.slug}`;
+  const url = `${base}${path}`;
+  const editorial = `${base}/editorial`;
+  const faqs = clusterArticleFaqs(article);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      reviewablePageJsonLd({
+        origin,
+        path,
+        name: article.title,
+        description: article.description,
+      }),
+      {
+        "@type": "BlogPosting",
+        "@id": `${url}#article`,
+        headline: article.title,
+        description: article.description,
+        datePublished: article.publishedAt,
+        dateModified: article.publishedAt,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+        url,
+        mainEntityOfPage: url,
+        isPartOf: { "@id": `${url}#page` },
+        author: {
+          "@type": "Organization",
+          name: BRAND_SPOKEN,
+          url: editorial,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: BRAND_SPOKEN,
+          url: `${base}/`,
+        },
+      },
+      {
+        ...faqPageJsonLd(faqs),
+        "@id": `${url}#faq`,
+        url,
+        mainEntityOfPage: url,
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "Blog", path: "/blog" },
+        { name: article.title, path },
+      ]),
+    ],
+  };
+}
+
 /**
  * YMYL page node. Always `MedicalWebPage` with audience + specialty + citations.
  * Adds `reviewedBy` / `lastReviewed` only when a real advisor is in
@@ -397,22 +457,22 @@ function offerAmount(displayPrice: string): string {
 
 /** H1 + lead mirrored into JSON-LD for `/pricing`. */
 export const PRICING_JSON_LD = {
-  name: "Plans for AI-guided EMDR",
-  description: `Weekly, monthly, and yearly plans for ${BRAND_SPOKEN}. Start with a ${TRIAL_DAYS}-day trial.`,
+  name: "Pricing — EMDR app plans and free trial",
+  description: `Nura pricing: weekly, monthly, or yearly after a ${TRIAL_DAYS}-day trial. Every plan unlocks agent-guided and Free sessions.`,
 } as const;
 
 /** H1 mirrored into JSON-LD for `/faq`. */
 export const PUBLIC_FAQ_JSON_LD = {
   name: "FAQ",
   description:
-    "Answers about Nura sessions, Free sets, the trial, privacy, and when to get help.",
+    "Answers to the questions people ask before starting: is guided EMDR safe, how long a session takes, what happens if you feel worse, and how billing works.",
 } as const;
 
 /** H1 + lead mirrored into JSON-LD for `/support`. */
 export const SUPPORT_JSON_LD = {
   name: "Support",
   description:
-    "How to reach Nura — in-app Need help chat, email hello@nurahelp.com, and crisis lines.",
+    "Get help with your Nura account, billing, sessions, or data. How to reach us and what to include so we can fix it fast.",
 } as const;
 
 export function buildPricingJsonLd(origin: string) {

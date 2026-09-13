@@ -27,7 +27,7 @@ export const BRAND_TAGLINE = "Support for therapy. Starting with EMDR.";
  * that lives in `BRAND_LIMITS_LINE` (footer /limits / llms.txt).
  */
 export const BRAND_DESCRIPTION =
-  "Guided EMDR therapy in a calm online app — visual sets, optional voice, and resources for practice between sessions.";
+  "Guided EMDR sessions you run yourself: visual sets, optional voice, grounding, and short guides for between sessions. Start with a 7-day trial.";
 
 /**
  * Canonical limits sentence — footer, /limits lead, llms.txt.
@@ -37,7 +37,8 @@ export const BRAND_LIMITS_LINE =
   "Nura is a self-help tool for practice between sessions. It is not therapy, diagnosis, or crisis care.";
 
 /** Title stem for `/` — layout template adds ` — Nura`. Keep under ~50 chars. */
-export const BRAND_TITLE_STEM = "AI-guided EMDR therapy online";
+export const BRAND_TITLE_STEM =
+  "EMDR Therapy Online — Guided Bilateral Stimulation";
 
 export const BRAND_TITLE = `${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}`;
 

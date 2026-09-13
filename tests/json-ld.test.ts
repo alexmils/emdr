@@ -16,6 +16,7 @@ import {
   LEARN_JSON_LD,
   buildBlogIndexJsonLd,
   buildClinicalReviewJsonLd,
+  buildClusterArticleJsonLd,
   buildEmdrJsonLd,
   buildLearnJsonLd,
   reviewablePageJsonLd,
@@ -259,5 +260,29 @@ describe("clinical-team meta (F8 placeholder retired)", () => {
         "How clinical review works for Nura’s self-help EMDR Support app — named advisor listed when configured.",
       ),
     );
+  });
+});
+
+describe("cluster article JSON-LD (R5h)", () => {
+  it("emits MedicalWebPage, BlogPosting, and FAQPage without fake reviewedBy", () => {
+    const article = listClusterArticles()[0];
+    assert.ok(article);
+    const data = buildClusterArticleJsonLd("https://nurahelp.com", article);
+    const types = data["@graph"].map((n: { "@type"?: string }) => n["@type"]);
+    assert.ok(types.includes("Organization"));
+    assert.ok(types.includes("MedicalWebPage"));
+    assert.ok(types.includes("BlogPosting"));
+    assert.ok(types.includes("FAQPage"));
+    assert.ok(types.includes("BreadcrumbList"));
+    const raw = JSON.stringify(data);
+    assert.equal(raw.includes("reviewedBy"), hasClinicalAdvisorConfigured());
+    if (!hasClinicalAdvisorConfigured()) {
+      assert.equal(raw.includes("lastReviewed"), false);
+    }
+    assert.ok(raw.includes("EMDRIA") || raw.includes("emdria"));
+    const faq = data["@graph"].find(
+      (n: { "@type"?: string }) => n["@type"] === "FAQPage",
+    ) as { mainEntity?: unknown[] };
+    assert.ok((faq?.mainEntity?.length ?? 0) >= 2);
   });
 });

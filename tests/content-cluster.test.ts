@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   CLUSTER_ARTICLES,
   LEARN_READING_ORDER,
+  clusterArticleFaqs,
   clusterHasBlsAcronym,
   clusterSitemapPaths,
   featuredClusterPosts,
@@ -92,5 +93,16 @@ describe("content cluster", () => {
       ["understand", "practice", "safety"] as const
     ).flatMap((t) => LEARN_READING_ORDER[t]);
     assert.ok(allLearn.length < CLUSTER_ARTICLES.length);
+  });
+
+  it("builds at least two FAQ items per article for schema + on-page block", () => {
+    for (const article of CLUSTER_ARTICLES) {
+      const faqs = clusterArticleFaqs(article);
+      assert.ok(faqs.length >= 2, article.slug);
+      for (const item of faqs) {
+        assert.match(item.q, /\?$/);
+        assert.ok(item.a.length >= 40, `${article.slug}: ${item.q}`);
+      }
+    }
   });
 });

@@ -13,13 +13,14 @@ export function PricingPageView() {
 
   return (
     <article className="frontend-legal frontend-legal--long">
-      <h1>Plans for AI-guided EMDR</h1>
+      <h1>Pricing — EMDR app plans and free trial</h1>
       <p>
         Start with a {TRIAL_DAYS}-day trial. Every paid plan unlocks the same
         agent-guided sessions and Free sets — pick how often you want to be
         billed.
       </p>
 
+      <h2>Plans</h2>
       <ul className="frontend-pricing-plans">
         {plans.map((plan) => (
           <li
@@ -46,6 +47,27 @@ export function PricingPageView() {
         ))}
       </ul>
 
+      <h2>What every plan includes</h2>
+      <p>
+        Agent-guided EMDR sessions with optional voice, Free visual sets you run
+        yourself, and the same session controls for speed, animation, sound, and
+        repeats. Billing interval is the only difference between plans.
+      </p>
+
+      <h2>Trial and cancel</h2>
+      <p>
+        The {TRIAL_DAYS}-day trial lets you try the full product before you pay.
+        Cancel anytime from account billing — you keep access until the period
+        you already paid for ends.
+      </p>
+
+      <h2>Before you start</h2>
+      <p>
+        Common questions are on <Link href="/faq">FAQ</Link>. Product limits are
+        on <Link href="/limits">Limits</Link>. How a session runs is on{" "}
+        <Link href="/emdr">AI-guided EMDR</Link>.
+      </p>
+
       <div className="frontend-hero-actions">
         <Link href={appPath("/create-account")} className="frontend-btn-primary">
           Get started
@@ -56,8 +78,8 @@ export function PricingPageView() {
       </div>
 
       <p className="frontend-legal-note">
-        See <Link href="/limits">what {BRAND_SPOKEN} does not do</Link> and{" "}
-        <Link href="/faq">common questions</Link> before you start.
+        {BRAND_SPOKEN} is self-help software for practice between sessions.{" "}
+        <Link href="/limits">Read the limits</Link>.
       </p>
     </article>
   );

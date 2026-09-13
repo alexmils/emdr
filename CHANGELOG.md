@@ -504,6 +504,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Cluster note CTA: “Read the limits” (drop passive “See what this app does not do”)
 - [internal] SEO strategy §12.6–12.9 — E-E-A-T gap vs commercial rivals; `/learn/[slug]` URL window while blog 404s
 - [internal] SEO strategy §13 — keyword map (18 existing), P0 gaps, cannibalization rules, AEO format gates
+- [internal] SEO round 2: unique home vs /emdr titles; query-order article titles; no disclaimer in meta; /rss.xml→/feed.xml; thicker /pricing
+- [internal] Admin voice preview: no false “Could not play” toast when stopping a sample (clear handlers before clearing src)
+- [internal] R5h: blog guides get visible FAQ + MedicalWebPage/FAQPage/BlogPosting JSON-LD (no fake reviewedBy)
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

@@ -260,14 +260,17 @@ describe("public page titles and descriptions", () => {
     }
   });
 
-  it("puts the money phrase in home and EMDR titles", () => {
+  it("gives home and EMDR unique money titles with bilateral stimulation", () => {
     const home = SITE_SEO_DEFAULTS.find((page) => page.id === "home");
     const emdr = SITE_SEO_DEFAULTS.find((page) => page.id === "emdr");
     assert.equal(home?.title, BRAND_TITLE_STEM);
     assert.match(BRAND_TITLE, new RegExp(`^${BRAND_TITLE_STEM} — ${BRAND_SPOKEN}$`));
+    assert.notEqual(home?.title, emdr?.title);
+    assert.match(home?.title || "", /EMDR Therapy Online/i);
+    assert.match(home?.title || "", /Bilateral Stimulation/i);
+    assert.match(emdr?.title || "", /AI EMDR App/i);
+    assert.match(emdr?.title || "", /Bilateral Stimulation/i);
     for (const page of [home, emdr]) {
-      assert.match(page?.title || "", /EMDR therapy/);
-      assert.match(page?.title || "", /AI-guided/);
       assert.doesNotMatch(page?.title || "", /\bAi\b/);
       assert.doesNotMatch(page?.title || "", /\| Nura/);
     }
@@ -287,7 +290,7 @@ describe("public page titles and descriptions", () => {
     const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
     const meta = metadataFromResolved("emdr", pages);
     assert.equal(typeof meta.title, "string");
-    assert.equal(meta.title, "AI-guided EMDR therapy online");
+    assert.equal(meta.title, "AI EMDR App — Guided Bilateral Stimulation Online");
   });
 
   it("uses an absolute document title on home so Nura is not dropped", () => {
@@ -331,7 +334,7 @@ describe("public page titles and descriptions", () => {
     assert.equal(pages.find((p) => p.id === "home")?.title, BRAND_TITLE_STEM);
     assert.equal(
       pages.find((p) => p.id === "emdr")?.title,
-      "AI-guided EMDR therapy online",
+      "AI EMDR App — Guided Bilateral Stimulation Online",
     );
     const homeMeta = metadataFromResolved("home", pages);
     assert.deepEqual(homeMeta.title, { absolute: BRAND_TITLE });
@@ -388,10 +391,10 @@ describe("public page titles and descriptions", () => {
     assert.equal(byId.about?.title, "About the EMDR therapy online app");
     assert.equal(
       byId.emdr?.title,
-      "AI-guided EMDR therapy online"
+      "AI EMDR App — Guided Bilateral Stimulation Online"
     );
-    assert.equal(byId.learn?.title, "EMDR therapy — where to start");
-    assert.equal(byId.blog?.title, "EMDR therapy blog — guides and visual sets");
+    assert.equal(byId.learn?.title, "Learn EMDR — Guides by Topic, Safety & Practice");
+    assert.equal(byId.blog?.title, "EMDR Articles — Guides, Visual Sets & Safety");
     assert.equal(byId.terms?.title, "Terms of service");
     assert.notEqual(byId.about?.description, BRAND_DESCRIPTION);
     assert.notEqual(byId.privacy?.description, "Privacy policy for NuraHelp");
