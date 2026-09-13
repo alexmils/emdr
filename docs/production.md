@@ -219,11 +219,15 @@ Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process o
 - Binds **only** `127.0.0.1:3471:80` on Docker network `coolify`
 - Discovers app containers via Docker labels (`traefik.enable=true`, entrypoint `http`)
 - **Do not** start the stock Coolify Proxy (`/data/coolify/proxy`) on 80/443 — it fights CloudPanel
+- **Do not** re-add Coolify **Ports mappings** `127.0.0.1:3471:3471` — next deploy will fail to bind (edge already owns 3471) and nginx gets Traefik `404 page not found`
+- After a bad Coolify deploy: `bash /data/nura-edge/ensure-after-deploy.sh` (re-locks DB settings) or `bash /data/nura-edge/restore-app.sh` (recreates the app container without host publish)
+- Coolify FQDN must stay `http://nurahelp.com,…` with **Force HTTPS off** so routers are HTTP-only (CloudPanel terminates TLS)
 
 ```bash
 # On VPS — edge status
 docker ps --filter name=nura-edge --format '{{.Names}} {{.Status}} {{.Ports}}'
 curl -sS -H 'Host: nurahelp.com' http://127.0.0.1:3471/health
+bash /data/nura-edge/ensure-after-deploy.sh
 ```
 
 ---
