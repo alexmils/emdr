@@ -242,6 +242,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] `/about/clinical-team` is a clinical **review process** page (EMDRIA/APA/NICE/WHO/PubMed citations); YMYL JSON-LD uses `MedicalWebPage` with audience + specialty — `reviewedBy` only when a real advisor is set; Cursor rule `ymyl-clinical-eeat`
 - [internal] P0 SEO: strip UTF-8 BOM from `app/blog/[slug]` (prod 404s), strip brand suffixes so titles cannot become `Nura — Nura`, meta descriptions value-only with `BRAND_LIMITS_LINE` in footer/`/limits`/`llms.txt`
 - [internal] F4–F7: split `/learn` (curated paths) vs `/blog` (chrono); add `/pricing` `/faq` `/support`; dynamic `/og` 1200×630 cards; WebSite + AboutPage + legal WebPage JSON-LD
+- [internal] `/privacy` hosts prepared Termly Privacy HTML (same chrome as `/terms`); AI providers OpenAI + Anthropic (Claude) + DeepSeek; hosting copy is EU/US only — no IPs or vendor hostnames
+- [internal] `/privacy` Nura product-details addendum from prior draft (Art. 9 special category, session fields, cookies, subprocessors, LLM, retention, in-app delete) — still no IPs or hosting-vendor names
+- [internal] Strip Termly generator footer / termly.io links from `/privacy` and `/terms` public HTML; rename legal CSS classes off “termly”
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)

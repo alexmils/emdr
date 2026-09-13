@@ -1,4 +1,4 @@
-﻿import { LegalOpenHelp } from "@/app/components/frontend/LegalOpenHelp";
+import { LegalOpenHelp } from "@/app/components/frontend/LegalOpenHelp";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
 import { JsonLd } from "@/app/components/frontend/JsonLd";
 import {
@@ -40,7 +40,7 @@ export default async function TermsPage() {
         })}
       />
       <LegalOpenHelp />
-      <article className="frontend-legal frontend-legal--long frontend-legal--termly">
+      <article className="frontend-legal frontend-legal--long frontend-legal--prepared">
         <h1>Terms of service</h1>
         <p className="frontend-legal-meta">
           Version {LEGAL_DOC_VERSION.terms} · Last updated 12 September 2026
@@ -59,7 +59,7 @@ export default async function TermsPage() {
         </nav>
 
         <div
-          className="frontend-legal-termly"
+          className="frontend-legal-body"
           dangerouslySetInnerHTML={{ __html: bodyHtml }}
         />
       </article>

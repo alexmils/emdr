@@ -31,9 +31,12 @@ export const LEGAL_ENTITY: LegalEntity = {
   jurisdiction: "the state and federal courts located in Wyoming, United States",
 };
 
-/** Hosting region note for Privacy (Coolify VPS — see docs/production.md). */
+/**
+ * Public hosting region note for Privacy — countries only.
+ * Never put IPs, hostnames, or hosting-vendor names in user-facing copy.
+ */
 export const DATA_HOSTING_REGION =
-  "Application and primary database run on a VPS at approximately EU (Hetzner-class / Coolify on 217.76.58.141). Exact datacenter metro may change; contact support for the current region.";
+  "Application and primary database are hosted in the European Union and the United States. Contact us via Need help for the current region.";
 
 export type LegalDocType =
   | "terms"
@@ -44,7 +47,7 @@ export type LegalDocType =
 /** Bump when Terms / Privacy / informed-consent copy materially changes. */
 export const LEGAL_DOC_VERSION = {
   terms: "terms@2026-09-12c",
-  privacy: "privacy@2026-09-12d",
+  privacy: "privacy@2026-09-13b",
   informed_session: "informed_session@2026-09-12",
   age_18: "age_18@2026-09-12",
 } as const satisfies Record<LegalDocType, string>;

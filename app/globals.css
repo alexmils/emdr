@@ -8597,9 +8597,9 @@ select.field option:disabled {
 .frontend-home .frontend-legal h2,
 .frontend-home .frontend-legal h3,
 .frontend-home .frontend-legal h4,
-.frontend-home .frontend-legal-termly h1,
-.frontend-home .frontend-legal-termly h2,
-.frontend-home .frontend-legal-termly h3 {
+.frontend-home .frontend-legal-body h1,
+.frontend-home .frontend-legal-body h2,
+.frontend-home .frontend-legal-body h3 {
   font-family: var(--font-sans) !important;
 }
 
@@ -8790,20 +8790,20 @@ select.field option:disabled {
 }
 
 @media (min-width: 1100px) {
-  .frontend-legal.frontend-legal--termly {
+  .frontend-legal.frontend-legal--prepared {
     display: grid;
     grid-template-columns: minmax(13.5rem, 17rem) minmax(0, 1fr);
     column-gap: 2.25rem;
     align-items: start;
   }
 
-  .frontend-legal.frontend-legal--termly > h1,
-  .frontend-legal.frontend-legal--termly > .frontend-legal-meta,
-  .frontend-legal.frontend-legal--termly > .frontend-legal-pre {
+  .frontend-legal.frontend-legal--prepared > h1,
+  .frontend-legal.frontend-legal--prepared > .frontend-legal-meta,
+  .frontend-legal.frontend-legal--prepared > .frontend-legal-pre {
     grid-column: 1 / -1;
   }
 
-  .frontend-legal.frontend-legal--termly > .frontend-legal-toc {
+  .frontend-legal.frontend-legal--prepared > .frontend-legal-toc {
     grid-column: 1;
     grid-row: 4;
     position: sticky;
@@ -8815,12 +8815,12 @@ select.field option:disabled {
     overscroll-behavior: contain;
   }
 
-  .frontend-legal.frontend-legal--termly > .frontend-legal-termly {
+  .frontend-legal.frontend-legal--prepared > .frontend-legal-body {
     grid-column: 2;
     grid-row: 4;
   }
 
-  .frontend-legal.frontend-legal--termly .frontend-legal-toc-list {
+  .frontend-legal.frontend-legal--prepared .frontend-legal-toc-list {
     columns: 1;
   }
 }
@@ -8875,11 +8875,11 @@ select.field option:disabled {
   color: var(--fe-accent);
 }
 
-.frontend-legal--termly [id] {
+.frontend-legal--prepared [id] {
   scroll-margin-top: 5.5rem;
 }
 
-.frontend-legal-termly {
+.frontend-legal-body {
   max-width: none;
   font-family: var(--font-sans);
   font-size: 1.125rem;
@@ -8888,8 +8888,8 @@ select.field option:disabled {
   color: var(--fe-fg);
 }
 
-/* Kill leftover Termly / Word paint: gray 11pt, bold blocks, white span chips */
-.frontend-legal-termly *:not(h1):not(h2):not(h3):not(h4):not(strong):not(b):not(a):not(button) {
+/* Kill leftover export / Word paint: gray 11pt, bold blocks, white span chips */
+.frontend-legal-body *:not(h1):not(h2):not(h3):not(h4):not(strong):not(b):not(a):not(button) {
   font-family: inherit !important;
   font-size: inherit !important;
   font-weight: inherit !important;
@@ -8899,8 +8899,8 @@ select.field option:disabled {
   background-color: transparent !important;
 }
 
-.frontend-legal-termly h1 {
-  /* Title already rendered above; hide Termly duplicate if present */
+.frontend-legal-body h1 {
+  /* Title already rendered above; hide export duplicate if present */
   position: absolute;
   width: 1px;
   height: 1px;
@@ -8912,8 +8912,8 @@ select.field option:disabled {
   border: 0;
 }
 
-.frontend-legal-termly h2,
-.frontend-legal-termly h3 {
+.frontend-legal-body h2,
+.frontend-legal-body h3 {
   font-family: var(--font-sans) !important;
   font-weight: 600 !important;
   letter-spacing: -0.015em;
@@ -8921,44 +8921,44 @@ select.field option:disabled {
   background: transparent !important;
 }
 
-.frontend-legal-termly h2 {
+.frontend-legal-body h2 {
   margin: 2rem 0 0.75rem;
   font-size: 1.25rem !important;
   line-height: 1.3 !important;
 }
 
-.frontend-legal-termly h3 {
+.frontend-legal-body h3 {
   margin: 1.35rem 0 0.55rem;
   font-size: 1.0625rem !important;
   line-height: 1.35 !important;
 }
 
-.frontend-legal-termly div,
-.frontend-legal-termly p,
-.frontend-legal-termly li,
-.frontend-legal-termly span {
+.frontend-legal-body div,
+.frontend-legal-body p,
+.frontend-legal-body li,
+.frontend-legal-body span {
   margin-block: 0;
 }
 
-.frontend-legal-termly div + div {
+.frontend-legal-body div + div {
   margin-top: 0;
 }
 
-.frontend-legal-termly p,
-.frontend-legal-termly div[data-custom-class],
-.frontend-legal-termly > div {
+.frontend-legal-body p,
+.frontend-legal-body div[data-custom-class],
+.frontend-legal-body > div {
   margin: 0 0 1.1rem;
 }
 
-.frontend-legal-termly strong,
-.frontend-legal-termly b {
+.frontend-legal-body strong,
+.frontend-legal-body b {
   font-weight: 600 !important;
   color: inherit !important;
   background: transparent !important;
 }
 
 .frontend-home .frontend-legal .help-text-link,
-.frontend-home .frontend-legal-termly .help-text-link {
+.frontend-home .frontend-legal-body .help-text-link {
   color: var(--fe-fg) !important;
   font-size: inherit !important;
   font-weight: 600 !important;
@@ -8969,18 +8969,18 @@ select.field option:disabled {
 }
 
 .frontend-home .frontend-legal .help-text-link:hover,
-.frontend-home .frontend-legal-termly .help-text-link:hover {
+.frontend-home .frontend-legal-body .help-text-link:hover {
   color: var(--fe-fg) !important;
   text-decoration-color: var(--fe-accent);
 }
 
-.frontend-legal-termly ul,
-.frontend-legal-termly ol {
+.frontend-legal-body ul,
+.frontend-legal-body ol {
   margin: 0 0 1.1rem;
   padding-left: 1.35rem;
 }
 
-.frontend-legal-termly a {
+.frontend-legal-body a {
   color: var(--fe-fg) !important;
   font-weight: 500 !important;
   text-decoration: underline;
@@ -8988,7 +8988,7 @@ select.field option:disabled {
   background: transparent !important;
 }
 
-.frontend-legal-termly .legal-addendum {
+.frontend-legal-body .legal-addendum {
   margin: 1.5rem 0;
   padding: 1.1rem 1.2rem;
   border-left: 3px solid var(--fe-accent);
@@ -8997,11 +8997,11 @@ select.field option:disabled {
   color: var(--fe-fg);
 }
 
-.frontend-legal-termly .legal-addendum *:not(h2):not(h3):not(strong):not(a):not(button) {
+.frontend-legal-body .legal-addendum *:not(h2):not(h3):not(strong):not(a):not(button) {
   background: transparent !important;
 }
 
-.frontend-legal-termly .legal-addendum h2 {
+.frontend-legal-body .legal-addendum h2 {
   margin-top: 0;
 }
 

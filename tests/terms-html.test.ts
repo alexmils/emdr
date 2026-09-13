@@ -61,4 +61,17 @@ describe("prepareTermsHtml", () => {
     assert.match(out, /13\. Advertisers/);
     assert.match(out, /We allow advertisers/);
   });
+
+  it("strips Termly branding and termly.io links", () => {
+    const raw = `<body>
+      <h2>1. OUR SERVICES</h2>
+      <div style="display: none;"><a class="terms123" href="https://app.termly.io/dsar/abc"></a></div>
+      <div>This Terms of Service was created using Termly's <a href="https://termly.io/products/terms-and-conditions-generator/">Terms of Service Generator</a></div>
+      <div id="ip"></div>
+    </body>`;
+    const out = prepareTermsHtml(raw);
+    assert.doesNotMatch(out, /Termly/i);
+    assert.doesNotMatch(out, /termly\.io/i);
+    assert.doesNotMatch(out, /created using/i);
+  });
 });

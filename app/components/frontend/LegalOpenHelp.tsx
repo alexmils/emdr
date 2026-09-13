@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { openHelpChat } from "@/app/components/HelpChatWidget";
 
 /**
- * Termly HTML cannot mount React buttons. Prepared markup uses
+ * Prepared legal HTML cannot mount React buttons. Markup uses
  * `data-open-help` controls; this listener opens the shared Need help drawer.
  */
 export function LegalOpenHelp() {

@@ -194,6 +194,33 @@ export function stripTermlyPresentation(html: string): string {
   return out;
 }
 
+/**
+ * Never show Termly branding, generator footers, or termly.io links on public pages.
+ */
+export function stripTermlyBranding(html: string): string {
+  return (
+    html
+      // Generator attribution footer (tight: only the attribution block)
+      .replace(
+        /<(div|p)\b[^>]*>\s*(?:<span\b[^>]*>\s*)?This (?:Privacy Policy|Privacy Notice|Terms of Service) was created using[\s\S]{0,500}?(?:Privacy Policy|Terms of Service)\s*Generator(?:\s*<\/a>)?\s*(?:<\/span>\s*)?<\/\1>/gi,
+        "",
+      )
+      .replace(
+        /This (?:Privacy Policy|Privacy Notice|Terms of Service) was created using[\s\S]{0,500}?(?:Privacy Policy|Terms of Service)\s*Generator(?:\s*<\/a>)?/gi,
+        "",
+      )
+      // Hidden DSAR / tracking anchors hosted on Termly
+      .replace(
+        /<div\b[^>]*>\s*<a\b[^>]*href=["'][^"']*termly\.io[^"']*["'][^>]*>[\s\S]*?<\/a>\s*<\/div>/gi,
+        "",
+      )
+      .replace(/<a\b[^>]*href=["'][^"']*termly\.io[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, "")
+      // Any leftover public "Termly" word
+      .replace(/\bTermly(?:'s)?\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+  );
+}
+
 /** Hide public support emails — open Need help instead (phone/mail stay). */
 function rewriteSupportEmails(html: string): string {
   return html
@@ -226,6 +253,7 @@ export function prepareTermsHtml(rawHtml: string): string {
   body = demoteDocumentTitleH1(body);
   body = injectNuraAddendum(body);
   body = stripTermlyPresentation(body);
+  body = stripTermlyBranding(body);
   body = rewriteHeadingCase(body);
   body = rewriteSupportEmails(body);
   return lightSanitize(body);
