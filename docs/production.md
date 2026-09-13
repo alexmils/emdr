@@ -29,15 +29,15 @@ Browser
   → VPS 217.76.58.141 :443
   → CloudPanel nginx (`/etc/nginx/sites-enabled/nurahelp.com.conf`)
   → http://127.0.0.1:3471
-  → Coolify-managed Docker container (`ghcr.io/alexmils/nura`)
+  → nura-edge (Traefik on Docker network `coolify`, host bind 127.0.0.1:3471→80)
+  → Coolify-managed app container(s) on :3471 (no host port publish)
   → Next.js standalone (`node server.js`, WORKDIR `/nura`)
   → Postgres container on Docker network (Coolify DB uuid below)
 ```
 
-**Important:** Traefik/Coolify is **not** the public edge for `nurahelp.com`. Same pattern as Receptly on this box: **CloudPanel nginx** terminates TLS and reverse-proxies to a localhost-bound app port.
+**Important:** Official Coolify Proxy must **not** bind public 80/443 on this VPS (CloudPanel owns TLS). Same pattern as Receptly: **CloudPanel nginx** terminates TLS. For Nura only, a dedicated **`nura-edge`** Traefik listens on loopback **3471** so Coolify can run **rolling updates** (overlap old+new) without a host-port conflict.
 
-Coolify still orchestrates the app + Postgres containers and exposes its UI/API on `server.nurahelp.com`.
-
+Coolify still orchestrates the app + Postgres containers and exposes its UI/API on `server.nurahelp.com` (nginx → `127.0.0.1:8001`, not Coolify Proxy).
 ---
 
 ## VPS / Coolify identifiers
@@ -54,8 +54,11 @@ Coolify still orchestrates the app + Postgres containers and exposes its UI/API 
 | Application | **nurahelp** — uuid `epufvmx1j8jold5gdpfak85m` |
 | App build pack | **`dockerimage`** (pull only — no on-server Next build) |
 | Image name in Coolify | `ghcr.io/alexmils/nura` (tag `latest`) |
-| Ports mapping | `127.0.0.1:3471:3471` |
-| Domains (Coolify fqdn) | `https://nurahelp.com,https://www.nurahelp.com` |
+| Ports mapping | **empty** (do not publish `3471` on the host — kills rolling updates) |
+| Ports exposes | `3471` |
+| Domains (Coolify fqdn) | `http://nurahelp.com,http://www.nurahelp.com` (HTTP to Traefik; public TLS is CloudPanel/`APP_URL=https://…`) |
+| Force HTTPS (Coolify) | **off** (nginx already terminates TLS) |
+| Loopback edge | `nura-edge` compose at `/data/nura-edge` → `127.0.0.1:3471` |
 | Postgres service | **nura-postgres** — uuid `kiywnhlez6gi7d9hkzfksffp` |
 | Postgres DB / user | database `nura`, user `nura` (password only in Coolify) |
 | Sibling on same VPS | Receptly app on `127.0.0.1:3100` (separate Coolify project) |
@@ -116,8 +119,10 @@ git push origin main
   → docker build (Dockerfile) + push ghcr.io/alexmils/nura:latest (+ sha)
   → POST https://server.nurahelp.com/api/v1/deploy
        { "uuid": "<COOLIFY_APP_UUID>", "force": true }
-  → Coolify pulls image and recreates container
+  → Coolify pulls image and **rolling-updates** the container behind nura-edge
 ```
+
+Rolling updates require: **no host port mapping**, no consistent/custom container name, Coolify healthcheck on `GET /health`, and `nura-edge` already listening on `127.0.0.1:3471`. If someone re-adds `127.0.0.1:3471:3471` in Coolify, deploys fall back to stop-then-start and Cloudflare shows **502** during the gap.
 
 ### GitHub Actions secrets
 
@@ -197,15 +202,29 @@ Schema migrates on app start via app DB init (same as local).
 
 ## Healthcheck (`GET /health`)
 
-Coolify and Docker probe **`GET /health`** (not `/`). It returns JSON `{ ok, status, checks: { app, db } }` — **200** when Postgres answers `SELECT 1`, **503** otherwise. No auth, no schema work, `Cache-Control: no-store`.
+Coolify and Docker probe **`GET /health`** (not `/`). It returns JSON `{ ok, status, checks: { app, db } }` — **200** when Postgres answers `SELECT 1`, **503** otherwise. No auth, no schema work, `Cache-Control: no-store`. Rolling updates wait for this before stopping the old container.
 
 | Where | Setting |
 |-------|---------|
 | Dockerfile `HEALTHCHECK` | `http://127.0.0.1:3471/health` (node `fetch`; image also has `curl`) |
-| Coolify → Configuration → Healthcheck | Type **HTTP**, method `GET`, path `/health`, port **3471**, host `localhost` |
+| Coolify → Configuration → Healthcheck | **Enabled**, type **HTTP**, method `GET`, path `/health`, port **3471**, host `localhost`, interval **5s**, timeout **3s**, retries **5**, start period **60s** |
+| Coolify → Advanced | Stop grace period **30s**; Force HTTPS **off** |
 | Admin Overview | Platform health card polls `GET /api/admin/health` every 10s (local `/health` + Coolify `GET /api/v1/applications/{uuid}` when `COOLIFY_TOKEN` is set) |
 
 Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process only).
+
+### nura-edge (loopback Traefik)
+
+- Path on VPS: `/data/nura-edge` (`docker-compose.yml` + `traefik.yml`)
+- Binds **only** `127.0.0.1:3471:80` on Docker network `coolify`
+- Discovers app containers via Docker labels (`traefik.enable=true`, entrypoint `http`)
+- **Do not** start the stock Coolify Proxy (`/data/coolify/proxy`) on 80/443 — it fights CloudPanel
+
+```bash
+# On VPS — edge status
+docker ps --filter name=nura-edge --format '{{.Names}} {{.Status}} {{.Ports}}'
+curl -sS -H 'Host: nurahelp.com' http://127.0.0.1:3471/health
+```
 
 ---
 
@@ -269,3 +288,4 @@ If `/` looks unstyled and login-gated: suspect **WORKDIR `/app` regression** or 
 3. First deploys: Dockerfile build **on Coolify** → OOM → raised heap / skip lint in image.
 4. Switched to **GitHub Actions build + GHCR + Coolify `dockerimage` pull**.
 5. Fixed prod “no CSS / home → login”: `WORKDIR` `/app` → `/nura`; added `gsap`/`lenis` to `package.json`.
+6. **2026-09-13:** Host port publish `127.0.0.1:3471:3471` caused stop-then-start **502**s on every deploy. Moved to **nura-edge** Traefik on loopback + empty Coolify ports mapping so rolling updates can overlap containers; Coolify FQDN is `http://…` (Force HTTPS off) while public `APP_URL` stays `https://nurahelp.com`.

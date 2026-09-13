@@ -84,6 +84,7 @@ export const RETIRED_SEO_TITLES = new Set([
   "Plans for AI-guided EMDR",
   "FAQ — sessions, Free sets, and the trial",
   "Support — how to get help",
+  "Support — Contact the Nura Team",
 ]);
 
 export const RETIRED_SEO_DESCRIPTIONS = new Set([
@@ -118,7 +119,7 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
 ]);
 
 /** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
-export const SEO_COPY_REVISION = "p0-seo-round2-titles-1";
+export const SEO_COPY_REVISION = "p0-seo-round3-titles-1";
 
 export function documentTitle(pageTitle: string): string {
   const suffix = ` — ${BRAND_SPOKEN}`;
@@ -223,7 +224,7 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "support",
     path: "/support",
     label: "Support",
-    title: "Support — Contact the Nura Team",
+    title: "Support — Get Help With Your Account",
     description:
       "Get help with your Nura account, billing, sessions, or data. How to reach us and what to include so we can fix it fast.",
   },

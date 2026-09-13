@@ -57,7 +57,7 @@ export const KNOWLEDGE_HERO = {
   poster: IMG.support,
   /** Single ambient clip — play to start, loops until pause. */
   videoSrc: "/marketing/knowledge/hero.mp4",
-  title: "Knowledge",
+  title: "EMDR knowledge clips",
   lead: "Tap a question. A different clip answers.",
 } as const;
 

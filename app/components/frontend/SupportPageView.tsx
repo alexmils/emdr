@@ -6,7 +6,7 @@ const SUPPORT_EMAIL = "hello@nurahelp.com";
 export function SupportPageView() {
   return (
     <article className="frontend-legal frontend-legal--long">
-      <h1>Support</h1>
+      <h1>Support — Get Help With Your Account</h1>
       <p>
         Product questions about {BRAND_SPOKEN} — accounts, billing, and how a
         session works. For clinical crisis help, use the lines below, not email.

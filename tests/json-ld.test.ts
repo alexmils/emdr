@@ -19,6 +19,7 @@ import {
   buildClusterArticleJsonLd,
   buildEmdrJsonLd,
   buildLearnJsonLd,
+  buildPricingJsonLd,
   reviewablePageJsonLd,
 } from "../lib/seo-jsonld.ts";
 import {
@@ -284,5 +285,19 @@ describe("cluster article JSON-LD (R5h)", () => {
       (n: { "@type"?: string }) => n["@type"] === "FAQPage",
     ) as { mainEntity?: unknown[] };
     assert.ok((faq?.mainEntity?.length ?? 0) >= 2);
+  });
+});
+
+describe("pricing JSON-LD", () => {
+  it("emits Product/SoftwareApplication with Offer prices", () => {
+    const data = buildPricingJsonLd("https://nurahelp.com");
+    const raw = JSON.stringify(data);
+    assert.ok(raw.includes("SoftwareApplication"));
+    assert.ok(raw.includes("Product"));
+    assert.ok(raw.includes("AggregateOffer"));
+    assert.match(raw, /"price":"4\.99"/);
+    assert.match(raw, /"price":"14\.99"/);
+    assert.match(raw, /"price":"99\.00"/);
+    assert.ok(raw.includes("trial"));
   });
 });

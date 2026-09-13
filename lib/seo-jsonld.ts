@@ -130,9 +130,16 @@ export function collectionPageJsonLd({
 
 /** Visible H1 + dek on `/learn` — JSON-LD must match the hub, not the meta title. */
 export const LEARN_JSON_LD = {
-  name: "EMDR reading paths",
+  name: "Learn EMDR — reading paths",
   description:
     "Three short paths — pick a topic, read in order. For every guide newest-first, see the blog.",
+} as const;
+
+/** Visible H1 on `/knowledge` — matches meta keyword focus. */
+export const KNOWLEDGE_JSON_LD = {
+  name: "EMDR knowledge clips",
+  description:
+    "Short clips answering the questions people ask before a session: how Guided works, what Free mode does, the trial, and when to stop.",
 } as const;
 
 /** Visible H1 + dek on `/blog` (dek without the Learn link markup). */
@@ -180,23 +187,23 @@ export function buildLearnJsonLd(origin: string) {
 }
 
 export function buildKnowledgeJsonLd(origin: string, faq: FaqItem[]) {
+  const base = origin.replace(/\/$/, "");
   return {
     "@context": "https://schema.org",
     "@graph": [
       organizationJsonLd(origin),
       {
         "@type": "WebPage",
-        "@id": `${origin.replace(/\/$/, "")}/knowledge`,
-        url: `${origin.replace(/\/$/, "")}/knowledge`,
-        name: "Knowledge",
-        description:
-          "Short clips about agent-guided sessions, Free sets, and safety in Nura.",
-        isPartOf: { "@id": `${origin.replace(/\/$/, "")}/#website` },
+        "@id": `${base}/knowledge`,
+        url: `${base}/knowledge`,
+        name: KNOWLEDGE_JSON_LD.name,
+        description: KNOWLEDGE_JSON_LD.description,
+        isPartOf: { "@id": `${base}/#website` },
       },
       faqPageJsonLd(faq),
       breadcrumbJsonLd(origin, [
         { name: "Home", path: "/" },
-        { name: "Knowledge", path: "/knowledge" },
+        { name: KNOWLEDGE_JSON_LD.name, path: "/knowledge" },
       ]),
     ],
   };
@@ -463,14 +470,14 @@ export const PRICING_JSON_LD = {
 
 /** H1 mirrored into JSON-LD for `/faq`. */
 export const PUBLIC_FAQ_JSON_LD = {
-  name: "FAQ",
+  name: "EMDR App FAQ",
   description:
     "Answers to the questions people ask before starting: is guided EMDR safe, how long a session takes, what happens if you feel worse, and how billing works.",
 } as const;
 
 /** H1 + lead mirrored into JSON-LD for `/support`. */
 export const SUPPORT_JSON_LD = {
-  name: "Support",
+  name: "Support — Get Help With Your Account",
   description:
     "Get help with your Nura account, billing, sessions, or data. How to reach us and what to include so we can fix it fast.",
 } as const;
@@ -478,6 +485,18 @@ export const SUPPORT_JSON_LD = {
 export function buildPricingJsonLd(origin: string) {
   const base = origin.replace(/\/$/, "");
   const plans = orderedBillingPlans(BILLING_PLANS);
+  const offerNodes = plans.map((plan, i) => ({
+    "@type": "Offer" as const,
+    "@id": `${base}/pricing#offer-${plan.id}`,
+    position: i + 1,
+    name: `${BRAND_SPOKEN} ${plan.label}`,
+    description: `${plan.label} plan after a ${TRIAL_DAYS}-day trial. Agent-guided and Free sessions included.`,
+    price: offerAmount(plan.displayPrice),
+    priceCurrency: "USD",
+    url: `${base}/pricing`,
+    availability: "https://schema.org/InStock",
+    category: plan.interval,
+  }));
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -494,21 +513,31 @@ export function buildPricingJsonLd(origin: string) {
           name: BRAND_SPOKEN,
           url: `${base}/`,
         },
-        mainEntity: {
-          "@type": "OfferCatalog",
-          name: PRICING_JSON_LD.name,
+        mainEntity: { "@id": `${base}/pricing#product` },
+      },
+      {
+        "@type": ["Product", "SoftwareApplication"],
+        "@id": `${base}/pricing#product`,
+        name: BRAND_SPOKEN,
+        description: PRICING_JSON_LD.description,
+        applicationCategory: "HealthApplication",
+        operatingSystem: "Web",
+        url: `${base}/pricing`,
+        brand: {
+          "@type": "Brand",
+          name: BRAND_SPOKEN,
+        },
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "USD",
+          lowPrice: offerAmount(BILLING_PLANS.weekly.displayPrice),
+          highPrice: offerAmount(BILLING_PLANS.yearly.displayPrice),
+          offerCount: plans.length,
           url: `${base}/pricing`,
-          numberOfItems: plans.length,
-          itemListElement: plans.map((plan, i) => ({
-            "@type": "Offer",
-            position: i + 1,
-            name: plan.label,
-            price: offerAmount(plan.displayPrice),
-            priceCurrency: "USD",
-            url: `${base}/pricing`,
-          })),
+          offers: offerNodes,
         },
       },
+      ...offerNodes,
       breadcrumbJsonLd(origin, [
         { name: "Home", path: "/" },
         { name: "Pricing", path: "/pricing" },
@@ -538,7 +567,7 @@ export function buildPublicFaqJsonLd(origin: string, faqItems: FaqItem[]) {
       },
       breadcrumbJsonLd(origin, [
         { name: "Home", path: "/" },
-        { name: "FAQ", path: "/faq" },
+        { name: "EMDR App FAQ", path: "/faq" },
       ]),
     ],
   };

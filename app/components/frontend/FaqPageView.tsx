@@ -4,7 +4,7 @@ import { PUBLIC_FAQ_ITEMS } from "@/lib/public-faq";
 export function FaqPageView() {
   return (
     <article className="frontend-legal frontend-legal--long">
-      <h1>FAQ</h1>
+      <h1>EMDR App FAQ</h1>
       <p>
         Short answers about sessions, Free sets, the trial, and when to get
         help. For plans, see <Link href="/pricing">Pricing</Link>. For how to

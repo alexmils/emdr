@@ -98,4 +98,17 @@ describe("llms.txt", () => {
     assert.match(body, /not therapy, diagnosis, or crisis care/);
     assert.doesNotMatch(body, /Self-help, not a licensed therapist/);
   });
+
+  it("lists every public EMDR guide under /blog", () => {
+    assert.match(body, /## EMDR guides/);
+    assert.match(body, /nurahelp\.com\/blog\/what-is-emdr/);
+    assert.match(body, /nurahelp\.com\/blog\/guided-vs-free-mode/);
+    const articleLinks =
+      body.match(/nurahelp\.com\/blog\/[a-z0-9-]+/g)?.filter(
+        (u) => !u.endsWith("rss") && u !== "nurahelp.com/blog"
+      ) ?? [];
+    // Dedupe: title lines only under ## EMDR guides
+    const unique = new Set(articleLinks);
+    assert.ok(unique.size >= 18, `expected ≥18 article URLs, got ${unique.size}`);
+  });
 });

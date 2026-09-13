@@ -1,0 +1,10 @@
+id,url,issue,fix,status
+r3-1,/blog/what-is-emdr,Title 66 chars truncated (Reprocessing cut); stem had no room for layout — Nura,Stem → What Is EMDR? How EMDR Therapy Works (layout adds — Nura → ~44),done
+r3-2,/blog/guided-vs-free-mode,Double brand: … — Nura Session Types — Nura,Stem → Guided vs Free Mode — Two Ways to Run a Set,done
+r3-3,/support,Double brand: Support — Contact the Nura Team — Nura,Stem → Support — Get Help With Your Account (no Nura in stem),done
+r3-4,/pricing,No Product/Offer rich-result schema despite live $4.99/$14.99/$99 + trial,JSON-LD Product+SoftwareApplication with AggregateOffer and three Offer nodes,done
+r3-5,/knowledge,H1 was Knowledge (no keyword); meta already EMDR Video Clips…,H1 → EMDR knowledge clips (JSON-LD name matched),done
+r3-6,/faq,H1 was FAQ only,H1 → EMDR App FAQ (aligns with meta EMDR App FAQ — Common Questions),done
+r3-7,/support,H1 was Support only,H1 → Support — Get Help With Your Account,done
+r3-8,/learn,H1 was EMDR reading paths (missing Learn EMDR),H1 → Learn EMDR — reading paths,done
+r3-9,/llms.txt,Listed /blog hub only — AI crawlers could not discover 18 guides,## EMDR guides section lists all cluster articles with URLs,done

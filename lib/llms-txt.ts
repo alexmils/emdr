@@ -1,8 +1,16 @@
 import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
+import { listClusterArticles } from "@/lib/content-cluster";
 import { legalEntityDisplayName } from "@/lib/legal-entity";
 
 export function buildLlmsTxt(origin: string): string {
   const base = origin.replace(/\/$/, "");
+  const articles = listClusterArticles()
+    .map(
+      (a) =>
+        `- [${a.title}](${base}/blog/${a.slug}): ${a.description.slice(0, 120).trim()}${a.description.length > 120 ? "…" : ""}`
+    )
+    .join("\n");
+
   return `# ${BRAND_SPOKEN}
 
 > ${BRAND_LIMITS_LINE}
@@ -27,6 +35,10 @@ Do not fetch /app, /admin, /api, or /health — those are the signed-in product 
 - [Safety](${base}/safety): When to stop a session, when to see a clinician, and crisis lines
 - [Limits](${base}/limits): ${BRAND_LIMITS_LINE}
 - [What's new](${base}/changelog): Product notes from the public changelog
+
+## EMDR guides
+
+${articles}
 
 ## Also
 

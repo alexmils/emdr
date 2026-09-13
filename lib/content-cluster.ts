@@ -52,7 +52,7 @@ const COVER = {
 export const CLUSTER_ARTICLES: ClusterArticle[] = [
   {
     slug: "what-is-emdr",
-    title: "What Is EMDR? Eye Movement Desensitization and Reprocessing",
+    title: "What Is EMDR? How EMDR Therapy Works",
     description:
       "EMDR is an 8-phase therapy for trauma and PTSD that uses bilateral stimulation while you recall a memory. What it is, how it works, and who it is for.",
     kicker: "EMDR",
@@ -442,7 +442,7 @@ export const CLUSTER_ARTICLES: ClusterArticle[] = [
   },
   {
     slug: "guided-vs-free-mode",
-    title: "Guided vs Free Mode — Nura Session Types Explained",
+    title: "Guided vs Free Mode — Two Ways to Run a Set",
     description:
       "Nura has two session types: agent-guided, which walks you through phases and check-ins, and Free, where you run visual sets yourself. How to choose.",
     kicker: "Modes",

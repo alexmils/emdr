@@ -14,7 +14,7 @@ export function EmdrKeepReading() {
         tag: post.tag,
       }))}
       indexHref="/learn"
-      indexLabel="EMDR reading paths"
+      indexLabel="Learn EMDR"
     />
   );
 }

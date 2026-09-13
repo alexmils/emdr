@@ -20,7 +20,7 @@ export function LearnHub() {
       <div className="fe-cluster-inner fe-cluster-inner--wide">
         <header className="fe-learn-intro">
           <p className="fe-cluster-kicker">Learn</p>
-          <h1 className="fe-cluster-title">EMDR reading paths</h1>
+          <h1 className="fe-cluster-title">Learn EMDR — reading paths</h1>
           <p className="fe-cluster-dek">
             Three short paths — pick a topic, read in order. For every guide
             newest-first, see the <Link href="/blog">blog</Link>. Or{" "}
