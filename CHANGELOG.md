@@ -90,6 +90,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Public `/limits` page — “what Nura does not do” (no diagnosis, treatment, clinical judgment, or crisis care); registered in public paths, sitemap, robots, llms.txt, and Admin SEO
 - [internal] Wired the safety content cluster so it is no longer orphaned — Safety + Limits links in the site footer, `/learn` safety group links to `/safety`, informed-consent gate links to the safety guide, and cross-links between `/emdr`, `/safety`, and `/limits`
 - [internal] Public `/knowledge` — Nolla-style video Q stage (tap a question → different clip); pistachio marketing shell, FAQ JSON-LD, sitemap/robots/llms/footer; per-question mp4 when files land under `public/marketing/knowledge/`
+- [internal] Public `/pricing`, `/faq`, and `/support` marketing pages — plans (USD), merged FAQ, and how to get help; wired into SEO, sitemap, robots, llms.txt, footer, and header Prices
 
 ### Changed
 - **Cursor rule `marketing-no-explain-copy`**: marketing surfaces must not use body text to explain — hierarchy, cards, labels, visuals + CTA; linked from `page-copy-design-review` and `nura-brand`
@@ -240,6 +241,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Home blog width capped at 56rem; Load more paginates cluster posts on `/`
 - [internal] `/about/clinical-team` is a clinical **review process** page (EMDRIA/APA/NICE/WHO/PubMed citations); YMYL JSON-LD uses `MedicalWebPage` with audience + specialty — `reviewedBy` only when a real advisor is set; Cursor rule `ymyl-clinical-eeat`
 - [internal] P0 SEO: strip UTF-8 BOM from `app/blog/[slug]` (prod 404s), strip brand suffixes so titles cannot become `Nura — Nura`, meta descriptions value-only with `BRAND_LIMITS_LINE` in footer/`/limits`/`llms.txt`
+- [internal] F4–F7: split `/learn` (curated paths) vs `/blog` (chrono); add `/pricing` `/faq` `/support`; dynamic `/og` 1200×630 cards; WebSite + AboutPage + legal WebPage JSON-LD
 
 ### Fixed
 - GTM public container: load `gtm.js` on marketing pages with Consent Mode (like GA4) so Google’s install checker detects `GTM-*` without Accept; Clarity stays consent-gated (`MarketingTags`, Connections hint)
@@ -467,7 +469,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Help guest contact**: drop in-chat “Leave your email…” link — name/email modal only on close chat / leave tab (after they messaged)
 - **Help chat chrome**: sage circle mark (`A-white-on-sage`) in header; 3-dot typing bubble while waiting for the assistant reply
 - **Help reply sound**: soft Web Audio bubble-pop when the assistant message arrives
-- **Help pricing answers**: never name payment brands; price questions get a link to `https://nurahelp.com/#prices` (home Prices). Knowledge seeds + system prompt updated; help bubbles linkify URLs
+- **Help pricing answers**: never name payment brands; price questions get a link to `https://nurahelp.com/pricing`. Knowledge seeds + system prompt updated; help bubbles linkify URLs
 - **Help admin notify**: email at most once per thread (guests: only from a new IP); Web Push for Admin PWA via top-bar **Alerts** (`/admin/sw.js`, VAPID auto or `VAPID_*` env)
 - **Help notify hardening**: Platform API redacts/locks `adminPush` VAPID secrets; email claim rolls back if send fails; atomic per-IP email claim; VAPID generate under advisory lock; push click URLs same-origin `/admin` only
 - **Help chat panel**: slightly larger (~26×38rem); message list scrolls in-panel (Lenis `prevent` + `overscroll-behavior`) so the page behind does not steal the wheel
@@ -484,7 +486,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] `/knowledge` Q stage: chip click autoplays; on end advances to next question in a loop
 - [internal] `/knowledge` hero uses stock-a.mp4 (temp) instead of old hero.mp4
 - [internal] Drop unused `public/marketing/knowledge/hero.mp4` (hero points at stock-a)
-
+- [internal] `/knowledge` hero: muted autoplay playlist of 4 stock clips (no play button), cycles on end
+- [internal] Help price link + homepage AggregateOffer point at `/pricing` (USD); header Prices nav uses `/pricing` instead of `/#prices`
+- [internal] `/knowledge` hero back to play button + single looping `hero.mp4` (6631458 stock)
+- [internal] `/knowledge` hero.mp4 swapped to 7199650 stock clip
+- [internal] Marketing footer limits line spans full meta row (one line on desktop; drop `max-width: 42rem`)
+- [internal] `/terms`: strip Termly duplicate H1; sticky left ToC on wide screens
+- [internal] Homepage canonical keeps trailing slash (`https://nurahelp.com/`) — covered by test
+- [internal] Blog RSS at `/blog/rss.xml` + `/feed.xml`; linked from blog metadata and llms.txt
+- [internal] AI robots Allow list derived from public marketing paths (new hubs inherit; privacy/terms stay off)
+- [internal] `/about` expanded E-E-A-T hub (operator, sessions, publish, clinical, support)
+- [internal] Shorter default titles for `/emdr` and `/safety` (under ~60 with ` — Nura`)
+- [internal] Competitor deep-dive §12 in `docs/seo-ai-emdr-strategy.md` — winnable clusters, no meta disclaimers, anti-volume
+- [internal] Legal note links (Terms / Privacy) use sage accent so they read as links
+- [internal] Footer “Read the limits” hover uses mint lime (was dark ink on black)
+- [internal] Cluster meta links (e.g. How we write) get accent + hover to ink
+- [internal] Cluster note CTA: “Read the limits” (drop passive “See what this app does not do”)
+- [internal] SEO strategy §12.6–12.9 — E-E-A-T gap vs commercial rivals; `/learn/[slug]` URL window while blog 404s
+- [internal] SEO strategy §13 — keyword map (18 existing), P0 gaps, cannibalization rules, AEO format gates
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow

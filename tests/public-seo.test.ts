@@ -50,6 +50,9 @@ describe("public sitemap", () => {
     assert.ok(urls.has("https://nurahelp.com/editorial"));
     assert.ok(urls.has("https://nurahelp.com/learn"));
     assert.ok(urls.has("https://nurahelp.com/knowledge"));
+    assert.ok(urls.has("https://nurahelp.com/pricing"));
+    assert.ok(urls.has("https://nurahelp.com/faq"));
+    assert.ok(urls.has("https://nurahelp.com/support"));
     assert.ok(urls.has("https://nurahelp.com/blog"));
     assert.ok(urls.has("https://nurahelp.com/changelog"));
     assert.ok(urls.has("https://nurahelp.com/blog/what-is-emdr"));

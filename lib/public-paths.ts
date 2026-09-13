@@ -11,10 +11,25 @@ const FRONTEND_PREFIXES = [
   "/learn",
   "/knowledge",
   "/blog",
+  "/pricing",
+  "/faq",
+  "/support",
   "/changelog",
   "/safety",
   "/limits",
 ] as const;
+
+/** Legal docs — public to browsers, blocked for AI grounding bots in robots.txt. */
+export const AI_CRAWL_BLOCKED_PREFIXES = ["/privacy", "/terms"] as const;
+
+/**
+ * Marketing prefixes AI answer bots may fetch (longest-match Allow).
+ * Derived from FRONTEND_PREFIXES so new hubs inherit Allow automatically.
+ */
+export function frontendAiGroundingAllowPaths(): string[] {
+  const blocked = new Set<string>(AI_CRAWL_BLOCKED_PREFIXES);
+  return FRONTEND_PREFIXES.filter((p) => !blocked.has(p));
+}
 
 const AUTH_PUBLIC_PREFIXES = [
   LOGIN_PATH,

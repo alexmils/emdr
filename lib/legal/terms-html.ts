@@ -98,6 +98,25 @@ function stripTermlyToc(html: string): string {
   );
 }
 
+/**
+ * Page already has one React `<h1>`. Termly's document title must not be a
+ * second H1 — demote to a plain label (or strip if it only repeats the title).
+ */
+export function demoteDocumentTitleH1(html: string): string {
+  return html.replace(/<h1(\b[^>]*)>([\s\S]*?)<\/h1>/gi, (_all, attrs, inner) => {
+    const plain = String(inner)
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (/^terms of service$/i.test(plain)) {
+      return "";
+    }
+    const label = softSentenceCaseHeading(plain);
+    return `<div class="frontend-legal-doc-label"${attrs}>${label}</div>`;
+  });
+}
+
 function injectNuraAddendum(html: string): string {
   const marker =
     /(<div[^>]*id="services"[\s\S]*?<\/div>[\s\S]*?)(?=<div[^>]*align="center"[^>]*>\s*<strong>\s*<span>\s*<h2>\s*2\.\s*INTELLECTUAL|<h2>\s*2\.\s*INTELLECTUAL)/i;
@@ -204,6 +223,7 @@ function lightSanitize(html: string): string {
 export function prepareTermsHtml(rawHtml: string): string {
   let body = extractBody(rawHtml);
   body = stripTermlyToc(body);
+  body = demoteDocumentTitleH1(body);
   body = injectNuraAddendum(body);
   body = stripTermlyPresentation(body);
   body = rewriteHeadingCase(body);

@@ -162,18 +162,18 @@ describe("helpThreadDisplayLabel", () => {
 describe("help bubble links and knowledge copy", () => {
   it("parses markdown and bare price URLs", () => {
     const segs = parseHelpBubbleSegments(
-      "See [current prices](https://nurahelp.com/#prices) or https://nurahelp.com/#prices."
+      "See [current prices](https://nurahelp.com/pricing) or https://nurahelp.com/pricing."
     );
     const links = segs.filter((s) => s.type === "link");
     assert.equal(links.length, 2);
     assert.equal(links[0]?.type === "link" && links[0].label, "current prices");
     assert.equal(
       links[0]?.type === "link" && links[0].href,
-      "https://nurahelp.com/#prices"
+      "https://nurahelp.com/pricing"
     );
     assert.equal(
       links[1]?.type === "link" && links[1].href,
-      "https://nurahelp.com/#prices"
+      "https://nurahelp.com/pricing"
     );
   });
 

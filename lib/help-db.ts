@@ -11,14 +11,14 @@ import {
   type PlatformSettings,
 } from "@/lib/platform-settings";
 
-/** Canonical public prices URL for help answers (home Prices section). */
-export const HELP_PRICES_URL = "https://nurahelp.com/#prices";
+/** Canonical public prices URL for help answers. */
+export const HELP_PRICES_URL = "https://nurahelp.com/pricing";
 
 const HELP_BILLING_BODY =
   `New users start a 7-day trial after adding a payment method. Trial includes up to 3 guided sessions and 10 minutes of Free mode. After the trial, the chosen weekly, monthly, or yearly plan renews. Current public prices: ${HELP_PRICES_URL} . To change or cancel after signing in, use Billing → Manage billing in the app. Never name payment processors in replies.`;
 
 const HELP_PRICING_BODY =
-  `When someone asks about price, cost, or plans, send them to ${HELP_PRICES_URL} (Prices on the home page). Do not invent dollar amounts. Do not tell them to open a customer portal only to see prices. Never name payment processors or payment brands in replies.`;
+  `When someone asks about price, cost, or plans, send them to ${HELP_PRICES_URL} (Pricing). Do not invent dollar amounts. Do not tell them to open a customer portal only to see prices. Never name payment processors or payment brands in replies.`;
 
 /** Scrub vendor names and stale portal wording from stored help copy. */
 export function rewriteHelpKnowledgeCopy(text: string): string {
@@ -226,7 +226,8 @@ async function syncCanonicalHelpKnowledge(
     }
     const needsRefresh =
       /stripe/i.test(existing.body) ||
-      !existing.body.includes("nurahelp.com/#prices");
+      existing.body.includes("nurahelp.com/#prices") ||
+      !existing.body.includes("nurahelp.com/pricing");
     if (!needsRefresh) continue;
     await db.query(
       `UPDATE help_knowledge

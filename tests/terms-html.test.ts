@@ -32,6 +32,17 @@ describe("prepareTermsHtml", () => {
     assert.match(out, /id="nura-product"/);
   });
 
+  it("removes Termly document H1 so the page keeps a single H1", () => {
+    const raw = `<body>
+      <h1>TERMS OF SERVICE</h1>
+      <h2>1. OUR SERVICES</h2>
+      <div id="ip"></div>
+    </body>`;
+    const out = prepareTermsHtml(raw);
+    assert.doesNotMatch(out, /<h1\b/i);
+    assert.match(out, /1\. Our services/);
+  });
+
   it("strips Termly inline colors and sizes so CSS owns the type", () => {
     const raw = `<body>
       <div class="MsoNormal" style="line-height: 1.5;">

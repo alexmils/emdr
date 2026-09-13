@@ -8704,6 +8704,16 @@ select.field option:disabled {
   font-weight: 600;
 }
 
+.frontend-legal-note a {
+  color: var(--fe-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.frontend-legal-note a:hover {
+  color: color-mix(in srgb, var(--fe-accent) 70%, #2a3020);
+}
+
 /* Comparison table — horizontal scroll on mobile, no squashed strip. */
 .frontend-legal-tablewrap {
   margin: 0 0 1.4rem;
@@ -8745,6 +8755,31 @@ select.field option:disabled {
   margin: 1.25rem 0 1.5rem;
 }
 
+.frontend-legal-faq {
+  margin: 0 0 1.5rem;
+  max-width: none;
+}
+
+.frontend-legal-faq > div {
+  margin: 0 0 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--fe-fg) 10%, transparent);
+}
+
+.frontend-legal-faq > div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.frontend-legal-faq h2,
+.frontend-legal-faq h3 {
+  margin: 0 0 0.45rem;
+}
+
+.frontend-legal-faq p {
+  margin: 0;
+}
+
 .frontend-legal-toc {
   margin: 1.5rem 0 2rem;
   padding: 1rem 1.1rem;
@@ -8754,12 +8789,57 @@ select.field option:disabled {
   background: color-mix(in srgb, var(--fe-fg) 3%, transparent);
 }
 
+@media (min-width: 1100px) {
+  .frontend-legal.frontend-legal--termly {
+    display: grid;
+    grid-template-columns: minmax(13.5rem, 17rem) minmax(0, 1fr);
+    column-gap: 2.25rem;
+    align-items: start;
+  }
+
+  .frontend-legal.frontend-legal--termly > h1,
+  .frontend-legal.frontend-legal--termly > .frontend-legal-meta,
+  .frontend-legal.frontend-legal--termly > .frontend-legal-pre {
+    grid-column: 1 / -1;
+  }
+
+  .frontend-legal.frontend-legal--termly > .frontend-legal-toc {
+    grid-column: 1;
+    grid-row: 4;
+    position: sticky;
+    top: 5.5rem;
+    z-index: 2;
+    margin: 0;
+    max-height: calc(100vh - 6.5rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .frontend-legal.frontend-legal--termly > .frontend-legal-termly {
+    grid-column: 2;
+    grid-row: 4;
+  }
+
+  .frontend-legal.frontend-legal--termly .frontend-legal-toc-list {
+    columns: 1;
+  }
+}
+
 .frontend-legal-toc-title {
   margin: 0 0 0.65rem;
   font-family: var(--font-alt), var(--font-sans);
   font-size: 0.8125rem;
   font-weight: 400;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fe-muted);
+}
+
+.frontend-legal-doc-label {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--fe-muted);
 }

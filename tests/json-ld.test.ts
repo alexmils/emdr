@@ -27,11 +27,12 @@ import {
 import { DEFAULT_PLATFORM_SEO } from "../lib/seo-config.ts";
 
 describe("homepage JSON-LD", () => {
-  it("emits Organization, SoftwareApplication, and FAQPage", () => {
+  it("emits Organization, WebSite, SoftwareApplication, and FAQPage", () => {
     const data = buildHomeJsonLd("https://nurahelp.com");
     const types = data["@graph"].map((node) => node["@type"]);
     assert.deepEqual(types, [
       "Organization",
+      "WebSite",
       "SoftwareApplication",
       "FAQPage",
     ]);
@@ -41,8 +42,17 @@ describe("homepage JSON-LD", () => {
       "https://www.instagram.com/nurahelpco/",
       "https://www.facebook.com/profile.php?id=61594147808052",
     ]);
-    assert.equal(data["@graph"][1]?.operatingSystem, "Web");
-    assert.equal(data["@graph"][1]?.name, BRAND_SPOKEN);
+    const app = data["@graph"].find(
+      (node) => node["@type"] === "SoftwareApplication"
+    );
+    assert.equal(app?.operatingSystem, "Web");
+    assert.equal(app?.name, BRAND_SPOKEN);
+    const offers = app?.offers as {
+      priceCurrency?: string;
+      url?: string;
+    };
+    assert.equal(offers?.priceCurrency, "USD");
+    assert.equal(offers?.url, "https://nurahelp.com/pricing");
   });
 
   it("mirrors the visible FAQ strings", () => {
@@ -57,6 +67,7 @@ describe("homepage JSON-LD", () => {
       assert.equal(entities[i]?.name, item.q);
       assert.equal(entities[i]?.acceptedAnswer.text, item.a);
     }
+    assert.equal(faq?.url, "https://nurahelp.com/faq");
   });
 
   it("does not invent native apps, BLS jargon, or a clinical reviewer", () => {

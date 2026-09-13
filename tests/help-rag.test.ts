@@ -112,7 +112,7 @@ describe("help RAG", () => {
     assert.match(prompt, /EXTRA ADMIN NOTES:/);
     assert.match(prompt, /KNOWLEDGE BASE/);
     assert.match(prompt, /Trial lasts 7 days/);
-    assert.match(prompt, /nurahelp\.com\/#prices/);
+    assert.match(prompt, /nurahelp\.com\/pricing/);
     assert.match(prompt, /Never name payment processors/);
     assert.doesNotMatch(prompt, /\bStripe\b/);
   });

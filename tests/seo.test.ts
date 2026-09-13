@@ -200,7 +200,10 @@ describe("site-seo status", () => {
     const status = buildMarketingSeoStatus(seo, pages, "https://nurahelp.com");
     assert.equal(status.canonical, "https://nurahelp.com/");
     assert.equal(status.llmsTxtUrl, "https://nurahelp.com/llms.txt");
-    assert.equal(pages[0]?.ogImageUrl, "https://nurahelp.com/brand/lockup.png");
+    assert.match(
+      pages[0]?.ogImageUrl || "",
+      /^https:\/\/nurahelp\.com\/og\?/
+    );
     const connected = status.connections.filter((c) => c.status === "connected");
     assert.ok(connected.length >= 5);
     const meta = status.connections.find((c) => c.id === "meta");
@@ -270,11 +273,21 @@ describe("public page titles and descriptions", () => {
     }
   });
 
+  it("uses a trailing slash on the homepage canonical", () => {
+    const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
+    const home = pages.find((p) => p.id === "home");
+    assert.equal(home?.canonical, "https://nurahelp.com/");
+    assert.match(
+      String((metadataFromResolved("home", pages).alternates as { canonical?: string })?.canonical),
+      /nurahelp\.com\/$/
+    );
+  });
+
   it("uses the layout title template instead of absolute titles", () => {
     const pages = resolveSiteSeoPages(DEFAULT_PLATFORM_SEO, "https://nurahelp.com");
     const meta = metadataFromResolved("emdr", pages);
     assert.equal(typeof meta.title, "string");
-    assert.equal(meta.title, "AI-guided EMDR therapy — bilateral stimulation");
+    assert.equal(meta.title, "AI-guided EMDR therapy online");
   });
 
   it("uses an absolute document title on home so Nura is not dropped", () => {
@@ -318,7 +331,7 @@ describe("public page titles and descriptions", () => {
     assert.equal(pages.find((p) => p.id === "home")?.title, BRAND_TITLE_STEM);
     assert.equal(
       pages.find((p) => p.id === "emdr")?.title,
-      "AI-guided EMDR therapy — bilateral stimulation",
+      "AI-guided EMDR therapy online",
     );
     const homeMeta = metadataFromResolved("home", pages);
     assert.deepEqual(homeMeta.title, { absolute: BRAND_TITLE });
@@ -375,7 +388,7 @@ describe("public page titles and descriptions", () => {
     assert.equal(byId.about?.title, "About the EMDR therapy online app");
     assert.equal(
       byId.emdr?.title,
-      "AI-guided EMDR therapy — bilateral stimulation"
+      "AI-guided EMDR therapy online"
     );
     assert.equal(byId.learn?.title, "EMDR therapy — where to start");
     assert.equal(byId.blog?.title, "EMDR therapy blog — guides and visual sets");

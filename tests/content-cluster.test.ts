@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   CLUSTER_ARTICLES,
+  LEARN_READING_ORDER,
   clusterHasBlsAcronym,
   clusterSitemapPaths,
   featuredClusterPosts,
   getClusterArticle,
+  learnReadingPath,
   listClusterArticles,
   relatedClusterArticles,
 } from "../lib/content-cluster.ts";
@@ -77,5 +79,18 @@ describe("content cluster", () => {
     assert.ok(params.some((p) => p.slug === "what-is-emdr"));
     assert.ok(params.some((p) => p.slug === "what-is-bilateral-stimulation"));
     assert.ok(params.some((p) => p.slug === "visual-sets-and-the-moving-ball"));
+  });
+
+  it("curates a short /learn path per topic (not the full archive)", () => {
+    for (const topic of ["understand", "practice", "safety"] as const) {
+      const path = learnReadingPath(topic);
+      assert.equal(path.length, LEARN_READING_ORDER[topic].length);
+      assert.ok(path.length >= 2 && path.length <= 4, topic);
+      assert.ok(path.every((a) => a.topic === topic));
+    }
+    const allLearn = (
+      ["understand", "practice", "safety"] as const
+    ).flatMap((t) => LEARN_READING_ORDER[t]);
+    assert.ok(allLearn.length < CLUSTER_ARTICLES.length);
   });
 });

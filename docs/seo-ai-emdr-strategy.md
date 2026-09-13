@@ -317,3 +317,208 @@ Bez imenovanog recenzenta, **ne** padati na placeholder meta ili lažni `reviewe
 | Rok | Godine | **~3 mjeseca** |
 
 Ne pobjeđujete Freudly na volumen — pobjeđujete u niši koju su oni **eksplicitno napustili**.
+
+---
+
+## 12. Competitor deep-dive (2026-09-13)
+
+Verbatim titles/meta iz raw HTML-a komercijalnih i inkumbentnih sajtova. Ovdje samo što mijenja strategiju.
+
+### 12.1 Komercijalni front
+
+| Sajt | IA (skraćeno) | E-E-A-T markup |
+|---|---|---|
+| **Heal EMDR** | ~samo `/`, contact, delete, legal — **0 blog, 0 hub** | 0 JSON-LD |
+| **Virtual EMDR** | `/knowledge-base/` ~130 Q-URL + 10 condition + pricing/faq | Nema |
+| **Rewire** | `/emdr-guide/` ~40 + worksheets 16 + blog ~40 + ~200 city | `reviewedBy: Organization` (self-ref) |
+| **EmEase** | **757** URL: answers 225 + compare 57 + glossary 122 | Nema |
+| **Open EMDR** | 24 blog (money questions) | Byline, bez medical review |
+| **EMDR Tappers** | Blog ×4 | FAQPage + Article + Org |
+| **self EMDR / EMDR4LIFE** | Thin / single-page | Nema |
+
+**Dva zaključka:**
+
+1. **Heal** (najbliži app-intent rival) rangira na store signalima, ne na sadržaju. Nura ga neće pobijediti bez App Store/Play — **može ga lako nadjačati na content-u**.
+2. **Volume igrači su saturirali long-tail** (EmEase/Rewire/Virtual). Nura **ne** takmiči se u broju URL-ova. Pobjeda = kvalitet + stvarni E-E-A-T + oštar wedge.
+
+### 12.2 Inkumbenti (informacioni head)
+
+Cleveland Clinic, Healthline, Verywell, APA, Harvard, VA, EMDR Institute, EMDRIA — drže **what is EMDR**. AIO/featured answer apsorbuje head.
+
+**Jedina pukotina u zidu:** EMDRIA resource stranice su često **video + tanak tekst**. To je relevantno za *bilateral stimulation* / technique scripts — Nurin definišući pojam — ne za “what is EMDR” head.
+
+Calm Blog ulazi u BLS temu — pratiti.
+
+### 12.3 Klasteri koji se stvarno dobijaju
+
+| Klaster | Winnable? | Nura fit |
+|---|---|---|
+| EMDR at home / DIY / self-administered | ✅ | Core use case |
+| EMDR between sessions | ✅ | Product reason to exist |
+| Side effects / safe self-guided | ✅ | Najveći gap vs Healthline (opšte) |
+| Cost / access / insurance | ✅ | `/pricing` + FAQ — još content |
+| BLS technique scripts (butterfly hug, calm place, container) | ✅ | Product + Learn |
+| Bilateral stimulation (opšte) | ⚠️ | Calm/EMDRIA/Verywell — dubina, ne volume |
+| EMDR for \<condition\> | ⚠️ | Saturirano — samo dublje + honest limits |
+| what is EMDR | ❌ | Ne trošiti |
+| EMDR app / best app | ⚠️ | Store signali; usporedbe pomažu |
+
+### 12.4 Strukture koje pobeđuju (ukrasti selektivno)
+
+Ne klonirati EmEase 225×. Ukrasti **oblik**, ne volumen:
+
+| Struktura | Model | Nura verzija (disciplinirana) |
+|---|---|---|
+| Question-slug KB | Virtual `/knowledge-base/…`, EmEase `/answers/…` | `/faq` + mali `/answers/[slug]` set (~15–25), evergreen, 1 pitanje = 1 URL |
+| Compare hub | EmEase `/compare/*` ×57 | 5–8 **iskrenih** usporedbi (već u §6 Tier 2) — ne 57 templatea |
+| Phase/protocol hub | Rewire phase-1…8 | Jedan hub + 8 kratkih stranica **ili** Learn path — ne 200 city |
+| Worksheets | Rewire `/worksheets/*` | Opciono kasnije (PDF/link-bait) — after core wedge |
+| Glossary | EmEase ×122 | Mali glossary (~20–40) koji hrani interne linkove — ne 122 |
+| Us vs them | emease-vs-heal… | Da — honest, marketing-honesty ton |
+| Audience split | Rewire for-clients / therapists | Nura = **clients / between-session practice** first; therapists kasnije ako ima product |
+
+### 12.5 Disclaimer u meta — potvrđeno
+
+**Nijedan** komercijalni konkurent ne stavlja self-help/medical disclaimer u meta description. Meta = benefit/feature.
+
+Najbolji “pametan oprez” u niši (EmEase stil): ograničenje kao **vrijednost** u body/title teritoriji, ne kao ogradu u snippetu:
+
+> *EMDR exercises between sessions: what's safe to practice solo, what your therapist may assign, and what stays in the therapy room.*
+
+Nura je već uskladila ovo (F3): meta = value only; `BRAND_LIMITS_LINE` u footer / `/limits` / llms.txt.
+
+### 12.6 E-E-A-T — najveća prilika na tržištu (2026-09-13)
+
+| Konkurent | Medical review byline | Schema | Verdikt |
+|---|---|---|---|
+| Healthline / Cleveland / Verywell | ✅ imenovani kliničar | MedicalWebPage + reviewedBy | Zlatni standard |
+| Psychology Today | “Reviewed by” urednik, ne kliničar | MedicalWebPage | Srednje/slabo |
+| EMDRIA / APA / VA / Harvard | Institucionalni autoritet | malo/nema | Jako preko domena |
+| **Rewire** | ❌ “Rewire Editorial” | reviewedBy: **Organization** (self-ref) | Šuplje — ne kopirati |
+| EMDR Tappers | ❌ | FAQPage + Article + Org | Tehnički OK, trust tanko |
+| EmEase / Open / Virtual / Heal / self | ❌ | Nema / minimalno | Nema |
+
+**Nijedan komercijalni konkurent nema stvarnog, imenovanog, kvalifikovanog kliničkog recenzenta.**
+
+Zato je pravi recenzent + `MedicalWebPage` + `lastReviewed` **jedini odbrambeni zid koji se ne kopira preko noći** — i najvredniji potez koji Nura može povući. Direktno vezano za F8 / `/about/clinical-team`.
+
+⚠️ Hard rule ne mijenja se: **ne izmišljati kredencijale**. Rewire-ov “Rewire Editorial” je primer šupljeg E-E-A-T-a. Dok nema osobe: iskrena procesna stranica + citati (EMDRIA, APA, NICE, WHO, PubMed) + `MedicalWebPage` bez `reviewedBy`. Kad postoji: setuj `CLINICAL_ADVISOR`, onda byline + schema.
+
+### 12.7 Tri stuba strategije (ne page-count)
+
+Nura (~živih hubova + ~18 guide-ova) **ne** trka EmEase (757) / Rewire (~300). Bitka:
+
+1. **Pravi E-E-A-T** — imenovan recenzent kad postoji; do tada honest process (već F8).
+2. **Oštar wedge** — “EMDR between sessions” + “self-guided safety”.
+3. **AI-answer readiness** — robots + `llms.txt` već dobri; proširiti llms/sitemap signal na članke (RSS već postoji).
+
+### 12.8 URL prozor — `/learn/[slug]` vs `/blog/[slug]`
+
+**Stanje (lokalno):** evergreen guide-ovi žive na `/blog/[slug]`; `/learn` je hub sa kuriranim pathom. Prod 18× `/blog/*` još **404** (BOM fix čeka deploy) → **još nije indeksirano**.
+
+**Preporuka audita:** dok je 404, restrukturiranje je jeftino:
+- Evergreen guide-ovi → `/learn/[slug]` (hub + leaf ista teritorija)
+- `/blog` → hronološki / product / “newest” feed (tankiji ili kasniji postovi)
+- Posle prvog uspješnog indeksiranja: ista izmjena = 301 + izgubljena equity
+
+**Odluka (otvorena):** uraditi migraciju **prije** push-a koji popravlja 404, ili ostaviti `/blog/[slug]` i jačati Learn samo kao hub. Ne miješati 301 kasnije “jer je zgodno”.
+
+### 12.9 Revidirani prioritet (poslije F1–F15)
+
+**P0**  
+1. Imenovani klinički recenzent (recruit) — ili drži F8 process page dok ga nema  
+2. URL odluka: migrate evergreen → `/learn/[slug]` **sada** ili commit na `/blog/[slug]`  
+3. Deploy F1–F15 (blog 404 + hubovi + schema)  
+4. Wedge content: between-sessions + self-guided safety (5–10 Q-slug / Learn leafs)
+
+**P1**  
+5. Cost/access → `/pricing`  
+6. 3–5 honest compares  
+7. llms.txt + interne linkove proširiti na svaki guide
+
+**P2**  
+8. Technique scripts, mali glossary  
+9. Ne: condition spam, city pages, 100+ compares, “what is EMDR” head
+
+---
+
+## 13. Keyword mapa i prioriteti (2026-09-13)
+
+### 13.1 Postojeći članci (18)
+
+| # | Slug | Primarni keyword | Intent | Prioritet |
+|---|---|---|---|---|
+| 1 | `what-is-emdr` | what is emdr | Informational | P0 hub anchor |
+| 2 | `what-is-bilateral-stimulation` | bilateral stimulation | Informational | P0 definiše proizvod |
+| 3 | `visual-sets-and-the-moving-ball` | emdr moving ball | Info/mixed | P0 tool intent |
+| 4 | `emdr-vs-cbt` | emdr vs cbt | Commercial-inv. | P1 |
+| 5 | `emdr-between-sessions` | emdr between sessions | Informational | P0 core use case |
+| 6 | `can-you-do-emdr-alone` | can you do emdr on yourself | Info → konverzija | P0 |
+| 7 | `how-long-does-emdr-take` | how long does emdr take | Informational | P0 |
+| 8 | `emdr-for-anxiety` | emdr for anxiety | Info → commercial | P0 |
+| 9 | `emdr-for-ptsd` | emdr for ptsd | Info → commercial | P0 |
+| 10 | `emdr-online-what-to-expect` | online emdr therapy | Commercial-inv. | P0 |
+| 11 | `guided-vs-free-mode` | — (brand) | Navigational | P2 product support |
+| 12 | `grounding-before-a-set` | grounding techniques | Informational | P1 |
+| 13 | `when-to-pause-or-stop` | when to stop emdr | Informational | P1 |
+| 14 | `emdr-session-structure` | emdr session structure | Informational | P1 |
+| 15 | `self-help-emdr-vs-a-therapist` | self emdr vs therapist | Commercial-inv. | P1 |
+| 16 | `eye-movements-and-online-emdr` | does online emdr work | Informational | P1 |
+| 17 | `emdr-check-ins-after-sets` | emdr check in | Product support | P2 |
+| 18 | `what-happens-in-an-emdr-set` | emdr set | Informational | P2 |
+
+**#11 i #17:** bez search volume-a — piši za konverziju i in-app podršku, ne za rangiranje.
+
+### 13.2 Content gaps — šta dodati
+
+Safety + protocol/how-to: visok volume, AIO teško odgovara (YMYL), authority tanki.
+
+**P0 (graditi prvo)**
+
+| Tema | Primarni keyword | Zašto |
+|---|---|---|
+| EMDR side effects | emdr side effects | Najveći gap; AI-answerable |
+| Is EMDR safe | is emdr safe | Članak nosi upit; `/safety` ostaje policy hub |
+| 8 phases | emdr 8 phases | Numbered list → snippet / AIO |
+| Butterfly hug | butterfly hug | EMDRIA kanon; pobedi jasnoćom + vizual |
+| Tapping vs eye movements | emdr tapping vs eye movements | Product-relevant (visual/audio/tactile) |
+| EMDR for depression | emdr for depression | Strogo — slabija evidence |
+| EMDR for C-PTSD | emdr for cptsd | Iskreno → `/safety` (rizična solo grupa) |
+| Best EMDR app | best emdr app | Honest compare + disclose bias |
+| EMDR cost | how much does emdr cost | Most ka `/pricing` |
+| EMDR not working | emdr not working | Empatično; sme reći “možda nije alat za tebe” |
+
+**P1:** container, calm place, resourcing, window of tolerance, negative cognitions, after-effects (headache/nausea/fatigue), sleep, dissociation risk, grief/phobias/OCD/panic, insurance, vs brainspotting/somatic/EFT, how to prepare.
+
+**P2:** chronic pain/tinnitus/children/BPD, SUD/VOC, body scan, tappers, polyvagal, fight-flight-freeze.
+
+### 13.3 Kanibalizacija — rešiti prije pisanja
+
+| Par | Rizik | Pravilo |
+|---|---|---|
+| `emdr-session-structure` ↔ `what-happens-in-an-emdr-set` | Visok | Structure = cijeli luk + 8 faza; set = mehanika jednog seta |
+| `visual-sets…` ↔ `eye-movements…` ↔ `what-is-bilateral-stimulation` | Visok 3-way | (a) UI/format+proizvod (b) dokazi screen delivery (c) koncept |
+| `emdr-between-sessions` ↔ `can-you-do-emdr-alone` ↔ `self-help-emdr-vs-a-therapist` | Visok | Uz terapiju / samostalno / poređenje — lančano linkovati |
+| `/learn` ↔ `/blog` | Visok | F4: hub vs chrono feed |
+| `how-long-does-emdr-take` ↔ budući “how many sessions” | Preduprediti | Ne novi URL — H2/FAQ na postojećoj |
+| `/safety` ↔ is-emdr-safe ↔ side-effects | Planirati | `/safety` = policy; članci nose upite i linkuju hub |
+
+### 13.4 AI search (AEO/GEO) — format obavezan
+
+Definicioni head (`what is emdr`) = skupa borba vs Cleveland/APA/EMDRIA + AIO. Nura pobjeđuje na **mehanizam / safety / between-sessions / product-adjacent**.
+
+Na **svakom** članku:
+
+1. H1/H2 u **pitanju**, ne u tvrdnji  
+2. Direktan odgovor **40–60 riječi** kao prvi pasus ispod svakog H2 (verbatim extract)  
+3. Schema: Article/BlogPosting + FAQPage gdje ima FAQ; YMYL → MedicalWebPage (audience/specialty; `reviewedBy` samo ako stvaran kliničar) + `lastReviewed` kad postoji review  
+4. Numerisane liste (8 faza); tabele za vs CBT / brainspotting / somatic  
+5. Inline citati: APA, EMDRIA, NICE, WHO, PubMed — pozajmi autoritet, ne izmišljaj
+
+### 13.5 Redoslijed izvršenja sadržaja
+
+1. Zaključaj URL (`/learn/[slug]` vs `/blog/[slug]`) + deploy F1  
+2. Anti-kanibal rewrite P0 postojećih (uloge u §13.3) + AEO format  
+3. Novi P0 gapovi: side effects → is safe → 8 phases → cost → best app → butterfly hug → tapping vs eyes → not working → depression/C-PTSD (strogo)  
+4. P1 technique + after-effects  
+5. Recenzent kad postoji → `reviewedBy` val  

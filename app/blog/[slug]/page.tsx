@@ -6,6 +6,7 @@ import {
   listClusterArticles,
 } from "@/lib/content-cluster";
 import { getPublicAppUrl } from "@/lib/platform-settings";
+import { dynamicOgImageUrl } from "@/lib/seo-og-image";
 import {
   breadcrumbJsonLd,
   localeAlternates,
@@ -40,6 +41,7 @@ export async function generateMetadata({
   }
   const origin = siteOrigin(publicUrl);
   const canonical = `${origin}/blog/${article.slug}`;
+  const ogImage = dynamicOgImageUrl(origin, article.title, "Blog");
 
   return {
     title: article.title,
@@ -53,6 +55,13 @@ export async function generateMetadata({
       locale: "en",
       publishedTime: article.publishedAt,
       modifiedTime: article.publishedAt,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${article.title} — ${BRAND_SPOKEN}`,
+      description: article.description,
+      images: [ogImage],
     },
   };
 }

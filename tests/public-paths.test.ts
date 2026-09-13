@@ -18,6 +18,9 @@ describe("isFrontendPublicPath", () => {
     assert.equal(isFrontendPublicPath("/emdr"), true);
     assert.equal(isFrontendPublicPath("/learn"), true);
     assert.equal(isFrontendPublicPath("/knowledge"), true);
+    assert.equal(isFrontendPublicPath("/pricing"), true);
+    assert.equal(isFrontendPublicPath("/faq"), true);
+    assert.equal(isFrontendPublicPath("/support"), true);
     assert.equal(isFrontendPublicPath("/resources"), false);
     assert.equal(isFrontendPublicPath("/blog"), true);
     assert.equal(isFrontendPublicPath("/changelog"), true);

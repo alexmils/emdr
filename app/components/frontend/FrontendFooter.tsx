@@ -21,6 +21,9 @@ const FOOTER_LINKS = [
   { href: "/blog", label: "Blog" },
   { href: "/learn", label: "Learn" },
   { href: "/knowledge", label: "Knowledge" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/support", label: "Support" },
   { href: "/about", label: "About" },
   { href: "/changelog", label: "What's new" },
 ] as const;

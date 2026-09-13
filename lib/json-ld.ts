@@ -8,9 +8,7 @@ import {
 } from "@/lib/brand";
 import { legalEntityDisplayName } from "@/lib/legal-entity";
 import { LANDING_FAQ_ITEMS } from "@/lib/landing-faq";
-import {
-  BILLING_PLANS,
-} from "@/lib/billing-constants";
+import { BILLING_PLANS } from "@/lib/billing-constants";
 
 function jsonLdOrigin(): string {
   try {
@@ -20,7 +18,7 @@ function jsonLdOrigin(): string {
   }
 }
 
-function euroAmount(displayPrice: string): string {
+function usdAmount(displayPrice: string): string {
   const n = displayPrice.replace(/[^\d.]/g, "");
   if (!n) return "0";
   return n.includes(".") ? n : `${n}.00`;
@@ -34,6 +32,7 @@ export function buildHomeJsonLd(origin = jsonLdOrigin()) {
   const orgId = `${origin}/#organization`;
   const appId = `${origin}/#app`;
   const faqId = `${origin}/#faq`;
+  const siteId = `${origin}/#website`;
   const logoUrl = `${origin}/brand/lockup.png`;
 
   return {
@@ -52,6 +51,23 @@ export function buildHomeJsonLd(origin = jsonLdOrigin()) {
         },
         description: BRAND_DESCRIPTION,
         sameAs: [BRAND_SOCIAL.instagram, BRAND_SOCIAL.facebook],
+        email: "hello@nurahelp.com",
+      },
+      {
+        "@type": "WebSite",
+        "@id": siteId,
+        name: BRAND_SPOKEN,
+        url: `${origin}/`,
+        publisher: { "@id": orgId },
+        inLanguage: "en",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `https://www.google.com/search?q=site:${BRAND_DOMAIN}+{search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
       {
         "@type": "SoftwareApplication",
@@ -64,18 +80,18 @@ export function buildHomeJsonLd(origin = jsonLdOrigin()) {
         description: BRAND_DESCRIPTION,
         offers: {
           "@type": "AggregateOffer",
-          priceCurrency: "EUR",
-          lowPrice: euroAmount(BILLING_PLANS.weekly.displayPrice),
-          highPrice: euroAmount(BILLING_PLANS.yearly.displayPrice),
+          priceCurrency: "USD",
+          lowPrice: usdAmount(BILLING_PLANS.weekly.displayPrice),
+          highPrice: usdAmount(BILLING_PLANS.yearly.displayPrice),
           offerCount: 3,
-          url: `${origin}/#prices`,
+          url: `${origin}/pricing`,
         },
         publisher: { "@id": orgId },
       },
       {
         "@type": "FAQPage",
         "@id": faqId,
-        url: `${origin}/#faq`,
+        url: `${origin}/faq`,
         inLanguage: "en",
         mainEntity: LANDING_FAQ_ITEMS.map((item) => ({
           "@type": "Question",

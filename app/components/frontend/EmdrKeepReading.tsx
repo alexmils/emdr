@@ -13,8 +13,8 @@ export function EmdrKeepReading() {
         coverUrl: post.coverUrl,
         tag: post.tag,
       }))}
-      indexHref="/blog"
-      indexLabel="All public guides"
+      indexHref="/learn"
+      indexLabel="EMDR reading paths"
     />
   );
 }

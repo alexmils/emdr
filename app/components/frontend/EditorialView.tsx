@@ -71,8 +71,8 @@ export function EditorialView() {
         </div>
 
         <p className="fe-cluster-note">
-          {BRAND_LIMITS_LINE} See{" "}
-          <Link href="/limits">what this app does not do</Link>.
+          {BRAND_LIMITS_LINE}{" "}
+          <Link href="/limits">Read the limits</Link>.
         </p>
       </div>
     </article>

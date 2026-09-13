@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  CLUSTER_TOPIC_LABEL,
   estimateClusterReadMinutes,
   listClusterArticles,
   type ClusterArticle,
@@ -33,10 +34,10 @@ export function BlogIndex() {
     <div className="fe-cluster fe-cluster--blog">
       <div className="fe-cluster-inner fe-cluster-inner--blog">
         <p className="fe-cluster-kicker">Blog</p>
-        <h1 className="fe-cluster-title">EMDR therapy, visual sets, and practice</h1>
+        <h1 className="fe-cluster-title">EMDR articles — newest first</h1>
         <p className="fe-cluster-dek">
-          Guides for practice between sessions — newest first. New here?{" "}
-          <Link href="/learn">Learn</Link> is the short start map.
+          Every public guide with a date. New here? Start on{" "}
+          <Link href="/learn">Learn</Link> for curated reading paths.
         </p>
 
         <div className="fe-blog-masonry" role="list">
@@ -47,8 +48,15 @@ export function BlogIndex() {
                 const mins = estimateClusterReadMinutes(article);
                 const height = mediaHeight(col, row);
                 return (
-                  <article key={article.slug} className="fe-blog-masonry-item" role="listitem">
-                    <Link href={`/blog/${article.slug}`} className="fe-blog-masonry-card">
+                  <article
+                    key={article.slug}
+                    className="fe-blog-masonry-item"
+                    role="listitem"
+                  >
+                    <Link
+                      href={`/blog/${article.slug}`}
+                      className="fe-blog-masonry-card"
+                    >
                       <span
                         className="fe-blog-masonry-media"
                         style={{ height }}
@@ -64,9 +72,12 @@ export function BlogIndex() {
                       <span className="fe-blog-masonry-body">
                         <span className="fe-blog-masonry-meta">
                           {date ? <span>{date}</span> : null}
+                          <span>{CLUSTER_TOPIC_LABEL[article.topic]}</span>
                           <span>{mins} min read</span>
                         </span>
-                        <span className="fe-blog-masonry-title">{article.title}</span>
+                        <span className="fe-blog-masonry-title">
+                          {article.title}
+                        </span>
                       </span>
                     </Link>
                   </article>

@@ -2,8 +2,9 @@
 import { EmdrKeepReading } from "@/app/components/frontend/EmdrKeepReading";
 import { JsonLd } from "@/app/components/frontend/JsonLd";
 import { LOGIN_PATH } from "@/lib/app-base";
+import { EMDR_FAQ_ITEMS as EMDR_FAQ } from "@/lib/emdr-faq";
 import { getPublicAppUrl } from "@/lib/platform-settings";
-import { buildEmdrJsonLd, type FaqItem } from "@/lib/seo-jsonld";
+import { buildEmdrJsonLd } from "@/lib/seo-jsonld";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
 import { siteOrigin } from "@/lib/site-seo";
 import type { Metadata } from "next";
@@ -14,42 +15,6 @@ export const revalidate = 3600; // PUBLIC_PAGE_REVALIDATE_SECONDS
 export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("emdr");
 }
-
-/** Visible FAQ — the JSON-LD FAQPage is built from this same array. */
-const EMDR_FAQ: FaqItem[] = [
-  {
-    q: "Is AI-guided EMDR as effective as EMDR with a therapist?",
-    a: "No, and no honest tool would claim so. The bilateral stimulation component is well studied and appears to work through working-memory load, which does not require a clinician to be present. The assessment, preparation, and clinical judgment around it do. Research into self-administered EMDR is early — a 2020 review in BJPsych Open found only one small primary study, with promising results but significant methodological limits.",
-  },
-  {
-    q: "Can bilateral stimulation work on its own?",
-    a: "The lab evidence suggests the core mechanism does not depend on a therapist being in the room. Studies consistently find that holding a negative memory while doing a demanding left-right task reduces its vividness and emotionality. What a therapist adds is knowing whether you should be doing that at all, and what to do when it goes sideways.",
-  },
-  {
-    q: "Do I need a therapist to use Nura?",
-    a: "No. But if you have complex trauma, a dissociative disorder, or you are in crisis, you should not use it without one.",
-  },
-  {
-    q: "Is my data private?",
-    a: "Sessions are encrypted and never used to train AI models. Read the Privacy Policy for exactly what is stored, where, and for how long.",
-  },
-  {
-    q: "What if I feel worse after a session?",
-    a: "Stop, use grounding, and do not run another set. If it persists for more than a day or two, contact a clinician. You can also log it in the app so it is on the record.",
-  },
-  {
-    q: "Does it work on a phone?",
-    a: "Yes — the ball, tones, and session flow all run in the browser.",
-  },
-  {
-    q: "How long is a session?",
-    a: "Typically 15–30 minutes. You can stop at any point, though the app will always ask you to close out properly first.",
-  },
-  {
-    q: "What is the difference between guided and Free mode?",
-    a: "Agent-guided runs the full session with the AI. Free gives you the set alone — no structure, no prompts — useful if you already have a protocol from your therapist.",
-  },
-];
 
 export default async function EmdrPage() {
   let publicUrl: string | undefined;

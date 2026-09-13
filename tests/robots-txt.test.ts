@@ -43,11 +43,18 @@ describe("robots.txt", () => {
     assert.match(block, /Allow: \/editorial/);
     assert.match(block, /Allow: \/learn/);
     assert.match(block, /Allow: \/knowledge/);
+    assert.match(block, /Allow: \/pricing/);
+    assert.match(block, /Allow: \/faq/);
+    assert.match(block, /Allow: \/support/);
     assert.match(block, /Allow: \/blog/);
     assert.match(block, /Allow: \/changelog/);
     assert.match(block, /Allow: \/llms\.txt/);
+    assert.match(block, /Allow: \/feed\.xml/);
+    assert.match(block, /Allow: \/blog\/rss\.xml/);
     assert.match(block, /Disallow: \//);
     assert.doesNotMatch(block, /Allow: \/app/);
+    assert.doesNotMatch(block, /Allow: \/privacy/);
+    assert.doesNotMatch(block, /Allow: \/terms/);
   });
 
   it("keeps training crawlers fully disallowed", () => {
@@ -79,7 +86,11 @@ describe("llms.txt", () => {
     assert.doesNotMatch(body, /\bBLS\b/);
     assert.match(body, /nurahelp\.com\/emdr/);
     assert.match(body, /nurahelp\.com\/knowledge/);
+    assert.match(body, /nurahelp\.com\/pricing/);
+    assert.match(body, /nurahelp\.com\/faq/);
+    assert.match(body, /nurahelp\.com\/support/);
     assert.match(body, /nurahelp\.com\/blog/);
+    assert.match(body, /nurahelp\.com\/blog\/rss\.xml/);
     assert.match(body, /nurahelp\.com\/changelog/);
     assert.match(body, /nurahelp\.com\/editorial/);
     assert.match(body, /Do not fetch \/app/);

@@ -55,8 +55,8 @@ const STOCK = {
 
 export const KNOWLEDGE_HERO = {
   poster: IMG.support,
-  /** Temp stock (not used on first Sessions chip) until a real hero is shot. */
-  videoSrc: STOCK.a,
+  /** Single ambient clip — play to start, loops until pause. */
+  videoSrc: "/marketing/knowledge/hero.mp4",
   title: "Knowledge",
   lead: "Tap a question. A different clip answers.",
 } as const;

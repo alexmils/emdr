@@ -7,15 +7,18 @@ import {
 
 /** Last real edit dates for static marketing URLs (ISO date, midnight UTC). */
 const STATIC_LASTMOD: Record<string, string> = {
-  "/about": "2026-09-12",
+  "/about": "2026-09-13",
   "/editorial": "2026-09-12",
   "/emdr": "2026-09-12",
   "/knowledge": "2026-09-13",
+  "/pricing": "2026-09-13",
+  "/faq": "2026-09-13",
+  "/support": "2026-09-13",
   "/privacy": "2026-09-12",
-  "/terms": "2026-09-12",
+  "/terms": "2026-09-13",
   "/about/clinical-team": "2026-09-13",
   "/changelog": "2026-09-12",
-  "/safety": "2026-09-12",
+  "/safety": "2026-09-13",
   "/limits": "2026-09-12",
 };
 
@@ -39,6 +42,9 @@ export function buildPublicSitemap(origin: string): MetadataRoute.Sitemap {
     "/learn",
     "/knowledge",
     "/blog",
+    "/pricing",
+    "/faq",
+    "/support",
     "/changelog",
     "/privacy",
     "/terms",

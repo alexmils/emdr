@@ -770,6 +770,37 @@ export function clusterArticlesByTopic(): Record<ClusterTopic, ClusterArticle[]>
   return out;
 }
 
+/**
+ * Curated /learn reading order (not the full archive).
+ * Keep short — /blog is the chronological dump of every guide.
+ */
+export const LEARN_READING_ORDER: Record<ClusterTopic, readonly string[]> = {
+  understand: [
+    "what-is-emdr",
+    "what-is-bilateral-stimulation",
+    "self-help-emdr-vs-a-therapist",
+  ],
+  practice: [
+    "visual-sets-and-the-moving-ball",
+    "emdr-session-structure",
+    "emdr-between-sessions",
+  ],
+  safety: ["grounding-before-a-set", "when-to-pause-or-stop"],
+};
+
+export function learnReadingPath(
+  topic: ClusterTopic
+): ClusterArticle[] {
+  return LEARN_READING_ORDER[topic]
+    .map((slug) => getClusterArticle(slug))
+    .filter((a): a is ClusterArticle => Boolean(a));
+}
+
+/** Anchor id for /learn topic sections. */
+export function learnTopicHref(topic: ClusterTopic): string {
+  return `/learn#${topic}`;
+}
+
 export function relatedClusterArticles(article: ClusterArticle): ClusterArticle[] {
   return article.related
     .map((slug) => getClusterArticle(slug))

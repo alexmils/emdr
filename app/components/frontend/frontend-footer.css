@@ -483,8 +483,10 @@
 }
 
 .fe-site-footer-limits {
-  margin: 0 0 0.75rem;
-  max-width: 42rem;
+  margin: 0;
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: none;
   font-size: 0.9375rem;
   color: color-mix(in srgb, var(--fe-ft-muted) 92%, transparent);
   line-height: 1.45;
@@ -497,7 +499,7 @@
 }
 
 .fe-site-footer-limits a:hover {
-  color: var(--fe-ft-ink, #edf9ed);
+  color: var(--fe-ft-lime);
 }
 
 @media (max-width: 720px) {

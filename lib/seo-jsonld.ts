@@ -1,3 +1,8 @@
+import {
+  BILLING_PLANS,
+  TRIAL_DAYS,
+  orderedBillingPlans,
+} from "@/lib/billing-constants";
 import { BRAND_SPOKEN } from "@/lib/brand";
 import {
   CLINICAL_AUTHORITIES,
@@ -123,15 +128,16 @@ export function collectionPageJsonLd({
 
 /** Visible H1 + dek on `/learn` — JSON-LD must match the hub, not the meta title. */
 export const LEARN_JSON_LD = {
-  name: "Start with one guide",
-  description: "Pick a topic below. One guide is enough for now.",
+  name: "EMDR reading paths",
+  description:
+    "Three short paths — pick a topic, read in order. For every guide newest-first, see the blog.",
 } as const;
 
 /** Visible H1 + dek on `/blog` (dek without the Learn link markup). */
 export const BLOG_INDEX_JSON_LD = {
-  name: "EMDR therapy, visual sets, and practice",
+  name: "EMDR articles — newest first",
   description:
-    "Guides for practice between sessions — newest first. New here? Learn is the short start map.",
+    "Every public guide with a date. New here? Start on Learn for curated reading paths.",
 } as const;
 
 function articleListItems() {
@@ -378,6 +384,199 @@ export function buildLimitsJsonLd(origin: string) {
       breadcrumbJsonLd(origin, [
         { name: "Home", path: "/" },
         { name: "Limits", path: "/limits" },
+      ]),
+    ],
+  };
+}
+
+function offerAmount(displayPrice: string): string {
+  const n = displayPrice.replace(/[^\d.]/g, "");
+  if (!n) return "0";
+  return n.includes(".") ? n : `${n}.00`;
+}
+
+/** H1 + lead mirrored into JSON-LD for `/pricing`. */
+export const PRICING_JSON_LD = {
+  name: "Plans for AI-guided EMDR",
+  description: `Weekly, monthly, and yearly plans for ${BRAND_SPOKEN}. Start with a ${TRIAL_DAYS}-day trial.`,
+} as const;
+
+/** H1 mirrored into JSON-LD for `/faq`. */
+export const PUBLIC_FAQ_JSON_LD = {
+  name: "FAQ",
+  description:
+    "Answers about Nura sessions, Free sets, the trial, privacy, and when to get help.",
+} as const;
+
+/** H1 + lead mirrored into JSON-LD for `/support`. */
+export const SUPPORT_JSON_LD = {
+  name: "Support",
+  description:
+    "How to reach Nura — in-app Need help chat, email hello@nurahelp.com, and crisis lines.",
+} as const;
+
+export function buildPricingJsonLd(origin: string) {
+  const base = origin.replace(/\/$/, "");
+  const plans = orderedBillingPlans(BILLING_PLANS);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      {
+        "@type": "WebPage",
+        "@id": `${base}/pricing#page`,
+        url: `${base}/pricing`,
+        name: PRICING_JSON_LD.name,
+        description: PRICING_JSON_LD.description,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+        isPartOf: {
+          "@type": "WebSite",
+          name: BRAND_SPOKEN,
+          url: `${base}/`,
+        },
+        mainEntity: {
+          "@type": "OfferCatalog",
+          name: PRICING_JSON_LD.name,
+          url: `${base}/pricing`,
+          numberOfItems: plans.length,
+          itemListElement: plans.map((plan, i) => ({
+            "@type": "Offer",
+            position: i + 1,
+            name: plan.label,
+            price: offerAmount(plan.displayPrice),
+            priceCurrency: "USD",
+            url: `${base}/pricing`,
+          })),
+        },
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "Pricing", path: "/pricing" },
+      ]),
+    ],
+  };
+}
+
+export function buildPublicFaqJsonLd(origin: string, faqItems: FaqItem[]) {
+  const base = origin.replace(/\/$/, "");
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      {
+        "@type": "WebPage",
+        "@id": `${base}/faq#page`,
+        url: `${base}/faq`,
+        name: PUBLIC_FAQ_JSON_LD.name,
+        description: PUBLIC_FAQ_JSON_LD.description,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+      },
+      {
+        ...faqPageJsonLd(faqItems),
+        "@id": `${base}/faq#faq`,
+        url: `${base}/faq`,
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "FAQ", path: "/faq" },
+      ]),
+    ],
+  };
+}
+
+export function buildSupportJsonLd(origin: string) {
+  const base = origin.replace(/\/$/, "");
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        ...organizationJsonLd(origin),
+        email: "hello@nurahelp.com",
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: "hello@nurahelp.com",
+          contactType: "customer support",
+        },
+      },
+      {
+        "@type": ["WebPage", "ContactPage"],
+        "@id": `${base}/support#page`,
+        url: `${base}/support`,
+        name: SUPPORT_JSON_LD.name,
+        description: SUPPORT_JSON_LD.description,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+        isPartOf: {
+          "@type": "WebSite",
+          name: BRAND_SPOKEN,
+          url: `${base}/`,
+        },
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "Support", path: "/support" },
+      ]),
+    ],
+  };
+}
+
+export const ABOUT_JSON_LD = {
+  name: "About the EMDR therapy online app",
+  description:
+    "Nura is an online app for guided EMDR therapy between sessions — agent-guided practice and Free visual sets on your schedule.",
+} as const;
+
+export function buildAboutJsonLd(origin: string) {
+  const base = origin.replace(/\/$/, "");
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      {
+        "@type": "AboutPage",
+        "@id": `${base}/about#page`,
+        url: `${base}/about`,
+        name: ABOUT_JSON_LD.name,
+        description: ABOUT_JSON_LD.description,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+        isPartOf: { "@type": "WebSite", name: BRAND_SPOKEN, url: `${base}/` },
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: "About", path: "/about" },
+      ]),
+    ],
+  };
+}
+
+export function buildLegalWebPageJsonLd({
+  origin,
+  path,
+  name,
+  description,
+}: {
+  origin: string;
+  path: string;
+  name: string;
+  description: string;
+}) {
+  const base = origin.replace(/\/$/, "");
+  const url = `${base}${path}`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationJsonLd(origin),
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name,
+        description,
+        inLanguage: SITE_CONTENT_LANGUAGE,
+        isPartOf: { "@type": "WebSite", name: BRAND_SPOKEN, url: `${base}/` },
+      },
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name, path },
       ]),
     ],
   };

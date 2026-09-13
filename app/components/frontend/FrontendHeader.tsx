@@ -30,13 +30,13 @@ type MeUser = {
 const NAV_LINKS = [
   { href: "/", label: "Home", id: "home" },
   { href: "/#how-it-works", label: "How it works", id: "how-it-works" },
-  { href: "/#prices", label: "Prices", id: "prices" },
+  { href: "/pricing", label: "Prices", id: "prices" },
   { href: "/blog", label: "Blog", id: "blog" },
-  { href: "/#faq", label: "FAQ", id: "faq" },
+  { href: "/faq", label: "FAQ", id: "faq" },
 ] as const;
 
 /** Real routes — do not hijack as a home hash (Lenis). */
-const PATH_NAV_IDS = new Set<string>(["blog"]);
+const PATH_NAV_IDS = new Set<string>(["blog", "prices", "faq"]);
 
 function HeaderCta({
   href,
@@ -204,6 +204,12 @@ export function FrontendHeader({ overlay = false }: { overlay?: boolean }) {
   const isNavCurrent = (id: string) => {
     if (id === "blog") {
       return pathname === "/blog" || pathname.startsWith("/blog/");
+    }
+    if (id === "prices") {
+      return pathname === "/pricing" || pathname.startsWith("/pricing/");
+    }
+    if (id === "faq") {
+      return pathname === "/faq" || pathname.startsWith("/faq/");
     }
     if (id === "learn") {
       return pathname === "/learn" || pathname.startsWith("/learn/");

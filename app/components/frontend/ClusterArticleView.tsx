@@ -3,6 +3,7 @@ import { ClusterKeepReading } from "@/app/components/frontend/ClusterKeepReading
 import { BRAND_LIMITS_LINE, BRAND_SPOKEN } from "@/lib/brand";
 import {
   CLUSTER_TOPIC_LABEL,
+  learnTopicHref,
   relatedClusterArticles,
   type ClusterArticle,
 } from "@/lib/content-cluster";
@@ -12,11 +13,16 @@ import "./public-cluster.css";
 export function ClusterArticleView({ article }: { article: ClusterArticle }) {
   const related = relatedClusterArticles(article);
   const date = formatBlogDate(article.publishedAt);
+  const learnHref = learnTopicHref(article.topic);
 
   return (
     <article className="fe-cluster">
       <div className="fe-cluster-inner">
-        <p className="fe-cluster-kicker">{article.kicker}</p>
+        <p className="fe-cluster-kicker">
+          <Link href={learnHref}>{CLUSTER_TOPIC_LABEL[article.topic]}</Link>
+          {" · "}
+          <Link href="/learn">Learn</Link>
+        </p>
         <h1>{article.title}</h1>
         <p className="fe-cluster-dek">{article.dek}</p>
         {date ? (
@@ -46,8 +52,8 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
         </p>
 
         <p className="fe-cluster-note">
-          {BRAND_LIMITS_LINE} See{" "}
-          <Link href="/limits">what this app does not do</Link>.
+          {BRAND_LIMITS_LINE}{" "}
+          <Link href="/limits">Read the limits</Link>.
         </p>
       </div>
 
@@ -60,6 +66,8 @@ export function ClusterArticleView({ article }: { article: ClusterArticle }) {
             coverUrl: item.coverUrl,
             tag: CLUSTER_TOPIC_LABEL[item.topic],
           }))}
+          indexHref={learnHref}
+          indexLabel={`More in ${CLUSTER_TOPIC_LABEL[article.topic]}`}
         />
       ) : null}
     </article>

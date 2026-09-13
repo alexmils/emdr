@@ -1,5 +1,6 @@
 ﻿import { HelpChatLink } from "@/app/components/HelpChatWidget";
 import { FrontendShell } from "@/app/components/frontend/FrontendShell";
+import { JsonLd } from "@/app/components/frontend/JsonLd";
 import {
   BRAND_DOMAIN,
   BRAND_PRODUCT,
@@ -11,7 +12,10 @@ import {
   LEGAL_DOC_VERSION,
   legalEntityDisplayName,
 } from "@/lib/legal-entity";
+import { getPublicAppUrl } from "@/lib/platform-settings";
+import { buildLegalWebPageJsonLd } from "@/lib/seo-jsonld";
 import { buildCachedPageMetadata } from "@/lib/site-seo-cache";
+import { siteOrigin } from "@/lib/site-seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -21,9 +25,26 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildCachedPageMetadata("privacy");
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  let publicUrl: string | undefined;
+  try {
+    publicUrl = await getPublicAppUrl();
+  } catch {
+    publicUrl = undefined;
+  }
+  const origin = siteOrigin(publicUrl);
+
   return (
     <FrontendShell>
+      <JsonLd
+        data={buildLegalWebPageJsonLd({
+          origin,
+          path: "/privacy",
+          name: "Privacy",
+          description:
+            "How Receptly LLC handles account, session, and billing data for the Nura EMDR therapy app.",
+        })}
+      />
       <article className="frontend-legal frontend-legal--long">
         <h1>Privacy policy</h1>
         <p className="frontend-legal-meta">

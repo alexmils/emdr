@@ -29,7 +29,6 @@ export function KnowledgeHub() {
       void el.play().then(
         () => setHeroPlaying(true),
         () => {
-          // Autoplay with sound often blocked — retry muted
           el.muted = true;
           void el.play().then(
             () => setHeroPlaying(true),
@@ -54,7 +53,6 @@ export function KnowledgeHub() {
         >
           {hasHeroVideo ? (
             <>
-              {/* Poster until first play — matches Nolla still → video */}
               {!heroStarted ? (
                 <Image
                   src={KNOWLEDGE_HERO.poster}
@@ -75,7 +73,6 @@ export function KnowledgeHub() {
                 preload="metadata"
                 onPlay={() => setHeroPlaying(true)}
                 onPause={() => setHeroPlaying(false)}
-                onEnded={() => setHeroPlaying(false)}
               />
             </>
           ) : (
@@ -90,7 +87,6 @@ export function KnowledgeHub() {
           )}
           <div className="fe-knowledge-hero-shade" aria-hidden />
 
-          {/* Always show centered play/pause — Nolla glass circle */}
           <button
             type="button"
             className={`fe-knowledge-hero-play${heroPlaying ? " is-playing" : ""}`}

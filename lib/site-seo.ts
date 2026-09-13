@@ -73,6 +73,8 @@ export const RETIRED_SEO_TITLES = new Set([
   "AI EMDR Therapy App — Guided Bilateral Stimulation",
   "AI EMDR Therapy App — Guided Bilateral Stimulation | Nura",
   "AI-guided EMDR therapy online — bilateral stimulation app",
+  "AI-guided EMDR therapy — bilateral stimulation",
+  "Using AI-guided EMDR safely — when to stop and get help",
 ]);
 
 export const RETIRED_SEO_DESCRIPTIONS = new Set([
@@ -99,7 +101,7 @@ export const RETIRED_SEO_DESCRIPTIONS = new Set([
 ]);
 
 /** Bump when default title/description copy changes so `unstable_cache` cannot keep the last resolve. */
-export const SEO_COPY_REVISION = "p0-blog-title-meta-1";
+export const SEO_COPY_REVISION = "p0-pricing-faq-support-1";
 
 export function documentTitle(pageTitle: string): string {
   const suffix = ` — ${BRAND_SPOKEN}`;
@@ -156,9 +158,9 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "emdr",
     path: "/emdr",
     label: "EMDR",
-    title: "AI-guided EMDR therapy — bilateral stimulation",
+    title: "AI-guided EMDR therapy online",
     description:
-      "Guided EMDR sessions with AI support: visual, audio, and tactile bilateral stimulation, on your schedule.",
+      "Guided EMDR sessions with AI support: visual sets, optional voice, and practice on your schedule.",
   },
   {
     id: "learn",
@@ -166,7 +168,7 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     label: "Learn",
     title: "EMDR therapy — where to start",
     description:
-      "Short EMDR guides by topic — understand, practice, and safety. Full archive on the blog.",
+      "Curated EMDR reading paths: understand, practice, and safety. Short guides in order — not the full archive.",
   },
   {
     id: "knowledge",
@@ -183,6 +185,30 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     title: "EMDR therapy blog — guides and visual sets",
     description:
       "Every Nura guide in one place: what EMDR is, how bilateral stimulation works, grounding, and what to do between sessions. Newest first.",
+  },
+  {
+    id: "pricing",
+    path: "/pricing",
+    label: "Pricing",
+    title: "Plans for AI-guided EMDR",
+    description:
+      "Weekly, monthly, and yearly plans for AI-guided EMDR — start with a 7-day trial.",
+  },
+  {
+    id: "faq",
+    path: "/faq",
+    label: "FAQ",
+    title: "FAQ — sessions, Free sets, and the trial",
+    description:
+      "Answers about Nura sessions, Free sets, the trial, privacy, and when to get help.",
+  },
+  {
+    id: "support",
+    path: "/support",
+    label: "Support",
+    title: "Support — how to get help",
+    description:
+      "Reach Nura by in-app Need help chat or email — plus safety and crisis links.",
   },
   {
     id: "changelog",
@@ -210,7 +236,7 @@ export const SITE_SEO_DEFAULTS: PageDefault[] = [
     id: "safety",
     path: "/safety",
     label: "Safety",
-    title: "Using AI-guided EMDR safely — when to stop and get help",
+    title: "Using AI-guided EMDR safely",
     description:
       "When to stop a Nura session, when to see a clinician, and crisis lines if you are not safe.",
   },
@@ -264,6 +290,8 @@ export function resolveSiteSeoPages(
       pageId: def.id,
       hasPageOverride: Boolean(pageOg),
       fallback: builtInDefault,
+      title: ogTitle || title,
+      kicker: def.label,
     });
     const path = def.path;
     const canonical = path === "/" ? `${origin}/` : `${origin}${path}`;
@@ -333,7 +361,16 @@ export function metadataFromResolved(
       siteName: BRAND_LEGAL,
       type: "website",
       locale: "en",
-      images: [{ url: page.ogImageUrl }],
+      images: [{ url: page.ogImageUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title:
+        page.ogTitle === page.title
+          ? `${page.title} — ${BRAND_SPOKEN}`
+          : page.ogTitle,
+      description: page.description,
+      images: [page.ogImageUrl],
     },
     ...(Object.keys(verification).length ? { verification } : {}),
   };

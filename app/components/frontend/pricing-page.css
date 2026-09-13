@@ -1,0 +1,64 @@
+/* Public /pricing — plan list, not SaaS card grid. */
+
+.frontend-pricing-plans {
+  list-style: none;
+  margin: 1.5rem 0 2rem;
+  padding: 0;
+  max-width: none;
+}
+
+.frontend-pricing-plan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1.5rem;
+  margin: 0;
+  padding: 1rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fe-fg) 12%, transparent);
+}
+
+.frontend-pricing-plan--highlight {
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--fe-accent);
+}
+
+.frontend-pricing-plan-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.frontend-pricing-plan-label {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fe-fg);
+}
+
+.frontend-pricing-plan-hint {
+  font-family: var(--font-alt), var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fe-muted);
+}
+
+.frontend-pricing-plan-price {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  color: var(--fe-fg);
+}
+
+.frontend-pricing-plan-amount {
+  font-weight: 600;
+}
+
+.frontend-pricing-plan-period {
+  margin-left: 0.2rem;
+  color: var(--fe-muted);
+  font-weight: 400;
+}
