@@ -542,6 +542,9 @@
   }
 
   .fe-site-footer-lead {
+    /* Column layout: reset the row flex-basis so height fits content
+       (18rem basis would otherwise force ~288px of empty vertical space). */
+    flex: 0 0 auto;
     min-width: 0;
     max-width: none;
     width: 100%;
@@ -583,6 +586,8 @@
   }
 
   .fe-site-footer-newsletter {
+    /* Same column-axis reset: 16rem basis would force ~256px of dead height. */
+    flex: 0 0 auto;
     max-width: none;
     width: 100%;
     align-items: center;
