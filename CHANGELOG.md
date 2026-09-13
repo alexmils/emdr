@@ -514,6 +514,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] Prod deploys: nura-edge Traefik on `127.0.0.1:3471` + empty Coolify host port map so rolling updates avoid Cloudflare 502 gaps
 - [internal] SEO round 3: trim 3 double-Nura titles; pricing Product/Offer JSON-LD; H1 align knowledge/faq/support/learn; llms.txt lists 18 guides
 - [internal] nura-edge: Coolify must keep empty ports mapping + http FQDN; ensure/restore scripts on VPS if deploy clashes on :3471
+- [internal] Coolify `ports_mappings` must be SQL NULL (not `''`) — empty string emits `ports: ['']` and deploys fail with `no port specified`
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
