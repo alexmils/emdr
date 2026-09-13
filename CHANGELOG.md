@@ -507,6 +507,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [internal] SEO round 2: unique home vs /emdr titles; query-order article titles; no disclaimer in meta; /rss.xml→/feed.xml; thicker /pricing
 - [internal] Admin voice preview: no false “Could not play” toast when stopping a sample (clear handlers before clearing src)
 - [internal] R5h: blog guides get visible FAQ + MedicalWebPage/FAQPage/BlogPosting JSON-LD (no fake reviewedBy)
+- [internal] `/rss.xml` 301 uses public site origin (not Coolify bind host `0.0.0.0:3471`)
 
 ### Removed
 - Design lab `/design/voice-composer` (page + CSS); dropped `/design` from public paths and robots disallow
