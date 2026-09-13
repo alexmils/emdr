@@ -220,8 +220,10 @@ Without `COOLIFY_TOKEN` the Coolify chip reads **Coolify local** (this process o
 - Discovers app containers via Docker labels (`traefik.enable=true`, entrypoint `http`)
 - **Do not** start the stock Coolify Proxy (`/data/coolify/proxy`) on 80/443 — it fights CloudPanel
 - **Do not** re-add Coolify **Ports mappings** `127.0.0.1:3471:3471` — next deploy will fail to bind (edge already owns 3471) and nginx gets Traefik `404 page not found`
+- **Ports mappings must be SQL `NULL` / truly empty in the Coolify UI** — do **not** save an empty string (`''`). Coolify then emits `ports: ['']` and compose fails with `no port specified: <empty>` (deploys 40–42 on 2026-09-13).
 - After a bad Coolify deploy: `bash /data/nura-edge/ensure-after-deploy.sh` (re-locks DB settings) or `bash /data/nura-edge/restore-app.sh` (recreates the app container without host publish)
 - Coolify FQDN must stay `http://nurahelp.com,…` with **Force HTTPS off** so routers are HTTP-only (CloudPanel terminates TLS)
+- On-server scripts under `/data/nura-edge/` set `ports_mappings = NULL` (not `''`)
 
 ```bash
 # On VPS — edge status
@@ -293,3 +295,4 @@ If `/` looks unstyled and login-gated: suspect **WORKDIR `/app` regression** or 
 4. Switched to **GitHub Actions build + GHCR + Coolify `dockerimage` pull**.
 5. Fixed prod “no CSS / home → login”: `WORKDIR` `/app` → `/nura`; added `gsap`/`lenis` to `package.json`.
 6. **2026-09-13:** Host port publish `127.0.0.1:3471:3471` caused stop-then-start **502**s on every deploy. Moved to **nura-edge** Traefik on loopback + empty Coolify ports mapping so rolling updates can overlap containers; Coolify FQDN is `http://…` (Force HTTPS off) while public `APP_URL` stays `https://nurahelp.com`.
+7. **2026-09-13 (follow-up):** Setting Coolify `ports_mappings` to empty string `''` still emits `ports: ['']` → deploy fails with `no port specified: <empty>`. Use SQL `NULL` / clear the field in UI. Patched `/data/nura-edge/ensure-after-deploy.sh` + `restore-app.sh` accordingly.
